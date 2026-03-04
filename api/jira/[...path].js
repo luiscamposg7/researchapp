@@ -1,4 +1,4 @@
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   const pathParts = req.query.path || [];
   const base = (req.headers['x-jira-base'] || '').replace(/\/$/, '');
   const auth = req.headers['x-jira-auth'];
@@ -23,8 +23,8 @@ export default async function handler(req, res) {
       },
     });
     const data = await response.json();
-    res.status(response.status).json(data);
+    return res.status(response.status).json(data);
   } catch (err) {
-    res.status(502).json({ error: err.message });
+    return res.status(502).json({ error: err.message });
   }
-}
+};

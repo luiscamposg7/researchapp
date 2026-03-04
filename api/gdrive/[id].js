@@ -1,4 +1,4 @@
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   const { id } = req.query;
   try {
     const response = await fetch(`https://drive.google.com/file/d/${id}/view`, {
@@ -7,9 +7,9 @@ export default async function handler(req, res) {
     const html = await response.text();
     const match = html.match(/<title[^>]*>([^<]+)<\/title>/i);
     const raw = match ? match[1] : '';
-    const title = raw.replace(/\s*[-–]\s*Google Drive\s*$/i, '').trim();
-    res.json({ title: title || null });
+    const title = raw.replace(/\s*[-\u2013]\s*Google Drive\s*$/i, '').trim();
+    return res.json({ title: title || null });
   } catch {
-    res.json({ title: null });
+    return res.json({ title: null });
   }
-}
+};
