@@ -2019,7 +2019,7 @@ function ProductPage() {
 
         {/* Research */}
         <div className="mb-10">
-          <h2 className={`text-xl font-bold mb-5 ${d ? "text-gray-100" : "text-gray-900"}`}>Research</h2>
+          <h2 className={`text-xl font-bold mb-5 ${d ? "text-gray-100" : "text-gray-900"}`}>Todos los research</h2>
           <div className="grid grid-cols-2 gap-5">
             {Object.entries(byType).map(([type, items]) => (
               <div key={type} className={`rounded-xl border p-5 ${d ? "border-gray-700 bg-gray-900" : "border-gray-200 bg-white"}`}>
