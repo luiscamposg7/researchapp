@@ -1010,6 +1010,7 @@ function AddPage() {
                           {p.foto ? <img src={p.foto} alt="Foto" className="w-full h-full object-cover" /> : <svg className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>}
                         </div>
                         <div className="space-y-1">
+                          <p className={`text-xs font-semibold mb-1 ${d ? "text-gray-400" : "text-gray-600"}`}>Imagen de perfil</p>
                           <button type="button" onClick={() => setShowPersonaPhotoPicker(true)} disabled={personaPhotoUploading} className={`flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-lg ${secBtn(d)} disabled:opacity-50`}>
                             {personaPhotoUploading ? "Subiendo..." : (p.foto ? "Cambiar foto" : "Subir foto")}
                           </button>
@@ -2894,6 +2895,7 @@ function EditPage() {
                           {p.foto ? <img src={p.foto} alt="Foto" className="w-full h-full object-cover" /> : <svg className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>}
                         </div>
                         <div className="space-y-1">
+                          <p className={`text-xs font-semibold mb-1 ${d ? "text-gray-400" : "text-gray-600"}`}>Imagen de perfil</p>
                           <button type="button" onClick={() => setShowPersonaPhotoPicker(true)} disabled={personaPhotoUploading} className={`flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-lg ${secBtn(d)} disabled:opacity-50`}>
                             {personaPhotoUploading ? "Subiendo..." : (p.foto ? "Cambiar foto" : "Subir foto")}
                           </button>
