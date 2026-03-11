@@ -1005,16 +1005,16 @@ function AddPage() {
                   );
                   return (
                     <div className="space-y-4">
-                      <div className="flex items-center gap-4">
-                        <div className={`w-20 h-20 rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center border-2 ${p.foto ? "border-green-500" : (d ? "border-gray-600" : "border-gray-200")}`}>
-                          {p.foto ? <img src={p.foto} alt="Foto" className="w-full h-full object-cover" /> : <svg className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>}
-                        </div>
+                      <div className="flex items-center justify-between gap-4">
                         <div className="space-y-1">
-                          <p className={`text-xs font-semibold mb-1 ${d ? "text-gray-400" : "text-gray-600"}`}>Imagen de perfil</p>
+                          <p className={`text-xs font-semibold ${d ? "text-gray-400" : "text-gray-600"}`}>Imagen de perfil</p>
+                          <p className={`text-xs ${d ? "text-gray-500" : "text-gray-400"}`}>500×500 px · JPG</p>
                           <button type="button" onClick={() => setShowPersonaPhotoPicker(true)} disabled={personaPhotoUploading} className={`flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-lg ${secBtn(d)} disabled:opacity-50`}>
                             {personaPhotoUploading ? "Subiendo..." : (p.foto ? "Cambiar foto" : "Subir foto")}
                           </button>
-                          <p className={`text-xs ${d ? "text-gray-500" : "text-gray-400"}`}>500×500 px · JPG</p>
+                        </div>
+                        <div className={`w-20 h-20 rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center border-2 ${p.foto ? "border-green-500" : (d ? "border-gray-600" : "border-gray-200")}`}>
+                          {p.foto ? <img src={p.foto} alt="Foto" className="w-full h-full object-cover" /> : <svg className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>}
                         </div>
                       </div>
                       <div><label className={lbl}>Nombre</label>{fi("nombre", "Nombre de la persona")}</div>
@@ -2890,16 +2890,16 @@ function EditPage() {
                   const group = (title, children) => <div><p className={`text-xs font-bold uppercase tracking-wider mb-3 ${d ? "text-gray-500" : "text-gray-400"}`}>{title}</p><div className="space-y-3">{children}</div></div>;
                   return (
                     <div className="space-y-4">
-                      <div className="flex items-center gap-4">
-                        <div className={`w-20 h-20 rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center border-2 ${p.foto ? "border-green-500" : (d ? "border-gray-600" : "border-gray-200")}`}>
-                          {p.foto ? <img src={p.foto} alt="Foto" className="w-full h-full object-cover" /> : <svg className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>}
-                        </div>
+                      <div className="flex items-center justify-between gap-4">
                         <div className="space-y-1">
-                          <p className={`text-xs font-semibold mb-1 ${d ? "text-gray-400" : "text-gray-600"}`}>Imagen de perfil</p>
+                          <p className={`text-xs font-semibold ${d ? "text-gray-400" : "text-gray-600"}`}>Imagen de perfil</p>
+                          <p className={`text-xs ${d ? "text-gray-500" : "text-gray-400"}`}>500×500 px · JPG</p>
                           <button type="button" onClick={() => setShowPersonaPhotoPicker(true)} disabled={personaPhotoUploading} className={`flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-lg ${secBtn(d)} disabled:opacity-50`}>
                             {personaPhotoUploading ? "Subiendo..." : (p.foto ? "Cambiar foto" : "Subir foto")}
                           </button>
-                          <p className={`text-xs ${d ? "text-gray-500" : "text-gray-400"}`}>500×500 px · JPG</p>
+                        </div>
+                        <div className={`w-20 h-20 rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center border-2 ${p.foto ? "border-green-500" : (d ? "border-gray-600" : "border-gray-200")}`}>
+                          {p.foto ? <img src={p.foto} alt="Foto" className="w-full h-full object-cover" /> : <svg className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>}
                         </div>
                       </div>
                       <div><label className={lbl}>Nombre</label>{fi("nombre","Nombre de la persona")}</div>
