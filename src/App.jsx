@@ -2927,6 +2927,18 @@ export default function App() {
 
   if (session === undefined) return null;
   if (!session) return <LoginPage dark={dark} />;
+  if (!session.user.email?.endsWith("@prestamype.com")) return (
+    <div className={`min-h-screen flex items-center justify-center ${dark ? "bg-gray-950" : "bg-gray-50"}`}>
+      <div className={`w-full max-w-sm rounded-2xl border p-10 flex flex-col items-center gap-4 text-center ${dark ? "bg-gray-900 border-gray-800" : "bg-white border-gray-200 shadow-sm"}`}>
+        <div className="w-12 h-12 rounded-full flex items-center justify-center bg-red-100">
+          <svg className="w-6 h-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        </div>
+        <h2 className={`text-lg font-bold ${dark ? "text-gray-100" : "text-gray-900"}`}>Acceso restringido</h2>
+        <p className={`text-sm ${dark ? "text-gray-400" : "text-gray-500"}`}>Solo cuentas <span className="font-semibold">@prestamype.com</span> pueden acceder a este portal.</p>
+        <button onClick={() => supabase.auth.signOut()} className="mt-2 text-sm font-semibold text-red-500 hover:text-red-700">Cerrar sesión</button>
+      </div>
+    </div>
+  );
   if (roleLoaded && !role) return (
     <div className={`min-h-screen flex items-center justify-center ${dark ? "bg-gray-950" : "bg-gray-50"}`}>
       <div className={`w-full max-w-sm rounded-2xl border p-10 flex flex-col items-center gap-4 text-center ${dark ? "bg-gray-900 border-gray-800" : "bg-white border-gray-200 shadow-sm"}`}>
