@@ -2136,12 +2136,15 @@ function ProductPage() {
         })()}
 
         {/* Otros productos */}
-        <div className={`pt-8 border-t ${d ? "border-gray-800" : "border-gray-200"}`}>
-          <h2 className={`text-xl font-bold mb-4 ${d ? "text-gray-100" : "text-gray-900"}`}>Otros productos</h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
+        <div className={`pt-6 border-t ${d ? "border-gray-800" : "border-gray-200"}`}>
+          <p className={`text-xs font-semibold uppercase tracking-wider mb-3 ${d ? "text-gray-600" : "text-gray-400"}`}>Otros productos</p>
+          <div className="flex flex-wrap gap-2">
             {PRODUCTS.filter(p => p !== product).map(p => (
-              <ProductCard key={p} product={p} deliverables={deliverables} coverUrl={allCovers[p]} dark={d}
-                onClick={() => navigate(`/producto/${toSlug(p)}`)} />
+              <button key={p} onClick={() => navigate(`/producto/${toSlug(p)}`)}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${d ? "bg-gray-800 hover:bg-gray-700 text-gray-300" : "bg-gray-100 hover:bg-gray-200 text-gray-700"}`}>
+                <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: PRODUCT_COLORS[p] || "#00B369" }} />
+                {p}
+              </button>
             ))}
           </div>
         </div>
