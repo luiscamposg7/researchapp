@@ -459,7 +459,7 @@ function SettingsModal({ onClose, dark }) {
     const newRole = pendingRoles[userId];
     if (!newRole) return;
     setRolesSaving(s => ({ ...s, [userId]: true }));
-    await supabase.from("user_roles").upsert({ user_id: userId, role: newRole });
+    await supabase.rpc("set_user_role", { target_user_id: userId, new_role: newRole });
     setUsers(u => u.map(x => x.user_id === userId ? { ...x, role: newRole } : x));
     setPendingRoles(p => { const n = { ...p }; delete n[userId]; return n; });
     setRolesSaving(s => ({ ...s, [userId]: false }));
