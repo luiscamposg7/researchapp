@@ -1516,7 +1516,7 @@ function DetailPage() {
   }, [item?.id]);
 
   if (!item) return <div className={`flex-1 flex items-center justify-center ${d ? "bg-gray-950 text-gray-400" : "bg-gray-50 text-gray-500"}`}>Research no encontrado.</div>;
-  const related = deliverables.filter(r => r.id !== item.id && r.tags[0] === item.tags[0]).slice(0, 3);
+  const related = deliverables.filter(r => r.id !== item.id && r.tags[0] === item.tags[0] && r.status === "Publicado").slice(0, 3);
 
   const jiraDone = /done|closed|resolved|finaliz|complet/i.test(item.jiraStatus || "");
   const entryJiraColor = (item.jiraStatus === "FINALIZADO" || jiraDone)
@@ -1565,7 +1565,7 @@ function DetailPage() {
       </div>
       {showViews && <ViewsModal researchId={item.id} dark={d} onClose={() => setShowViews(false)} />}
 
-      <div className="w-full mx-auto px-4 md:px-8 py-6 md:py-8" style={{maxWidth:"1600px"}}>
+      <div className="w-full mx-auto px-4 md:px-8 py-6 md:py-8 pb-16 md:pb-24" style={{maxWidth:"1600px"}}>
         {/* Breadcrumb */}
         <div className={`flex items-center gap-2 text-sm mb-2 ${d ? "text-gray-500" : "text-gray-400"}`}>
           <button onClick={() => navigate("/")} className={`hover:underline ${d ? "hover:text-gray-300" : "hover:text-gray-700"}`}>Inicio</button><span>/</span>
@@ -1716,9 +1716,9 @@ function DetailPage() {
 
         {/* Related */}
         {related.length > 0 && (
-          <div className="mt-16">
-            <h2 className={`text-xl font-bold mb-4 flex items-center gap-2 ${d ? "text-gray-300" : "text-gray-700"}`}>
-              Contenido relacionado
+          <div className={`mt-16 pt-10 border-t ${d ? "border-gray-800" : "border-gray-200"}`}>
+            <h2 className={`text-xl font-bold mb-5 ${d ? "text-gray-100" : "text-gray-900"}`}>
+              Research relacionados
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
               {related.map(r => (
