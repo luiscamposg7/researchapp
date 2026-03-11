@@ -1,18 +1,23 @@
-const { kv } = require('@vercel/kv');
+const { supabase } = require('../lib/supabase');
 
 module.exports = async function handler(req, res) {
   res.setHeader('Content-Type', 'application/json');
 
   if (req.method === 'GET') {
-    const deliverables = (await kv.get('deliverables')) || [];
-    return res.json(deliverables);
+    const { data, error } = await supabase
+      .from('deliverables')
+      .select('data')
+      .order('id', { ascending: false });
+    if (error) return res.status(500).json({ error: error.message });
+    return res.json(data.map(r => r.data));
   }
 
   if (req.method === 'POST') {
     const item = req.body;
-    const deliverables = (await kv.get('deliverables')) || [];
-    deliverables.unshift(item);
-    await kv.set('deliverables', deliverables);
+    const { error } = await supabase
+      .from('deliverables')
+      .insert({ id: item.id, data: item });
+    if (error) return res.status(500).json({ error: error.message });
     return res.json(item);
   }
 

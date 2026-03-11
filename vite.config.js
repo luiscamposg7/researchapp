@@ -1,22 +1,47 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import fs from 'fs'
-import path from 'path'
+import https from 'https'
+import dotenv from 'dotenv'
 
-const DB_PATH = path.join(process.cwd(), 'db.json')
+dotenv.config({ path: '.env.local' })
+
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+function sbRequest(method, path, body) {
+  return new Promise((resolve, reject) => {
+    const url = new URL(SUPABASE_URL + path);
+    const payload = body ? JSON.stringify(body) : null;
+    const options = {
+      hostname: url.hostname,
+      path: url.pathname + url.search,
+      method,
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal',
+        ...(payload ? { 'Content-Length': Buffer.byteLength(payload) } : {}),
+      },
+    };
+    const req = https.request(options, (r) => {
+      let data = '';
+      r.on('data', c => data += c);
+      r.on('end', () => {
+        try { resolve({ status: r.statusCode, body: data ? JSON.parse(data) : null }); }
+        catch { resolve({ status: r.statusCode, body: data }); }
+      });
+    });
+    req.on('error', reject);
+    if (payload) req.write(payload);
+    req.end();
+  });
+}
 
 function localDb() {
   return {
     name: 'local-db',
     configureServer(server) {
-      const read = () => {
-        try { return JSON.parse(fs.readFileSync(DB_PATH, 'utf8')); }
-        catch { return { deliverables: [] }; }
-      };
-      const write = (data) => fs.writeFileSync(DB_PATH, JSON.stringify(data, null, 2));
-
-      if (!fs.existsSync(DB_PATH)) write({ deliverables: [] });
-
       const getBody = (req) => new Promise(resolve => {
         let body = '';
         req.on('data', chunk => body += chunk);
@@ -28,29 +53,30 @@ function localDb() {
         const gdMatch = req.url.match(/^\/api\/gdrive\/([^/?]+)$/);
         if (gdMatch) {
           res.setHeader('Content-Type', 'application/json');
-          try {
-            const { default: https } = await import('https');
-            const fileId = gdMatch[1];
-            const title = await new Promise((resolve, reject) => {
-              https.get(
-                `https://drive.google.com/file/d/${fileId}/view`,
-                { headers: { 'User-Agent': 'Mozilla/5.0' } },
-                (r) => {
-                  let html = '';
-                  r.on('data', c => html += c);
-                  r.on('end', () => {
-                    const m = html.match(/<title[^>]*>([^<]+)<\/title>/i);
-                    const raw = m ? m[1] : '';
-                    const name = raw.replace(/\s*[-–]\s*Google Drive\s*$/i, '').trim();
-                    resolve(name || null);
-                  });
-                }
-              ).on('error', reject);
-            });
-            return res.end(JSON.stringify({ title }));
-          } catch (e) {
-            return res.end(JSON.stringify({ title: null }));
+          const fileId = gdMatch[1];
+          const tryUrls = [
+            `https://drive.google.com/file/d/${fileId}/view`,
+            `https://docs.google.com/presentation/d/${fileId}/edit`,
+            `https://docs.google.com/document/d/${fileId}/edit`,
+            `https://docs.google.com/spreadsheets/d/${fileId}/edit`,
+          ];
+          const fetchTitle = (url) => new Promise((resolve) => {
+            https.get(url, { headers: { 'User-Agent': 'Mozilla/5.0' } }, (r) => {
+              let html = '';
+              r.on('data', c => html += c);
+              r.on('end', () => {
+                const m = html.match(/<title[^>]*>([^<]+)<\/title>/i);
+                const raw = m ? m[1] : '';
+                const name = raw.replace(/\s*[-–]\s*Google (Drive|Docs|Slides|Sheets)\s*$/i, '').trim();
+                resolve(name || null);
+              });
+            }).on('error', () => resolve(null));
+          });
+          for (const url of tryUrls) {
+            const title = await fetchTitle(url);
+            if (title) return res.end(JSON.stringify({ title }));
           }
+          return res.end(JSON.stringify({ title: null }));
         }
 
         if (!req.url.startsWith('/api/deliverables')) return next();
@@ -58,24 +84,34 @@ function localDb() {
 
         if (req.url === '/api/deliverables') {
           if (req.method === 'GET') {
-            return res.end(JSON.stringify(read().deliverables));
+            const r = await sbRequest('GET', '/rest/v1/deliverables?select=data&order=id.desc');
+            if (r.status >= 300) { res.writeHead(500); return res.end(JSON.stringify({ error: r.body })); }
+            return res.end(JSON.stringify((r.body || []).map(row => row.data)));
           }
           if (req.method === 'POST') {
             const item = JSON.parse(await getBody(req));
-            const db = read();
-            db.deliverables.unshift(item);
-            write(db);
+            const r = await sbRequest('POST', '/rest/v1/deliverables', { id: item.id, data: item });
+            if (r.status >= 300) { res.writeHead(500); return res.end(JSON.stringify({ error: r.body })); }
             return res.end(JSON.stringify(item));
           }
         }
+
         const delMatch = req.url.match(/^\/api\/deliverables\/(.+)$/);
-        if (delMatch && req.method === 'DELETE') {
+        if (delMatch) {
           const id = Number(delMatch[1]);
-          const db = read();
-          db.deliverables = db.deliverables.filter(d => d.id !== id);
-          write(db);
-          return res.end('{}');
+          if (req.method === 'DELETE') {
+            const r = await sbRequest('DELETE', `/rest/v1/deliverables?id=eq.${id}`);
+            if (r.status >= 300) { res.writeHead(500); return res.end(JSON.stringify({ error: r.body })); }
+            return res.end('{}');
+          }
+          if (req.method === 'PUT') {
+            const item = JSON.parse(await getBody(req));
+            const r = await sbRequest('PATCH', `/rest/v1/deliverables?id=eq.${id}`, { data: item });
+            if (r.status >= 300) { res.writeHead(500); return res.end(JSON.stringify({ error: r.body })); }
+            return res.end('{}');
+          }
         }
+
         res.writeHead(404);
         res.end('{}');
       });

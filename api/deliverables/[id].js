@@ -1,12 +1,27 @@
-const { kv } = require('@vercel/kv');
+const { supabase } = require('../lib/supabase');
 
 module.exports = async function handler(req, res) {
-  if (req.method !== 'DELETE') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
   const { id } = req.query;
-  const deliverables = (await kv.get('deliverables')) || [];
-  const updated = deliverables.filter(d => d.id !== Number(id));
-  await kv.set('deliverables', updated);
-  return res.json({});
+  res.setHeader('Content-Type', 'application/json');
+
+  if (req.method === 'DELETE') {
+    const { error } = await supabase
+      .from('deliverables')
+      .delete()
+      .eq('id', Number(id));
+    if (error) return res.status(500).json({ error: error.message });
+    return res.json({});
+  }
+
+  if (req.method === 'PUT') {
+    const item = req.body;
+    const { error } = await supabase
+      .from('deliverables')
+      .update({ data: item })
+      .eq('id', Number(id));
+    if (error) return res.status(500).json({ error: error.message });
+    return res.json({});
+  }
+
+  return res.status(405).json({ error: 'Method not allowed' });
 };
