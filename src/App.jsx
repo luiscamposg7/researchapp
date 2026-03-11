@@ -2355,7 +2355,7 @@ function Sidebar({ onSettings, user, mobileOpen = false, onMobileClose }) {
   const { dark: dk, setDark, isSuperAdmin, roleLoaded } = useApp();
   const [pinned, setPinned] = useState(false);
   const [hovered, setHovered] = useState(false);
-  const expanded = pinned || hovered;
+  const expanded = pinned || hovered || mobileOpen;
 
   useEffect(() => { if (onMobileClose) onMobileClose(); }, [location.pathname]);
 
@@ -2372,7 +2372,7 @@ function Sidebar({ onSettings, user, mobileOpen = false, onMobileClose }) {
     helpBox: dk ? "bg-gray-800 border-gray-700" : "bg-gray-50 border-gray-200",
   };
 
-  const width = mobileOpen ? 272 : (expanded ? 272 : 64);
+  const width = mobileOpen ? "100%" : (expanded ? 272 : 64);
 
   return (
     <aside
