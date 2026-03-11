@@ -610,6 +610,8 @@ function AddPage() {
   });
   const [personaTab, setPersonaTab] = useState(0);
   const [personaPhotoUploading, setPersonaPhotoUploading] = useState(false);
+  const [showPersonaPhotoPicker, setShowPersonaPhotoPicker] = useState(false);
+  const personaPhotoInputRef = useRef(null);
   const [jiraLoading, setJiraLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [jiraError, setJiraError] = useState("");
@@ -843,6 +845,21 @@ function AddPage() {
           </div>
         )}
 
+        {showPersonaPhotoPicker && (
+          <PersonaPhotoPickerModal
+            dark={d}
+            onClose={() => setShowPersonaPhotoPicker(false)}
+            onSelect={(url) => { setPersonaField(personaTab, "foto", url); setShowPersonaPhotoPicker(false); }}
+            onUpload={() => { personaPhotoInputRef.current?.click(); setShowPersonaPhotoPicker(false); }}
+          />
+        )}
+        <input type="file" accept="image/*" ref={personaPhotoInputRef} className="hidden" onChange={async (e) => {
+          const file = e.target.files?.[0]; if (!file) return;
+          setPersonaPhotoUploading(true);
+          try { const url = await uploadPersonaPhoto(file); setPersonaField(personaTab, "foto", url); } catch (err) { console.error(err); }
+          setPersonaPhotoUploading(false); e.target.value = "";
+        }} />
+
         {/* Top bar */}
         <div className={`border-b px-4 py-3 md:px-8 md:py-4 sticky top-0 z-10 ${d ? "bg-gray-950 border-gray-800" : "bg-gray-50 border-gray-200"}`}>
           <button
@@ -992,17 +1009,11 @@ function AddPage() {
                         <div className={`w-20 h-20 rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center border-2 ${p.foto ? "border-green-500" : (d ? "border-gray-600" : "border-gray-200")}`}>
                           {p.foto ? <img src={p.foto} alt="Foto" className="w-full h-full object-cover" /> : <svg className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>}
                         </div>
-                        <div>
-                          <label className={`flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-lg cursor-pointer ${secBtn(d)} ${personaPhotoUploading ? "opacity-50 pointer-events-none" : ""}`}>
+                        <div className="space-y-1">
+                          <button type="button" onClick={() => setShowPersonaPhotoPicker(true)} disabled={personaPhotoUploading} className={`flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-lg ${secBtn(d)} disabled:opacity-50`}>
                             {personaPhotoUploading ? "Subiendo..." : (p.foto ? "Cambiar foto" : "Subir foto")}
-                            <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
-                              const file = e.target.files?.[0]; if (!file) return;
-                              setPersonaPhotoUploading(true);
-                              try { const url = await uploadPersonaPhoto(file); setPersonaField(personaTab, "foto", url); } catch (err) { console.error(err); }
-                              setPersonaPhotoUploading(false); e.target.value = "";
-                            }} />
-                          </label>
-                          <p className={`mt-1 text-xs ${d ? "text-gray-500" : "text-gray-400"}`}>500×500 px · JPG</p>
+                          </button>
+                          <p className={`text-xs ${d ? "text-gray-500" : "text-gray-400"}`}>500×500 px · JPG</p>
                         </div>
                       </div>
                       <div><label className={lbl}>Nombre</label>{fi("nombre", "Nombre de la persona")}</div>
@@ -1842,6 +1853,56 @@ function CoverPickerModal({ dark: d, onSelect, onUpload, onClose }) {
   );
 }
 
+function PersonaPhotoPickerModal({ dark: d, onSelect, onUpload, onClose }) {
+  const [files, setFiles] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    supabase.storage.from("persona-photos").list("", { limit: 200 }).then(({ data }) => {
+      setFiles((data || []).filter(f => !f.name.startsWith(".")));
+      setLoading(false);
+    });
+  }, []);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={onClose}>
+      <div onClick={e => e.stopPropagation()} className={`w-[480px] max-h-[80vh] rounded-2xl flex flex-col shadow-2xl ${d ? "bg-gray-900 border border-gray-800" : "bg-white border border-gray-200"}`}>
+        <div className={`flex items-center justify-between px-6 py-4 border-b ${d ? "border-gray-800" : "border-gray-200"}`}>
+          <h2 className={`font-semibold text-base ${d ? "text-gray-100" : "text-gray-900"}`}>Elegir foto de perfil</h2>
+          <button onClick={onClose} className={`w-8 h-8 flex items-center justify-center rounded-lg ${d ? "hover:bg-gray-800 text-gray-400" : "hover:bg-gray-100 text-gray-500"}`}>
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <div className={`px-6 py-3 border-b ${d ? "border-gray-800" : "border-gray-200"}`}>
+          <button onClick={onUpload} className={`flex items-center gap-2 text-sm font-semibold px-4 py-2 ${secBtn(d)}`}>
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+            Subir nueva foto
+          </button>
+        </div>
+        <div className="flex-1 overflow-y-auto p-6">
+          {loading ? (
+            <p className={`text-sm text-center py-8 ${d ? "text-gray-500" : "text-gray-400"}`}>Cargando...</p>
+          ) : files.length === 0 ? (
+            <p className={`text-sm text-center py-8 ${d ? "text-gray-500" : "text-gray-400"}`}>No hay fotos subidas aún.</p>
+          ) : (
+            <div className="grid grid-cols-4 gap-3">
+              {files.map(f => {
+                const { data } = supabase.storage.from("persona-photos").getPublicUrl(f.name);
+                const url = data?.publicUrl;
+                return (
+                  <button key={f.name} onClick={() => onSelect(url)} className={`rounded-full overflow-hidden border-2 transition-all hover:border-green-500 aspect-square ${d ? "border-gray-700" : "border-gray-200"}`}>
+                    <img src={url} alt={f.name} className="w-full h-full object-cover" />
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function ProductPage() {
   const navigate = useNavigate();
   const { slug } = useParams();
@@ -2593,6 +2654,8 @@ function EditPage() {
   const [form, setForm] = useState({ ...item });
   const [personaTab, setPersonaTab] = useState(0);
   const [personaPhotoUploading, setPersonaPhotoUploading] = useState(false);
+  const [showPersonaPhotoPicker, setShowPersonaPhotoPicker] = useState(false);
+  const personaPhotoInputRef = useRef(null);
   const [jiraLoading, setJiraLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [jiraError, setJiraError] = useState("");
@@ -2721,6 +2784,21 @@ function EditPage() {
   return (
     <div className={`flex-1 overflow-y-auto ${d ? "bg-gray-950" : "bg-gray-50"}`}>
 
+      {showPersonaPhotoPicker && (
+        <PersonaPhotoPickerModal
+          dark={d}
+          onClose={() => setShowPersonaPhotoPicker(false)}
+          onSelect={(url) => { setPersonaField(personaTab, "foto", url); setShowPersonaPhotoPicker(false); }}
+          onUpload={() => { personaPhotoInputRef.current?.click(); setShowPersonaPhotoPicker(false); }}
+        />
+      )}
+      <input type="file" accept="image/*" ref={personaPhotoInputRef} className="hidden" onChange={async (e) => {
+        const file = e.target.files?.[0]; if (!file) return;
+        setPersonaPhotoUploading(true);
+        try { const url = await uploadPersonaPhoto(file); setPersonaField(personaTab, "foto", url); } catch (err) { console.error(err); }
+        setPersonaPhotoUploading(false); e.target.value = "";
+      }} />
+
       {/* Top bar */}
       <div className={`border-b px-4 py-3 md:px-8 md:py-4 sticky top-0 z-10 ${d ? "bg-gray-950 border-gray-800" : "bg-gray-50 border-gray-200"}`}>
         <button onClick={() => navigate("/research")} className={`flex items-center gap-2 text-sm font-semibold ${d ? "text-gray-400 hover:text-gray-200" : "text-gray-500 hover:text-gray-900"}`}>
@@ -2815,17 +2893,11 @@ function EditPage() {
                         <div className={`w-20 h-20 rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center border-2 ${p.foto ? "border-green-500" : (d ? "border-gray-600" : "border-gray-200")}`}>
                           {p.foto ? <img src={p.foto} alt="Foto" className="w-full h-full object-cover" /> : <svg className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>}
                         </div>
-                        <div>
-                          <label className={`flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-lg cursor-pointer ${secBtn(d)} ${personaPhotoUploading ? "opacity-50 pointer-events-none" : ""}`}>
+                        <div className="space-y-1">
+                          <button type="button" onClick={() => setShowPersonaPhotoPicker(true)} disabled={personaPhotoUploading} className={`flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-lg ${secBtn(d)} disabled:opacity-50`}>
                             {personaPhotoUploading ? "Subiendo..." : (p.foto ? "Cambiar foto" : "Subir foto")}
-                            <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
-                              const file = e.target.files?.[0]; if (!file) return;
-                              setPersonaPhotoUploading(true);
-                              try { const url = await uploadPersonaPhoto(file); setPersonaField(personaTab, "foto", url); } catch (err) { console.error(err); }
-                              setPersonaPhotoUploading(false); e.target.value = "";
-                            }} />
-                          </label>
-                          <p className={`mt-1 text-xs ${d ? "text-gray-500" : "text-gray-400"}`}>500×500 px · JPG</p>
+                          </button>
+                          <p className={`text-xs ${d ? "text-gray-500" : "text-gray-400"}`}>500×500 px · JPG</p>
                         </div>
                       </div>
                       <div><label className={lbl}>Nombre</label>{fi("nombre","Nombre de la persona")}</div>
