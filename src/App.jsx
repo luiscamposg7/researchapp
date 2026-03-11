@@ -449,7 +449,7 @@ function SettingsModal({ onClose, dark }) {
           if (b.user_id === user?.id) return 1;
           return 0;
         });
-        setUsers(list);
+        setUsers(list.filter(u => u.role));
         setUsersLoading(false);
       });
     });
