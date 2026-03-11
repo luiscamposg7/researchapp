@@ -1084,29 +1084,30 @@ function AddPage() {
               <SectionTitle>Clasificación</SectionTitle>
               <div>
                 <label className={lbl}>Tipo de entregable <span className="text-green-500">*</span></label>
-                <select className={inp} value={form.type} onChange={e => setType(e.target.value)} style={!form.type ? { color: d ? "#6b7280" : "#9ca3af" } : {}}>
+                <select className={`${inp} ${d ? "dark-sel" : ""}`} value={form.type} onChange={e => setType(e.target.value)} style={!form.type ? { color: d ? "#6b7280" : "#9ca3af" } : {}}>
                   <option value="" disabled>Seleccione</option>
                   {TYPES.slice(1).map(t => <option key={t}>{t}</option>)}
                 </select>
               </div>
               <div>
                 <label className={lbl}>Metodología</label>
-                <select className={inp} value={form.metodologia} onChange={e => set("metodologia", e.target.value)}>
-                  <option value="">Sin especificar</option>
+                <select className={`${inp} ${d ? "dark-sel" : ""}`} value={form.metodologia} onChange={e => set("metodologia", e.target.value)} style={!form.metodologia ? { color: d ? "#6b7280" : "#9ca3af" } : {}}>
+                  <option value="" disabled>Seleccione</option>
+                  <option value="Sin especificar">Sin especificar</option>
                   {METODOLOGIAS.map(m => <option key={m}>{m}</option>)}
                 </select>
               </div>
               <div>
                 <label className={lbl}>Producto <span className="text-green-500">*</span></label>
-                <select className={inp} value={form.tags[0] || ""} onChange={e => set("tags", e.target.value ? [e.target.value] : [])} style={!form.tags[0] ? { color: d ? "#6b7280" : "#9ca3af" } : {}}>
+                <select className={`${inp} ${d ? "dark-sel" : ""}`} value={form.tags[0] || ""} onChange={e => set("tags", e.target.value ? [e.target.value] : [])} style={!form.tags[0] ? { color: d ? "#6b7280" : "#9ca3af" } : {}}>
                   <option value="" disabled>Seleccione</option>
                   {PRODUCTS.map(p => <option key={p}>{p}</option>)}
                 </select>
               </div>
               <div>
                 <label className={lbl}>Persona asignada</label>
-                <select className={inp} value={form.team[0] || ""} onChange={e => set("team", e.target.value ? [e.target.value] : [])} style={!form.team[0] ? { color: d ? "#6b7280" : "#9ca3af" } : {}}>
-                  <option value="">Sin asignar</option>
+                <select className={`${inp} ${d ? "dark-sel" : ""}`} value={form.team[0] || ""} onChange={e => set("team", e.target.value ? [e.target.value] : [])} style={!form.team[0] ? { color: d ? "#6b7280" : "#9ca3af" } : {}}>
+                  <option value="">Seleccione</option>
                   {editors.map(n => <option key={n}>{n}</option>)}
                 </select>
               </div>
@@ -2950,29 +2951,30 @@ function EditPage() {
               <SectionTitle>Clasificación</SectionTitle>
               <div>
                 <label className={lbl}>Tipo de entregable <span className="text-green-500">*</span></label>
-                <select className={inp} value={form.type} onChange={e => setType(e.target.value)}>
+                <select className={`${inp} ${d ? "dark-sel" : ""}`} value={form.type} onChange={e => setType(e.target.value)} style={!form.type ? { color: d ? "#6b7280" : "#9ca3af" } : {}}>
                   <option value="" disabled>Seleccione</option>
                   {TYPES.slice(1).map(t => <option key={t}>{t}</option>)}
                 </select>
               </div>
               <div>
                 <label className={lbl}>Metodología</label>
-                <select className={inp} value={form.metodologia || ""} onChange={e => set("metodologia", e.target.value)}>
-                  <option value="">Sin especificar</option>
+                <select className={`${inp} ${d ? "dark-sel" : ""}`} value={form.metodologia || ""} onChange={e => set("metodologia", e.target.value)} style={!form.metodologia ? { color: d ? "#6b7280" : "#9ca3af" } : {}}>
+                  <option value="" disabled>Seleccione</option>
+                  <option value="Sin especificar">Sin especificar</option>
                   {METODOLOGIAS.map(m => <option key={m}>{m}</option>)}
                 </select>
               </div>
               <div>
                 <label className={lbl}>Producto <span className="text-green-500">*</span></label>
-                <select className={inp} value={form.tags[0] || ""} onChange={e => set("tags", e.target.value ? [e.target.value] : [])} style={!form.tags[0] ? { color: d ? "#6b7280" : "#9ca3af" } : {}}>
+                <select className={`${inp} ${d ? "dark-sel" : ""}`} value={form.tags[0] || ""} onChange={e => set("tags", e.target.value ? [e.target.value] : [])} style={!form.tags[0] ? { color: d ? "#6b7280" : "#9ca3af" } : {}}>
                   <option value="" disabled>Seleccione</option>
                   {PRODUCTS.map(p => <option key={p}>{p}</option>)}
                 </select>
               </div>
               <div>
                 <label className={lbl}>Persona asignada</label>
-                <select className={inp} value={form.team[0] || ""} onChange={e => set("team", e.target.value ? [e.target.value] : [])} style={!form.team[0] ? { color: d ? "#6b7280" : "#9ca3af" } : {}}>
-                  <option value="">Sin asignar</option>
+                <select className={`${inp} ${d ? "dark-sel" : ""}`} value={form.team[0] || ""} onChange={e => set("team", e.target.value ? [e.target.value] : [])} style={!form.team[0] ? { color: d ? "#6b7280" : "#9ca3af" } : {}}>
+                  <option value="">Seleccione</option>
                   {editors.map(n => <option key={n}>{n}</option>)}
                 </select>
               </div>

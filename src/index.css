@@ -20,3 +20,9 @@
 .rich-content h3  { font-size: 1.05rem; font-weight: 700; margin: 0.6rem 0 0.25rem; line-height: 1.3; }
 .rich-content h4  { font-size: 0.9rem; font-weight: 600; margin: 0.4rem 0 0.2rem; line-height: 1.3; }
 .rich-content blockquote { border-left: 3px solid #00B369; padding-left: 0.75rem; color: #6b7280; margin: 0.3rem 0; font-style: italic; }
+
+/* Select option colors */
+select option { color: #111827; background-color: #ffffff; }
+select option:disabled { color: #9ca3af; }
+select.dark-sel option { color: #f9fafb; background-color: #1f2937; }
+select.dark-sel option:disabled { color: #6b7280; }
