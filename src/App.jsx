@@ -856,7 +856,7 @@ function AddPage() {
         <input type="file" accept="image/*" ref={personaPhotoInputRef} className="hidden" onChange={async (e) => {
           const file = e.target.files?.[0]; if (!file) return;
           setPersonaPhotoUploading(true);
-          try { const url = await uploadPersonaPhoto(file); setPersonaField(personaTab, "foto", url); } catch (err) { console.error(err); }
+          try { const url = await uploadPersonaPhoto(file); setPersonaField(personaTab, "foto", url); } catch (err) { console.error(err); showToast({ title: "Error al subir foto", subtitle: err?.message || "Revisa los permisos del bucket en Supabase." }, "error"); }
           setPersonaPhotoUploading(false); e.target.value = "";
         }} />
 
