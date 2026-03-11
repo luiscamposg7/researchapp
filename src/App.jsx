@@ -2113,32 +2113,27 @@ function ProductPage() {
         })}
 
         {/* Research */}
-        <div className="mb-10">
-          <div className="flex items-center justify-between mb-5">
-            <h2 className={`text-xl font-bold ${d ? "text-gray-100" : "text-gray-900"}`}>Todos los research</h2>
-            <button onClick={() => navigate("/research")} className={`px-3 py-2 text-sm font-semibold ${secBtn(d)}`}>Ver todos</button>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-            {Object.entries(byType).map(([type, items]) => (
-              <div key={type} className={`rounded-xl border p-5 ${d ? "border-gray-700 bg-gray-900" : "border-gray-200 bg-white"}`}>
-                <h3 className={`font-semibold text-base mb-1 ${d ? "text-gray-100" : "text-gray-900"}`}>{type}</h3>
-                <p className={`text-sm mb-3 ${d ? "text-gray-500" : "text-gray-400"}`}>{items.length} entregable{items.length !== 1 ? "s" : ""}</p>
-                {items.length > 0 ? (
-                  <ul className="space-y-1.5">
-                    {items.slice(0, 4).map(item => (
-                      <li key={item.id}>
-                        <button onClick={() => navigate(`/research/${toSlug(item.title)}`)} className={`text-sm font-semibold text-left hover:underline line-clamp-1 ${d ? "text-green-400" : "text-green-700"}`}>{item.title}</button>
-                      </li>
-                    ))}
-                    {items.length > 4 && <li className={`text-xs ${d ? "text-gray-500" : "text-gray-400"}`}>+{items.length - 4} más</li>}
-                  </ul>
-                ) : (
-                  <p className={`text-sm ${d ? "text-gray-600" : "text-gray-300"}`}>Sin entregables aún</p>
-                )}
+        {(() => {
+          const recentResearch = [...productDeliverables]
+            .filter(i => i.status === "Publicado")
+            .sort((a, b) => new Date(b.date) - new Date(a.date))
+            .slice(0, 3);
+          return (
+            <div className="mb-10">
+              <div className="flex items-center justify-between mb-5">
+                <h2 className={`text-xl font-bold ${d ? "text-gray-100" : "text-gray-900"}`}>Todos los research</h2>
+                <button onClick={() => navigate("/research")} className={`px-3 py-2 text-sm font-semibold ${secBtn(d)}`}>Ver todos</button>
               </div>
-            ))}
-          </div>
-        </div>
+              {recentResearch.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {recentResearch.map(item => <Card key={item.id} item={item} dark={d} />)}
+                </div>
+              ) : (
+                <p className={`text-sm ${d ? "text-gray-500" : "text-gray-400"}`}>Sin research publicados aún.</p>
+              )}
+            </div>
+          );
+        })()}
 
         {/* Otros productos */}
         <div className={`pt-8 border-t ${d ? "border-gray-800" : "border-gray-200"}`}>
