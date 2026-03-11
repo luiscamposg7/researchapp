@@ -1915,15 +1915,6 @@ function ProductPage() {
             <div key={type} className={`mb-10 pb-10 border-b ${d ? "border-gray-800" : "border-gray-100"}`}>
               <div className="flex items-center justify-between mb-5">
                 <h2 className={`text-xl font-bold ${d ? "text-gray-100" : "text-gray-900"}`}>{type}</h2>
-                {isEditor && (
-                  <button
-                    onClick={() => navigate("/añadir-research", { state: { type, product } })}
-                    className={`flex items-center gap-1.5 px-3 py-2 text-sm font-semibold ${secBtn(d)}`}
-                  >
-                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
-                    Añadir
-                  </button>
-                )}
               </div>
 
               {items.length > 0 ? (
@@ -2001,16 +1992,7 @@ function ProductPage() {
                 <div className={`rounded-xl border-2 border-dashed p-10 flex flex-col items-center justify-center text-center ${d ? "border-gray-700" : "border-gray-200"}`}>
                   <svg className={`w-8 h-8 mb-3 ${d ? "text-gray-600" : "text-gray-300"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg>
                   <p className={`text-sm font-medium mb-1 ${d ? "text-gray-400" : "text-gray-600"}`}>No hay research de {type} para {product}</p>
-                  <p className={`text-xs mb-4 ${d ? "text-gray-600" : "text-gray-400"}`}>Añade la primera para este producto</p>
-                  {isEditor && (
-                    <button
-                      onClick={() => navigate("/añadir-research", { state: { type, product } })}
-                      className={`flex items-center gap-1.5 px-3 py-2 text-sm font-semibold ${secBtn(d)}`}
-                    >
-                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
-                      Añadir {type}
-                    </button>
-                  )}
+                  <p className={`text-xs ${d ? "text-gray-600" : "text-gray-400"}`}>Añade la primera para este producto</p>
                 </div>
               )}
             </div>
@@ -2021,7 +2003,7 @@ function ProductPage() {
         <div className="mb-10">
           <div className="flex items-center justify-between mb-5">
             <h2 className={`text-xl font-bold ${d ? "text-gray-100" : "text-gray-900"}`}>Todos los research</h2>
-            <button onClick={() => navigate("/research")} className={`text-sm font-semibold ${d ? "text-green-400 hover:text-green-300" : "text-green-600 hover:text-green-700"}`}>Ver todos →</button>
+            <button onClick={() => navigate("/research")} className={`px-3 py-2 text-sm font-semibold ${secBtn(d)}`}>Ver todos</button>
           </div>
           <div className="grid grid-cols-2 gap-5">
             {Object.entries(byType).map(([type, items]) => (
