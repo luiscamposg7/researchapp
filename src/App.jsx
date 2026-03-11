@@ -2029,7 +2029,7 @@ function ProductPage() {
                   <ul className="space-y-1.5">
                     {items.slice(0, 4).map(item => (
                       <li key={item.id}>
-                        <button onClick={() => navigate(`/research/${toSlug(item.title)}`)} className={`text-sm text-left hover:underline line-clamp-1 ${d ? "text-green-400" : "text-green-700"}`}>{item.title}</button>
+                        <button onClick={() => navigate(`/research/${toSlug(item.title)}`)} className={`text-sm font-semibold text-left hover:underline line-clamp-1 ${d ? "text-green-400" : "text-green-700"}`}>{item.title}</button>
                       </li>
                     ))}
                     {items.length > 4 && <li className={`text-xs ${d ? "text-gray-500" : "text-gray-400"}`}>+{items.length - 4} más</li>}
