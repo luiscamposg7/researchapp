@@ -1567,7 +1567,7 @@ function DetailPage() {
         {/* Breadcrumb */}
         <div className={`flex items-center gap-2 text-sm mb-2 ${d ? "text-gray-500" : "text-gray-400"}`}>
           <button onClick={() => navigate("/")} className={`hover:underline ${d ? "hover:text-gray-300" : "hover:text-gray-700"}`}>Inicio</button><span>/</span>
-          <button onClick={() => navigate(`/producto/${encodeURIComponent(item.tags[0])}`)} className={`hover:underline ${d ? "hover:text-gray-300" : "hover:text-gray-700"}`}>{item.tags[0]}</button><span>/</span>
+          <button onClick={() => navigate(`/producto/${toSlug(item.tags[0])}`)} className={`hover:underline ${d ? "hover:text-gray-300" : "hover:text-gray-700"}`}>{item.tags[0]}</button><span>/</span>
           <span className={d ? "text-gray-300" : "text-gray-700"}>{item.title}</span>
         </div>
 
@@ -1799,7 +1799,7 @@ function CoverPickerModal({ dark: d, onSelect, onUpload, onClose }) {
 function ProductPage() {
   const navigate = useNavigate();
   const { slug } = useParams();
-  const product = decodeURIComponent(slug);
+  const product = PRODUCTS.find(p => toSlug(p) === slug) || slug;
   const { dark: d, deliverables, isEditor } = useApp();
   const [coverUrl, setCoverUrl] = useState(null);
   const [coverUploading, setCoverUploading] = useState(false);
@@ -2037,7 +2037,7 @@ function ProductPage() {
           <div className="grid grid-cols-3 gap-4">
             {PRODUCTS.filter(p => p !== product).map(p => (
               <ProductCard key={p} product={p} deliverables={deliverables} coverUrl={allCovers[p]} dark={d}
-                onClick={() => navigate(`/producto/${encodeURIComponent(p)}`)} />
+                onClick={() => navigate(`/producto/${toSlug(p)}`)} />
             ))}
           </div>
         </div>
@@ -2146,7 +2146,7 @@ function HomePage() {
               ? Array.from({ length: 6 }).map((_, i) => <ProductCardSkeleton key={i} dark={d} />)
               : PRODUCTS.map(p => (
                   <ProductCard key={p} product={p} deliverables={deliverables} coverUrl={productCovers[p]} dark={d}
-                    onClick={() => navigate(`/producto/${encodeURIComponent(p)}`)} />
+                    onClick={() => navigate(`/producto/${toSlug(p)}`)} />
                 ))
             }
           </div>
@@ -2409,11 +2409,11 @@ function Sidebar({ onSettings, user }) {
         <div className={expanded ? "pt-3" : "pt-3"}>
           {expanded && <p className={`px-3 pb-2 text-xs font-semibold uppercase tracking-wider whitespace-nowrap ${s.muted}`}>Productos</p>}
           {PRODUCTS.map(product => {
-            const isActive = location.pathname === `/producto/${encodeURIComponent(product)}`;
+            const isActive = location.pathname === `/producto/${toSlug(product)}`;
             const pc = PRODUCT_COLORS[product] || "#00B369";
             return (
               <button key={product} title={!expanded ? product : undefined}
-                onClick={() => navigate(`/producto/${encodeURIComponent(product)}`)}
+                onClick={() => navigate(`/producto/${toSlug(product)}`)}
                 className={`w-full flex items-center rounded-lg font-medium ${expanded ? "gap-3 px-3 py-2.5 text-base" : "justify-center py-2.5"} ${isActive ? s.navOn : s.navOff}`}>
                 <div className="w-5 h-5 flex-shrink-0 flex items-center justify-center">
                   <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: pc }} />
