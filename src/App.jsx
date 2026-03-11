@@ -817,7 +817,7 @@ function AddPage() {
         )}
 
         {/* Top bar */}
-        <div className={`border-b px-8 py-4 sticky top-0 z-10 ${d ? "bg-gray-950 border-gray-800" : "bg-gray-50 border-gray-200"}`}>
+        <div className={`border-b px-4 py-3 md:px-8 md:py-4 sticky top-0 z-10 ${d ? "bg-gray-950 border-gray-800" : "bg-gray-50 border-gray-200"}`}>
           <button
             onClick={() => {
               const hasData = form.title.trim() || form.descripcion.trim() || form.objetivo.trim() || form.hallazgos.trim() || form.jiraUrl || form.archivoUrl;
@@ -830,7 +830,7 @@ function AddPage() {
           </button>
         </div>
 
-      <div style={{ maxWidth: "1600px", margin: "0 auto", padding: "2rem 2rem 4rem" }}>
+      <div className="w-full mx-auto px-4 md:px-8 py-6 md:py-8" style={{ maxWidth: "1600px" }}>
         {/* Header */}
         <div className="mb-6">
           <h1 className={`text-2xl font-bold mb-1 ${d ? "text-gray-100" : "text-gray-900"}`}>Añadir research</h1>
@@ -844,9 +844,9 @@ function AddPage() {
           )}
         </div>
 
-        <div className="grid grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {/* Columna principal */}
-          <div className="col-span-3 space-y-4">
+          <div className="md:col-span-3 space-y-4">
 
             {/* Título + Descripción */}
             <div className="space-y-3">
@@ -1536,12 +1536,13 @@ function DetailPage() {
         />
       )}
       {/* Top bar */}
-      <div className={`border-b px-8 py-4 sticky top-0 z-10 flex items-center justify-between ${d ? "bg-gray-950 border-gray-800" : "bg-gray-50 border-gray-200"}`}>
+      <div className={`border-b px-4 py-3 md:px-8 md:py-4 sticky top-0 z-10 flex items-center justify-between ${d ? "bg-gray-950 border-gray-800" : "bg-gray-50 border-gray-200"}`}>
         <button onClick={() => navigate("/research")} className={`flex items-center gap-2 text-sm font-semibold ${d ? "text-gray-400 hover:text-gray-200" : "text-gray-500 hover:text-gray-900"}`}>
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
-          Volver a todos los research
+          <span className="hidden sm:inline">Volver a todos los research</span>
+          <span className="sm:hidden">Volver</span>
         </button>
         <div className="flex gap-2">
           {isEditor && (
@@ -1564,7 +1565,7 @@ function DetailPage() {
       </div>
       {showViews && <ViewsModal researchId={item.id} dark={d} onClose={() => setShowViews(false)} />}
 
-      <div style={{maxWidth:"1600px", margin:"0 auto", width:"100%", paddingLeft:"2rem", paddingRight:"2rem", paddingTop:"2rem", paddingBottom:"2rem"}}>
+      <div className="w-full mx-auto px-4 md:px-8 py-6 md:py-8" style={{maxWidth:"1600px"}}>
         {/* Breadcrumb */}
         <div className={`flex items-center gap-2 text-sm mb-2 ${d ? "text-gray-500" : "text-gray-400"}`}>
           <button onClick={() => navigate("/")} className={`hover:underline ${d ? "hover:text-gray-300" : "hover:text-gray-700"}`}>Inicio</button><span>/</span>
@@ -1585,9 +1586,9 @@ function DetailPage() {
         <div className="mb-8"><Badge label={item.status} dark={d} /></div>
 
         {/* All entregables stacked */}
-        <div className="flex gap-8">
+        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
           {/* LEFT — file + metadata */}
-          <div className="w-72 flex-shrink-0 space-y-5">
+          <div className="w-full lg:w-72 lg:flex-shrink-0 space-y-5">
             {(() => {
               const driveId = getDriveId(item.archivoUrl || "");
               const thumbUrl = driveId ? `https://drive.google.com/thumbnail?id=${driveId}&sz=w400` : null;
@@ -1719,7 +1720,7 @@ function DetailPage() {
             <h2 className={`text-xl font-bold mb-4 flex items-center gap-2 ${d ? "text-gray-300" : "text-gray-700"}`}>
               Contenido relacionado
             </h2>
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
               {related.map(r => (
                 <Card key={r.id} item={r} dark={d} />
               ))}
@@ -1899,8 +1900,8 @@ function ProductPage() {
         </button>
       </div>
 
-      <div style={{ maxWidth: "1600px", margin: "0 auto", paddingLeft: "2rem", paddingRight: "2rem", paddingTop: "2rem", paddingBottom: "4rem" }}>
-        <h1 className={`text-3xl font-bold mb-1 ${d ? "text-gray-100" : "text-gray-900"}`}>{product}</h1>
+      <div className="w-full mx-auto px-4 md:px-8 py-6 md:py-8 pb-16" style={{ maxWidth: "1600px" }}>
+        <h1 className={`text-2xl md:text-3xl font-bold mb-1 ${d ? "text-gray-100" : "text-gray-900"}`}>{product}</h1>
         <p className={`text-sm mb-10 ${d ? "text-gray-500" : "text-gray-400"}`}>{productDeliverables.length} entregable{productDeliverables.length !== 1 ? "s" : ""}</p>
 
         {/* Persona sections */}
@@ -1942,7 +1943,7 @@ function ProductPage() {
                       </div>
                       {/* Personas — compact 3-col */}
                       {inv.personas && inv.personas.length > 0 && (
-                        <div className="p-5 grid grid-cols-3 gap-4">
+                        <div className="p-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                           {inv.personas.map((p, i) => {
                             const nivelPct = { "básico": 33, "intermedio": 66, "avanzado": 100 }[(p.nivelTec || "").toLowerCase()] || null;
                             return (
@@ -2010,7 +2011,7 @@ function ProductPage() {
             <h2 className={`text-xl font-bold ${d ? "text-gray-100" : "text-gray-900"}`}>Todos los research</h2>
             <button onClick={() => navigate("/research")} className={`px-3 py-2 text-sm font-semibold ${secBtn(d)}`}>Ver todos</button>
           </div>
-          <div className="grid grid-cols-2 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             {Object.entries(byType).map(([type, items]) => (
               <div key={type} className={`rounded-xl border p-5 ${d ? "border-gray-700 bg-gray-900" : "border-gray-200 bg-white"}`}>
                 <h3 className={`font-semibold text-base mb-1 ${d ? "text-gray-100" : "text-gray-900"}`}>{type}</h3>
@@ -2035,7 +2036,7 @@ function ProductPage() {
         {/* Otros productos */}
         <div className={`pt-8 border-t ${d ? "border-gray-800" : "border-gray-200"}`}>
           <h2 className={`text-xl font-bold mb-4 ${d ? "text-gray-100" : "text-gray-900"}`}>Otros productos</h2>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
             {PRODUCTS.filter(p => p !== product).map(p => (
               <ProductCard key={p} product={p} deliverables={deliverables} coverUrl={allCovers[p]} dark={d}
                 onClick={() => navigate(`/producto/${toSlug(p)}`)} />
@@ -2091,11 +2092,11 @@ function HomePage() {
         <div className="absolute -top-16 -right-16 w-72 h-72 opacity-10" style={{ background: "radial-gradient(circle,#00B369,transparent)", borderRadius: "2.5rem", transform: "rotate(15deg)" }} />
         <div className="absolute -bottom-12 -left-12 w-60 h-60 opacity-15" style={{ borderRadius: "2rem", transform: "rotate(20deg)", border: "solid 1px #00B369" }} />
 
-        <div className="relative" style={{ maxWidth: 800, margin: "0 auto", padding: "5rem 2rem 4rem", textAlign: "center" }}>
+        <div className="relative w-full mx-auto px-4 md:px-8 pt-12 pb-10 md:pt-20 md:pb-16 text-center" style={{ maxWidth: 800 }}>
           <div className="inline-flex items-center text-sm font-semibold mb-4" style={{ color: "#00B369" }}>
             Research Portal
           </div>
-          <h1 className={`text-5xl font-bold mb-4 leading-tight ${d ? "text-gray-100" : "text-gray-900"}`}>
+          <h1 className={`text-3xl md:text-5xl font-bold mb-4 leading-tight ${d ? "text-gray-100" : "text-gray-900"}`}>
             Repositorio de <span style={{ color: "#00B369" }}>Strategic Research</span>
           </h1>
           <p className={`text-lg mb-8 ${d ? "text-gray-400" : "text-gray-500"}`}>
@@ -2115,10 +2116,10 @@ function HomePage() {
         </div>
       </div>
 
-      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "2.5rem 2rem 4rem" }}>
+      <div className="w-full mx-auto px-4 md:px-8 py-8 md:py-10 pb-16" style={{ maxWidth: 1200 }}>
 
         {/* Crear solicitud banner */}
-        <div className={`rounded-2xl p-6 mb-10 flex items-center justify-between gap-6 ${d ? "bg-gray-900 border border-gray-800" : "bg-white border border-gray-200"}`}
+        <div className={`rounded-2xl p-4 md:p-6 mb-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 md:gap-6 ${d ? "bg-gray-900 border border-gray-800" : "bg-white border border-gray-200"}`}
           style={{ boxShadow: d ? "0 2px 12px rgba(0,0,0,0.3)" : "0 2px 12px rgba(0,0,0,0.06)" }}>
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "linear-gradient(135deg,#00B369,#00a560)" }}>
@@ -2142,7 +2143,7 @@ function HomePage() {
         {/* Por producto */}
         <div className="mb-10">
           <h2 className={`text-lg font-bold mb-4 ${d ? "text-gray-100" : "text-gray-900"}`}>Productos</h2>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
             {loadingDeliverables
               ? Array.from({ length: 6 }).map((_, i) => <ProductCardSkeleton key={i} dark={d} />)
               : PRODUCTS.map(p => (
@@ -2156,7 +2157,7 @@ function HomePage() {
         {/* Recientes */}
         <div>
           <h2 className={`text-lg font-bold mb-4 ${d ? "text-gray-100" : "text-gray-900"}`}>Recientes</h2>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {loadingDeliverables
               ? Array.from({ length: 4 }).map((_, i) => (
                   <div key={i} className={`rounded-xl border p-4 animate-pulse ${d ? "bg-gray-900 border-gray-800" : "bg-white border-gray-200"}`}>
@@ -2258,24 +2259,25 @@ function ListPage() {
 
   return (
     <main className="flex-1 overflow-y-auto">
-      <div className={`border-b py-5 sticky top-0 z-10 ${s.panel}`}>
-        <div style={{maxWidth:"1600px", margin:"0 auto", paddingLeft:"2rem", paddingRight:"2rem"}}>
+      <div className={`border-b py-4 md:py-5 sticky top-0 z-10 ${s.panel}`}>
+        <div className="w-full mx-auto px-4 md:px-8" style={{maxWidth:"1600px"}}>
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h1 className={`text-2xl font-bold ${s.p1}`}>Todos los research</h1>
-              <p className={`text-base ${s.p2}`}>{filtered.length} research encontrados</p>
+              <h1 className={`text-xl md:text-2xl font-bold ${s.p1}`}>Todos los research</h1>
+              <p className={`text-sm md:text-base ${s.p2}`}>{filtered.length} research encontrados</p>
             </div>
             {isEditor && (
-              <button onClick={() => navigate("/añadir-research")} className={`flex items-center gap-2 px-4 py-2.5 text-sm ${primBtn}`} style={{backgroundColor:"#00B369"}}>
+              <button onClick={() => navigate("/añadir-research")} className={`flex items-center gap-2 px-3 md:px-4 py-2 md:py-2.5 text-sm ${primBtn}`} style={{backgroundColor:"#00B369"}}>
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                 </svg>
-                Añadir nueva
+                <span className="hidden sm:inline">Añadir nueva</span>
+                <span className="sm:hidden">Añadir</span>
               </button>
             )}
           </div>
-          <div className="flex items-center gap-3">
-            <div className="relative w-2/5">
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="relative w-full sm:w-2/5">
               <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
@@ -2284,7 +2286,7 @@ function ListPage() {
                 className={`w-full pl-10 pr-4 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent ${dk ? "bg-gray-800 border-gray-700 text-gray-200 placeholder-gray-500" : "bg-white border-gray-200 text-gray-900 placeholder-gray-400"}`}
                 style={{height:"40px"}} />
             </div>
-            <div className="flex items-center gap-3 w-3/5">
+            <div className="flex items-center gap-2 sm:gap-3 flex-1">
               <div className="flex-1"><CustomSelect dark={dk} value={filterType} onChange={v => setFilterType(v)} options={TYPES.map(f => ({ value: f, label: f }))} fullWidth /></div>
               <div className="flex-1"><CustomSelect dark={dk} value={filterProduct} onChange={v => setFilterProduct(v)} options={[{ value: "Todos los productos", label: "Todos los productos" }, ...PRODUCTS.map(p => ({ value: p, label: p }))]} fullWidth /></div>
               <div className="flex-1"><CustomSelect dark={dk} value={filterEstado} onChange={v => setFilterEstado(v)} options={[{ value: "Persona asignada", label: "Persona asignada" }, ...editors.map(e => ({ value: e, label: e }))]} fullWidth /></div>
@@ -2293,7 +2295,7 @@ function ListPage() {
         </div>
       </div>
 
-      <div style={{maxWidth:"1600px", margin:"0 auto", width:"100%", paddingLeft:"2rem", paddingRight:"2rem", paddingTop:"1.75rem", paddingBottom:"1.75rem"}}>
+      <div className="w-full mx-auto px-4 md:px-8 py-6 md:py-7" style={{maxWidth:"1600px"}}>
         {loadingDeliverables ? (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
             {Array.from({ length: PAGE_SIZE }).map((_, i) => <CardSkeleton key={i} dark={dk} />)}
@@ -2322,13 +2324,40 @@ function ListPage() {
 }
 
 // ── SIDEBAR (shared) ──
-function Sidebar({ onSettings, user }) {
+function MobileTopBar({ onMenu, dark: d }) {
+  const { setDark } = useApp();
+  return (
+    <div className={`flex md:hidden items-center justify-between px-4 py-3 border-b flex-shrink-0 ${d ? "bg-gray-950 border-gray-800" : "bg-white border-gray-200"}`}>
+      <div className="flex items-center gap-3">
+        <button onClick={onMenu} className={`w-9 h-9 flex items-center justify-center rounded-lg ${d ? "text-gray-400 hover:bg-gray-800" : "text-gray-600 hover:bg-gray-100"}`}>
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
+        </button>
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: "#00B369" }}>
+            <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path d="M11.9995 12.0001H12.0095M15.535 15.5357C10.8488 20.222 5.46685 22.438 3.51423 20.4854C1.56161 18.5328 3.77769 13.1509 8.46398 8.46461C13.1503 3.77832 18.5322 1.56224 20.4848 3.51486C22.4374 5.46748 20.2213 10.8494 15.535 15.5357ZM15.535 8.46443C20.2213 13.1507 22.4374 18.5326 20.4848 20.4852C18.5321 22.4379 13.1502 20.2218 8.46394 15.5355C3.77765 10.8492 1.56157 5.4673 3.51419 3.51468C5.46681 1.56206 10.8487 3.77814 15.535 8.46443ZM12.4995 12.0001C12.4995 12.2763 12.2757 12.5001 11.9995 12.5001C11.7234 12.5001 11.4995 12.2763 11.4995 12.0001C11.4995 11.724 11.7234 11.5001 11.9995 11.5001C12.2757 11.5001 12.4995 11.724 12.4995 12.0001Z" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </div>
+          <span className={`text-sm font-bold ${d ? "text-gray-100" : "text-gray-900"}`}>Strategic Research</span>
+        </div>
+      </div>
+      <button onClick={() => setDark(!d)} className={`w-9 h-9 flex items-center justify-center rounded-lg ${d ? "text-gray-400 hover:bg-gray-800" : "text-gray-600 hover:bg-gray-100"}`}>
+        {d ? <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M12 3v1m0 16v1m8.66-9H21M3 12H2m15.36-6.36l-.71.71M7.05 16.95l-.71.71M18.36 18.36l-.71-.71M6.34 6.34l-.71-.71M17 12a5 5 0 11-10 0 5 5 0 0110 0z" /></svg>
+            : <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" /></svg>}
+      </button>
+    </div>
+  );
+}
+
+function Sidebar({ onSettings, user, mobileOpen = false, onMobileClose }) {
   const navigate = useNavigate();
   const location = useLocation();
   const { dark: dk, setDark, isSuperAdmin, roleLoaded } = useApp();
   const [pinned, setPinned] = useState(false);
   const [hovered, setHovered] = useState(false);
   const expanded = pinned || hovered;
+
+  useEffect(() => { if (onMobileClose) onMobileClose(); }, [location.pathname]);
 
   const s = {
     panel:   dk ? "bg-gray-900 border-gray-800" : "bg-white border-gray-200",
@@ -2343,14 +2372,14 @@ function Sidebar({ onSettings, user }) {
     helpBox: dk ? "bg-gray-800 border-gray-700" : "bg-gray-50 border-gray-200",
   };
 
-  const width = expanded ? 272 : 64;
+  const width = mobileOpen ? 272 : (expanded ? 272 : 64);
 
   return (
     <aside
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      className={`flex flex-col flex-shrink-0 border-r overflow-hidden ${s.panel}`}
-      style={{ width, transition: "width 200ms ease" }}
+      className={`flex flex-col flex-shrink-0 border-r overflow-hidden ${s.panel} fixed inset-y-0 left-0 z-50 md:static md:z-auto ${mobileOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full"} md:translate-x-0`}
+      style={{ width, transition: "transform 300ms ease, width 200ms ease" }}
     >
       {/* Header */}
       <div className={`flex items-center border-b flex-shrink-0 ${s.div} ${expanded ? "px-4 py-4 justify-between" : "px-3 py-4 justify-center"}`}>
@@ -2614,14 +2643,15 @@ function EditPage() {
     <div className={`flex-1 overflow-y-auto ${d ? "bg-gray-950" : "bg-gray-50"}`}>
 
       {/* Top bar */}
-      <div className={`border-b px-8 py-4 sticky top-0 z-10 ${d ? "bg-gray-950 border-gray-800" : "bg-gray-50 border-gray-200"}`}>
+      <div className={`border-b px-4 py-3 md:px-8 md:py-4 sticky top-0 z-10 ${d ? "bg-gray-950 border-gray-800" : "bg-gray-50 border-gray-200"}`}>
         <button onClick={() => navigate("/research")} className={`flex items-center gap-2 text-sm font-semibold ${d ? "text-gray-400 hover:text-gray-200" : "text-gray-500 hover:text-gray-900"}`}>
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7"/></svg>
-          Volver a todos los research
+          <span className="hidden sm:inline">Volver a todos los research</span>
+          <span className="sm:hidden">Volver</span>
         </button>
       </div>
 
-      <div style={{ maxWidth: "1600px", margin: "0 auto", padding: "2rem 2rem 4rem" }}>
+      <div className="w-full mx-auto px-4 md:px-8 py-6 md:py-8 pb-16" style={{ maxWidth: "1600px" }}>
 
         {/* Header */}
         <div className="mb-6">
@@ -2634,9 +2664,9 @@ function EditPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {/* Columna principal */}
-          <div className="col-span-3 space-y-4">
+          <div className="md:col-span-3 space-y-4">
 
             {/* Título + Descripción */}
             <div className="space-y-3">
@@ -2795,20 +2825,25 @@ function EditorOnly({ children }) {
 function Layout({ toast, user }) {
   const { dark } = useApp();
   const [showSettings, setShowSettings] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   return (
     <div className={`min-h-screen ${dark ? "bg-gray-950" : "bg-gray-50"}`} style={{ fontFamily: "'Inter', sans-serif" }}>
       <Toast toast={toast} />
       <div className="flex h-screen overflow-hidden">
         {showSettings && <SettingsModal dark={dark} onClose={() => setShowSettings(false)} />}
-        <Sidebar onSettings={() => setShowSettings(true)} user={user} />
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/research" element={<ListPage />} />
-          <Route path="/research/:id" element={<DetailPage />} />
-          <Route path="/producto/:slug" element={<ProductPage />} />
-          <Route path="/añadir-research" element={<EditorOnly><AddPage /></EditorOnly>} />
-          <Route path="/editar-research/:slug" element={<EditorOnly><EditPage /></EditorOnly>} />
-        </Routes>
+        {mobileOpen && <div className="fixed inset-0 z-40 md:hidden" onClick={() => setMobileOpen(false)} style={{ backgroundColor: "rgba(0,0,0,0.5)" }} />}
+        <Sidebar onSettings={() => setShowSettings(true)} user={user} mobileOpen={mobileOpen} onMobileClose={() => setMobileOpen(false)} />
+        <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
+          <MobileTopBar onMenu={() => setMobileOpen(true)} dark={dark} />
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/research" element={<ListPage />} />
+            <Route path="/research/:id" element={<DetailPage />} />
+            <Route path="/producto/:slug" element={<ProductPage />} />
+            <Route path="/añadir-research" element={<EditorOnly><AddPage /></EditorOnly>} />
+            <Route path="/editar-research/:slug" element={<EditorOnly><EditPage /></EditorOnly>} />
+          </Routes>
+        </div>
       </div>
       <style>{`
         .line-clamp-2 { display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
