@@ -2327,10 +2327,11 @@ function ListPage() {
 function MobileTopBar({ onMenu, dark: d }) {
   const { setDark } = useApp();
   return (
-    <div className={`flex md:hidden items-center justify-between px-4 py-3 border-b flex-shrink-0 ${d ? "bg-gray-950 border-gray-800" : "bg-white border-gray-200"}`}>
+    <div className={`flex lg:hidden items-center justify-between px-4 py-3 border-b flex-shrink-0 ${d ? "bg-gray-950 border-gray-800" : "bg-white border-gray-200"}`}>
       <div className="flex items-center gap-3">
-        <button onClick={onMenu} className={`w-9 h-9 flex items-center justify-center rounded-lg ${d ? "text-gray-400 hover:bg-gray-800" : "text-gray-600 hover:bg-gray-100"}`}>
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
+        <button onClick={() => setDark(!d)} className={`w-9 h-9 flex items-center justify-center rounded-lg ${d ? "text-gray-400 hover:bg-gray-800" : "text-gray-600 hover:bg-gray-100"}`}>
+          {d ? <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M12 3v1m0 16v1m8.66-9H21M3 12H2m15.36-6.36l-.71.71M7.05 16.95l-.71.71M18.36 18.36l-.71-.71M6.34 6.34l-.71-.71M17 12a5 5 0 11-10 0 5 5 0 0110 0z" /></svg>
+              : <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" /></svg>}
         </button>
         <div className="flex items-center gap-2">
           <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: "#00B369" }}>
@@ -2341,9 +2342,8 @@ function MobileTopBar({ onMenu, dark: d }) {
           <span className={`text-sm font-bold ${d ? "text-gray-100" : "text-gray-900"}`}>Strategic Research</span>
         </div>
       </div>
-      <button onClick={() => setDark(!d)} className={`w-9 h-9 flex items-center justify-center rounded-lg ${d ? "text-gray-400 hover:bg-gray-800" : "text-gray-600 hover:bg-gray-100"}`}>
-        {d ? <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M12 3v1m0 16v1m8.66-9H21M3 12H2m15.36-6.36l-.71.71M7.05 16.95l-.71.71M18.36 18.36l-.71-.71M6.34 6.34l-.71-.71M17 12a5 5 0 11-10 0 5 5 0 0110 0z" /></svg>
-            : <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" /></svg>}
+      <button onClick={onMenu} className={`w-9 h-9 flex items-center justify-center rounded-lg ${d ? "text-gray-400 hover:bg-gray-800" : "text-gray-600 hover:bg-gray-100"}`}>
+        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
       </button>
     </div>
   );
@@ -2378,7 +2378,7 @@ function Sidebar({ onSettings, user, mobileOpen = false, onMobileClose }) {
     <aside
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      className={`flex flex-col flex-shrink-0 border-r overflow-hidden ${s.panel} fixed inset-y-0 left-0 z-50 md:static md:z-auto ${mobileOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full"} md:translate-x-0`}
+      className={`flex flex-col flex-shrink-0 border-r overflow-hidden ${s.panel} fixed inset-y-0 left-0 z-50 lg:static lg:z-auto ${mobileOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full"} lg:translate-x-0`}
       style={{ width, transition: "transform 300ms ease, width 200ms ease" }}
     >
       {/* Header */}
@@ -2395,15 +2395,21 @@ function Sidebar({ onSettings, user, mobileOpen = false, onMobileClose }) {
                 <p className={`text-sm whitespace-nowrap truncate max-w-[130px] ${s.p2}`}>{user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Usuario"}</p>
               </div>
             </div>
-            <button
-              onClick={() => setPinned(!pinned)}
-              title={pinned ? "Desfijar sidebar" : "Fijar sidebar"}
-              className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${pinned ? (dk ? "text-green-500" : "text-green-700") : s.pinBtn}`}
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 20 20" stroke="currentColor">
-                <path d="M7.5 2.5V17.5M6.5 2.5H13.5C14.9001 2.5 15.6002 2.5 16.135 2.77248C16.6054 3.01217 16.9878 3.39462 17.2275 3.86502C17.5 4.3998 17.5 5.09987 17.5 6.5V13.5C17.5 14.9001 17.5 15.6002 17.2275 16.135C16.9878 16.6054 16.6054 16.9878 16.135 17.2275C15.6002 17.5 14.9001 17.5 13.5 17.5H6.5C5.09987 17.5 4.3998 17.5 3.86502 17.2275C3.39462 16.9878 3.01217 16.6054 2.77248 16.135C2.5 15.6002 2.5 14.9001 2.5 13.5V6.5C2.5 5.09987 2.5 4.3998 2.77248 3.86502C3.01217 3.39462 3.39462 3.01217 3.86502 2.77248C4.3998 2.5 5.09987 2.5 6.5 2.5Z" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </button>
+            {mobileOpen ? (
+              <button onClick={onMobileClose} className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${s.pinBtn}`}>
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/></svg>
+              </button>
+            ) : (
+              <button
+                onClick={() => setPinned(!pinned)}
+                title={pinned ? "Desfijar sidebar" : "Fijar sidebar"}
+                className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${pinned ? (dk ? "text-green-500" : "text-green-700") : s.pinBtn}`}
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 20 20" stroke="currentColor">
+                  <path d="M7.5 2.5V17.5M6.5 2.5H13.5C14.9001 2.5 15.6002 2.5 16.135 2.77248C16.6054 3.01217 16.9878 3.39462 17.2275 3.86502C17.5 4.3998 17.5 5.09987 17.5 6.5V13.5C17.5 14.9001 17.5 15.6002 17.2275 16.135C16.9878 16.6054 16.6054 16.9878 16.135 17.2275C15.6002 17.5 14.9001 17.5 13.5 17.5H6.5C5.09987 17.5 4.3998 17.5 3.86502 17.2275C3.39462 16.9878 3.01217 16.6054 2.77248 16.135C2.5 15.6002 2.5 14.9001 2.5 13.5V6.5C2.5 5.09987 2.5 4.3998 2.77248 3.86502C3.01217 3.39462 3.39462 3.01217 3.86502 2.77248C4.3998 2.5 5.09987 2.5 6.5 2.5Z" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </button>
+            )}
           </>
         ) : (
           <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{backgroundColor:"#00B369"}}>
@@ -2831,7 +2837,7 @@ function Layout({ toast, user }) {
       <Toast toast={toast} />
       <div className="flex h-screen overflow-hidden">
         {showSettings && <SettingsModal dark={dark} onClose={() => setShowSettings(false)} />}
-        {mobileOpen && <div className="fixed inset-0 z-40 md:hidden" onClick={() => setMobileOpen(false)} style={{ backgroundColor: "rgba(0,0,0,0.5)" }} />}
+        {mobileOpen && <div className="fixed inset-0 z-40 lg:hidden" onClick={() => setMobileOpen(false)} style={{ backgroundColor: "rgba(0,0,0,0.5)" }} />}
         <Sidebar onSettings={() => setShowSettings(true)} user={user} mobileOpen={mobileOpen} onMobileClose={() => setMobileOpen(false)} />
         <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
           <MobileTopBar onMenu={() => setMobileOpen(true)} dark={dark} />
