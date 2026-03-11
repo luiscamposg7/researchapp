@@ -1721,7 +1721,7 @@ function DetailPage() {
                 >
                   {item.jira || item.jiraUrl || "—"}
                 </a>
-                <span className={`text-xs font-bold px-2 py-0.5 rounded border ${entryJiraColor}`}>{item.jiraStatus}</span>
+                {item.jira && item.jiraStatus && <span className={`text-xs font-bold px-2 py-0.5 rounded border ${entryJiraColor}`}>{item.jiraStatus}</span>}
               </div>
               {item.isCustom && isEditor && (
                 <div className={`mt-6 pt-4 border-t ${d ? "border-gray-700" : "border-gray-200"}`}>
