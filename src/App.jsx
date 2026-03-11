@@ -2019,7 +2019,10 @@ function ProductPage() {
 
         {/* Research */}
         <div className="mb-10">
-          <h2 className={`text-xl font-bold mb-5 ${d ? "text-gray-100" : "text-gray-900"}`}>Todos los research</h2>
+          <div className="flex items-center justify-between mb-5">
+            <h2 className={`text-xl font-bold ${d ? "text-gray-100" : "text-gray-900"}`}>Todos los research</h2>
+            <button onClick={() => navigate("/research")} className={`text-sm font-semibold ${d ? "text-green-400 hover:text-green-300" : "text-green-600 hover:text-green-700"}`}>Ver todos →</button>
+          </div>
           <div className="grid grid-cols-2 gap-5">
             {Object.entries(byType).map(([type, items]) => (
               <div key={type} className={`rounded-xl border p-5 ${d ? "border-gray-700 bg-gray-900" : "border-gray-200 bg-white"}`}>
