@@ -998,7 +998,7 @@ function AddPage() {
                   const p = form.personas[personaTab];
                   const fi = (field, placeholder) => <input className={inp} placeholder={placeholder} value={p[field] || ""} onChange={e => setPersonaField(personaTab, field, e.target.value)} />;
                   const group = (title, children) => (
-                    <div className={`rounded-xl border p-4 ${d ? "bg-gray-800 border-gray-700" : "bg-gray-50 border-gray-200"}`}>
+                    <div>
                       <p className={`text-xs font-bold uppercase tracking-wider mb-3 ${d ? "text-gray-500" : "text-gray-400"}`}>{title}</p>
                       <div className="space-y-3">{children}</div>
                     </div>
@@ -2886,7 +2886,7 @@ function EditPage() {
                 {(() => {
                   const p = form.personas[personaTab];
                   const fi = (field, placeholder) => <input className={inp} placeholder={placeholder} value={p[field] || ""} onChange={e => setPersonaField(personaTab, field, e.target.value)} />;
-                  const group = (title, children) => <div className={`rounded-xl border p-4 ${d ? "bg-gray-800 border-gray-700" : "bg-gray-50 border-gray-200"}`}><p className={`text-xs font-bold uppercase tracking-wider mb-3 ${d ? "text-gray-500" : "text-gray-400"}`}>{title}</p><div className="space-y-3">{children}</div></div>;
+                  const group = (title, children) => <div><p className={`text-xs font-bold uppercase tracking-wider mb-3 ${d ? "text-gray-500" : "text-gray-400"}`}>{title}</p><div className="space-y-3">{children}</div></div>;
                   return (
                     <div className="space-y-4">
                       <div className="flex items-center gap-4">
