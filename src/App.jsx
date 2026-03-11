@@ -1915,6 +1915,16 @@ function ProductPage() {
             <div key={type} className={`mb-10 pb-10 border-b ${d ? "border-gray-800" : "border-gray-100"}`}>
               <div className="flex items-center justify-between mb-5">
                 <h2 className={`text-xl font-bold ${d ? "text-gray-100" : "text-gray-900"}`}>{type}</h2>
+                {isEditor && (
+                  <button
+                    onClick={() => navigate("/añadir-research", { state: { type, product } })}
+                    className={`flex items-center gap-1.5 px-3 py-2 text-sm font-semibold ${primBtn}`}
+                    style={{backgroundColor:"#00B369"}}
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
+                    Añadir
+                  </button>
+                )}
               </div>
 
               {items.length > 0 ? (
