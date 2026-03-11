@@ -449,7 +449,7 @@ function SettingsModal({ onClose, dark }) {
           if (b.user_id === user?.id) return 1;
           return 0;
         });
-        setUsers(list.filter(u => u.role));
+        setUsers(list);
         setUsersLoading(false);
       });
     });
@@ -518,10 +518,11 @@ function SettingsModal({ onClose, dark }) {
                     ) : (
                       <div className="flex items-center gap-2 flex-shrink-0">
                         <select
-                          value={currentRole}
+                          value={currentRole ?? ""}
                           onChange={e => setPendingRoles(p => ({ ...p, [u.user_id]: e.target.value }))}
                           className={`text-xs font-semibold px-2 py-1.5 rounded-lg border focus:outline-none focus:ring-2 focus:ring-green-400 ${d ? "bg-gray-700 border-gray-600 text-gray-200" : "bg-white border-gray-300 text-gray-700"}`}
                         >
+                          {!u.role && <option value="" disabled>Sin acceso</option>}
                           <option value="visitor">Visitante</option>
                           <option value="editor">Editor</option>
                         </select>
@@ -2419,8 +2420,8 @@ function Sidebar({ onSettings, user, mobileOpen = false, onMobileClose }) {
 <path d="M11.9995 12.0001H12.0095M15.535 15.5357C10.8488 20.222 5.46685 22.438 3.51423 20.4854C1.56161 18.5328 3.77769 13.1509 8.46398 8.46461C13.1503 3.77832 18.5322 1.56224 20.4848 3.51486C22.4374 5.46748 20.2213 10.8494 15.535 15.5357ZM15.535 8.46443C20.2213 13.1507 22.4374 18.5326 20.4848 20.4852C18.5321 22.4379 13.1502 20.2218 8.46394 15.5355C3.77765 10.8492 1.56157 5.4673 3.51419 3.51468C5.46681 1.56206 10.8487 3.77814 15.535 8.46443ZM12.4995 12.0001C12.4995 12.2763 12.2757 12.5001 11.9995 12.5001C11.7234 12.5001 11.4995 12.2763 11.4995 12.0001C11.4995 11.724 11.7234 11.5001 11.9995 11.5001C12.2757 11.5001 12.4995 11.724 12.4995 12.0001Z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>                </svg>
               </div>
               <div className="overflow-hidden">
-                <p className={`text-base font-bold whitespace-nowrap ${s.p1}`}>Hola, Bienvenido</p>
-                <p className={`text-sm whitespace-nowrap truncate max-w-[130px] ${s.p2}`}>{user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Usuario"}</p>
+                <p className={`text-base font-bold whitespace-nowrap truncate max-w-[150px] ${s.p1}`}>{user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Usuario"}</p>
+                <p className={`text-sm whitespace-nowrap truncate max-w-[150px] ${s.p2}`}>{user?.email}</p>
               </div>
             </div>
             {mobileOpen ? (
@@ -2945,8 +2946,8 @@ export default function App() {
 
   useEffect(() => {
     if (!session) { setRole(null); setRoleLoaded(false); return; }
-    supabase.from("user_roles").select("role").eq("user_id", session.user.id).single()
-      .then(({ data }) => { setRole(data?.role || null); setRoleLoaded(true); });
+    supabase.from("user_roles").select("role").eq("user_id", session.user.id).maybeSingle()
+      .then(({ data }) => { setRole(data?.role || "visitor"); setRoleLoaded(true); });
     supabase.rpc("get_users_with_roles").then(({ data }) => {
       const editorList = (data || []).filter(u => u.role === "editor" || u.role === "super_admin");
       setEditors(editorList.map(u => u.full_name || u.email || u.user_id));
