@@ -2862,21 +2862,10 @@ export default function App() {
   const [toast, setToast] = useState(null);
 
   useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => setSession(session ?? null));
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
       setSession(session ?? null);
     });
-    // Handle implicit flow: parse hash manually if present
-    const hash = window.location.hash;
-    if (hash.includes('access_token')) {
-      const params = new URLSearchParams(hash.slice(1));
-      const accessToken = params.get('access_token');
-      const refreshToken = params.get('refresh_token');
-      if (accessToken && refreshToken) {
-        supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
-      }
-    } else {
-      supabase.auth.getSession().then(({ data: { session } }) => setSession(s => s === undefined ? (session ?? null) : s));
-    }
     return () => subscription.unsubscribe();
   }, []);
 
