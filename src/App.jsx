@@ -2862,12 +2862,12 @@ export default function App() {
   const [toast, setToast] = useState(null);
 
   useEffect(() => {
+    if (window.location.hash.includes('access_token')) {
+      window.history.replaceState(null, '', window.location.pathname);
+    }
     supabase.auth.getSession().then(({ data: { session } }) => setSession(session ?? null));
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
       setSession(session ?? null);
-      if (session && window.location.hash.includes('access_token')) {
-        window.history.replaceState(null, '', window.location.pathname);
-      }
     });
     return () => subscription.unsubscribe();
   }, []);
