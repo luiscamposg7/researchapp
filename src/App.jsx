@@ -2136,16 +2136,26 @@ function ProductPage() {
         })()}
 
         {/* Otros productos */}
-        <div className={`pt-6 border-t ${d ? "border-gray-800" : "border-gray-200"}`}>
-          <p className={`text-xs font-semibold uppercase tracking-wider mb-3 ${d ? "text-gray-600" : "text-gray-400"}`}>Otros productos</p>
-          <div className="flex flex-wrap gap-2">
-            {PRODUCTS.filter(p => p !== product).map(p => (
-              <button key={p} onClick={() => navigate(`/producto/${toSlug(p)}`)}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${d ? "bg-gray-800 hover:bg-gray-700 text-gray-300" : "bg-gray-100 hover:bg-gray-200 text-gray-700"}`}>
-                <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: PRODUCT_COLORS[p] || "#00B369" }} />
-                {p}
-              </button>
-            ))}
+        <div className={`pt-8 border-t ${d ? "border-gray-800" : "border-gray-200"}`}>
+          <h2 className={`text-base font-semibold mb-4 ${d ? "text-gray-400" : "text-gray-500"}`}>Otros productos</h2>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
+            {PRODUCTS.filter(p => p !== product).map(p => {
+              const pc = PRODUCT_COLORS[p] || "#00B369";
+              const all = deliverables.filter(i => i.tags.includes(p));
+              return (
+                <button key={p} onClick={() => navigate(`/producto/${toSlug(p)}`)}
+                  className={`text-left rounded-xl border p-4 transition-all group ${d ? "bg-gray-900 border-gray-800 hover:border-gray-600" : "bg-white border-gray-200 hover:border-gray-300 hover:shadow-sm"}`}>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: pc }} />
+                      <span className={`font-semibold text-sm ${d ? "text-gray-100" : "text-gray-900"}`}>{p}</span>
+                    </div>
+                    <svg className={`w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5 ${d ? "text-gray-700" : "text-gray-300"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7"/></svg>
+                  </div>
+                  <p className={`text-xs ${d ? "text-gray-500" : "text-gray-400"}`}>{all.length} entregable{all.length !== 1 ? "s" : ""}</p>
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>
