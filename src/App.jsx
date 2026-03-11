@@ -1577,7 +1577,7 @@ function DetailPage() {
         <div className={`flex items-center gap-2 text-sm mb-2 ${d ? "text-gray-500" : "text-gray-400"}`}>
           <button onClick={() => navigate("/")} className={`hover:underline ${d ? "hover:text-gray-300" : "hover:text-gray-700"}`}>Inicio</button><span>/</span>
           <button onClick={() => navigate(`/producto/${encodeURIComponent(item.tags[0])}`)} className={`hover:underline ${d ? "hover:text-gray-300" : "hover:text-gray-700"}`}>{item.tags[0]}</button><span>/</span>
-          <span className={d ? "text-gray-300" : "text-gray-700"}>{item.type}</span>
+          <span className={d ? "text-gray-300" : "text-gray-700"}>{item.title}</span>
         </div>
 
         {/* Page title */}
