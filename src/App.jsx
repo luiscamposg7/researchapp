@@ -2213,6 +2213,7 @@ function ListPage() {
   const [filterType, setFilterType] = useState("Tipo de entregable");
   const [filterProduct, setFilterProduct] = useState("Todos los productos");
   const [filterEstado, setFilterEstado] = useState("Persona asignada");
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   // Sync from sidebar activeFilter
   useEffect(() => {
@@ -2276,8 +2277,9 @@ function ListPage() {
               </button>
             )}
           </div>
-          <div className="flex flex-col sm:flex-row gap-3">
-            <div className="relative w-full sm:w-2/5">
+          {/* Desktop filters */}
+          <div className="hidden lg:flex gap-3">
+            <div className="relative w-2/5">
               <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
@@ -2286,11 +2288,42 @@ function ListPage() {
                 className={`w-full pl-10 pr-4 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent ${dk ? "bg-gray-800 border-gray-700 text-gray-200 placeholder-gray-500" : "bg-white border-gray-200 text-gray-900 placeholder-gray-400"}`}
                 style={{height:"40px"}} />
             </div>
-            <div className="flex items-center gap-2 sm:gap-3 flex-1">
+            <div className="flex items-center gap-3 flex-1">
               <div className="flex-1"><CustomSelect dark={dk} value={filterType} onChange={v => setFilterType(v)} options={TYPES.map(f => ({ value: f, label: f }))} fullWidth /></div>
               <div className="flex-1"><CustomSelect dark={dk} value={filterProduct} onChange={v => setFilterProduct(v)} options={[{ value: "Todos los productos", label: "Todos los productos" }, ...PRODUCTS.map(p => ({ value: p, label: p }))]} fullWidth /></div>
               <div className="flex-1"><CustomSelect dark={dk} value={filterEstado} onChange={v => setFilterEstado(v)} options={[{ value: "Persona asignada", label: "Persona asignada" }, ...editors.map(e => ({ value: e, label: e }))]} fullWidth /></div>
             </div>
+          </div>
+
+          {/* Mobile/tablet filters accordion */}
+          <div className="flex lg:hidden flex-col gap-2">
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <input type="text" placeholder="Buscar research..." value={search}
+                  onChange={e => setSearch(e.target.value)}
+                  className={`w-full pl-10 pr-4 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent ${dk ? "bg-gray-800 border-gray-700 text-gray-200 placeholder-gray-500" : "bg-white border-gray-200 text-gray-900 placeholder-gray-400"}`}
+                  style={{height:"40px"}} />
+              </div>
+              <button
+                onClick={() => setFiltersOpen(o => !o)}
+                className={`flex items-center gap-1.5 px-3 text-sm font-semibold border rounded-lg flex-shrink-0 ${filtersOpen ? (dk ? "bg-green-900/30 border-green-700 text-green-400" : "bg-green-50 border-green-400 text-green-700") : (dk ? "bg-gray-800 border-gray-700 text-gray-300" : "bg-white border-gray-200 text-gray-600")}`}
+                style={{height:"40px"}}
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z"/></svg>
+                Filtros
+                <svg className={`w-3.5 h-3.5 transition-transform ${filtersOpen ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7"/></svg>
+              </button>
+            </div>
+            {filtersOpen && (
+              <div className="flex flex-col gap-2 pt-1">
+                <CustomSelect dark={dk} value={filterType} onChange={v => setFilterType(v)} options={TYPES.map(f => ({ value: f, label: f }))} fullWidth />
+                <CustomSelect dark={dk} value={filterProduct} onChange={v => setFilterProduct(v)} options={[{ value: "Todos los productos", label: "Todos los productos" }, ...PRODUCTS.map(p => ({ value: p, label: p }))]} fullWidth />
+                <CustomSelect dark={dk} value={filterEstado} onChange={v => setFilterEstado(v)} options={[{ value: "Persona asignada", label: "Persona asignada" }, ...editors.map(e => ({ value: e, label: e }))]} fullWidth />
+              </div>
+            )}
           </div>
         </div>
       </div>
