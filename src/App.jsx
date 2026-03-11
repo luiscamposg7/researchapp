@@ -175,9 +175,9 @@ function resizeToSquareJpg(file, size = 500) {
 async function uploadPersonaPhoto(file) {
   const blob = await resizeToSquareJpg(file);
   const fileName = `${Date.now()}_${Math.random().toString(36).slice(2)}.jpg`;
-  const { error } = await supabase.storage.from("persona-photos").upload(fileName, blob, { contentType: "image/jpeg" });
+  const { error } = await supabase.storage.from("profile-pic-users").upload(fileName, blob, { contentType: "image/jpeg" });
   if (error) throw error;
-  const { data } = supabase.storage.from("persona-photos").getPublicUrl(fileName);
+  const { data } = supabase.storage.from("profile-pic-users").getPublicUrl(fileName);
   return data?.publicUrl;
 }
 const STATUSES = ["Borrador", "Publicado"];
@@ -1858,7 +1858,7 @@ function PersonaPhotoPickerModal({ dark: d, onSelect, onUpload, onClose }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    supabase.storage.from("persona-photos").list("", { limit: 200 }).then(({ data }) => {
+    supabase.storage.from("profile-pic-users").list("", { limit: 200 }).then(({ data }) => {
       setFiles((data || []).filter(f => !f.name.startsWith(".")));
       setLoading(false);
     });
@@ -1887,7 +1887,7 @@ function PersonaPhotoPickerModal({ dark: d, onSelect, onUpload, onClose }) {
           ) : (
             <div className="grid grid-cols-4 gap-3">
               {files.map(f => {
-                const { data } = supabase.storage.from("persona-photos").getPublicUrl(f.name);
+                const { data } = supabase.storage.from("profile-pic-users").getPublicUrl(f.name);
                 const url = data?.publicUrl;
                 return (
                   <button key={f.name} onClick={() => onSelect(url)} className={`rounded-full overflow-hidden border-2 transition-all hover:border-green-500 aspect-square ${d ? "border-gray-700" : "border-gray-200"}`}>
