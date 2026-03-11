@@ -11,8 +11,8 @@ const PRODUCTS = ["Cambio Seguro", "Factoring", "Gestora", "PGH", "Recadia", "Ta
 const TYPES = ["Tipo de entregable", "Research", "Pruebas de usabilidad", "Buyer Persona", "User Persona"];
 const PERSONA_TYPES = ["Buyer Persona", "User Persona"];
 
-const EMPTY_BUYER = () => ({ nombre: "", cargo: "", edad: "", ubicacion: "", nivelTec: "", herramientas: "", rubro: "", personal: "", tiempoApertura: "", metas: "", adquisicion: "", comunicaciones: "" });
-const EMPTY_USER  = () => ({ nombre: "", cargo: "", edad: "", ubicacion: "", nivelTec: "", herramientas: "", rubro: "", tiempoNegocio: "", objetivos: "", dolores: "" });
+const EMPTY_BUYER = () => ({ foto: "", nombre: "", cargo: "", edad: "", ubicacion: "", nivelTec: "", herramientas: "", rubro: "", personal: "", tiempoApertura: "", metas: "", adquisicion: "", comunicaciones: "" });
+const EMPTY_USER  = () => ({ foto: "", nombre: "", cargo: "", edad: "", ubicacion: "", nivelTec: "", herramientas: "", rubro: "", tiempoNegocio: "", objetivos: "", dolores: "" });
 
 const ESTADOS = ["Persona asignada", "Ana R.", "Sofia K.", "Luis M.", "Carlos T."];
 
@@ -154,6 +154,31 @@ async function uploadProductCover(product, file) {
   if (error) throw error;
   await saveProductCoverRef(product, fileName);
   return getProductCoverUrl(fileName);
+}
+function resizeToSquareJpg(file, size = 500) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = size; canvas.height = size;
+      const ctx = canvas.getContext("2d");
+      const min = Math.min(img.width, img.height);
+      const sx = (img.width - min) / 2, sy = (img.height - min) / 2;
+      ctx.drawImage(img, sx, sy, min, min, 0, 0, size, size);
+      URL.revokeObjectURL(url);
+      canvas.toBlob(resolve, "image/jpeg", 0.9);
+    };
+    img.src = url;
+  });
+}
+async function uploadPersonaPhoto(file) {
+  const blob = await resizeToSquareJpg(file);
+  const fileName = `${Date.now()}_${Math.random().toString(36).slice(2)}.jpg`;
+  const { error } = await supabase.storage.from("persona-photos").upload(fileName, blob, { contentType: "image/jpeg" });
+  if (error) throw error;
+  const { data } = supabase.storage.from("persona-photos").getPublicUrl(fileName);
+  return data?.publicUrl;
 }
 const STATUSES = ["Borrador", "Publicado"];
 const TEAM_MEMBERS = ["Ana R.", "Sofia K.", "Luis M.", "Carlos T."];
@@ -584,6 +609,7 @@ function AddPage() {
     };
   });
   const [personaTab, setPersonaTab] = useState(0);
+  const [personaPhotoUploading, setPersonaPhotoUploading] = useState(false);
   const [jiraLoading, setJiraLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [jiraError, setJiraError] = useState("");
@@ -962,6 +988,23 @@ function AddPage() {
                   );
                   return (
                     <div className="space-y-4">
+                      <div className="flex items-center gap-4">
+                        <div className={`w-20 h-20 rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center border-2 ${p.foto ? "border-green-500" : (d ? "border-gray-600" : "border-gray-200")}`}>
+                          {p.foto ? <img src={p.foto} alt="Foto" className="w-full h-full object-cover" /> : <svg className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>}
+                        </div>
+                        <div>
+                          <label className={`flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-lg cursor-pointer ${secBtn(d)} ${personaPhotoUploading ? "opacity-50 pointer-events-none" : ""}`}>
+                            {personaPhotoUploading ? "Subiendo..." : (p.foto ? "Cambiar foto" : "Subir foto")}
+                            <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
+                              const file = e.target.files?.[0]; if (!file) return;
+                              setPersonaPhotoUploading(true);
+                              try { const url = await uploadPersonaPhoto(file); setPersonaField(personaTab, "foto", url); } catch (err) { console.error(err); }
+                              setPersonaPhotoUploading(false); e.target.value = "";
+                            }} />
+                          </label>
+                          <p className={`mt-1 text-xs ${d ? "text-gray-500" : "text-gray-400"}`}>500×500 px · JPG</p>
+                        </div>
+                      </div>
                       <div><label className={lbl}>Nombre</label>{fi("nombre", "Nombre de la persona")}</div>
                       {group("Información personal", <>
                         <div className="grid grid-cols-2 gap-3">
@@ -2549,6 +2592,7 @@ function EditPage() {
   const today = new Date().toLocaleDateString("es-PE", { day: "2-digit", month: "short", year: "numeric" }).replace(".", "");
   const [form, setForm] = useState({ ...item });
   const [personaTab, setPersonaTab] = useState(0);
+  const [personaPhotoUploading, setPersonaPhotoUploading] = useState(false);
   const [jiraLoading, setJiraLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [jiraError, setJiraError] = useState("");
@@ -2767,6 +2811,23 @@ function EditPage() {
                   const group = (title, children) => <div className={`rounded-xl border p-4 ${d ? "bg-gray-800 border-gray-700" : "bg-gray-50 border-gray-200"}`}><p className={`text-xs font-bold uppercase tracking-wider mb-3 ${d ? "text-gray-500" : "text-gray-400"}`}>{title}</p><div className="space-y-3">{children}</div></div>;
                   return (
                     <div className="space-y-4">
+                      <div className="flex items-center gap-4">
+                        <div className={`w-20 h-20 rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center border-2 ${p.foto ? "border-green-500" : (d ? "border-gray-600" : "border-gray-200")}`}>
+                          {p.foto ? <img src={p.foto} alt="Foto" className="w-full h-full object-cover" /> : <svg className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>}
+                        </div>
+                        <div>
+                          <label className={`flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-lg cursor-pointer ${secBtn(d)} ${personaPhotoUploading ? "opacity-50 pointer-events-none" : ""}`}>
+                            {personaPhotoUploading ? "Subiendo..." : (p.foto ? "Cambiar foto" : "Subir foto")}
+                            <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
+                              const file = e.target.files?.[0]; if (!file) return;
+                              setPersonaPhotoUploading(true);
+                              try { const url = await uploadPersonaPhoto(file); setPersonaField(personaTab, "foto", url); } catch (err) { console.error(err); }
+                              setPersonaPhotoUploading(false); e.target.value = "";
+                            }} />
+                          </label>
+                          <p className={`mt-1 text-xs ${d ? "text-gray-500" : "text-gray-400"}`}>500×500 px · JPG</p>
+                        </div>
+                      </div>
                       <div><label className={lbl}>Nombre</label>{fi("nombre","Nombre de la persona")}</div>
                       {group("Información personal", <><div className="grid grid-cols-2 gap-3"><div><label className={lbl}>Cargo</label>{fi("cargo","Cargo o rol")}</div><div><label className={lbl}>Edad</label>{fi("edad","Ej: 35 años")}</div></div><div><label className={lbl}>Ubicación</label>{fi("ubicacion","Ciudad / País")}</div><div><label className={lbl}>Nivel tecnológico</label>{fi("nivelTec","Básico / Medio / Avanzado")}</div><div><label className={lbl}>Herramientas usadas</label>{fi("herramientas","Excel, Slack, etc.")}</div></>)}
                       {group("Sobre el negocio", form.type === "Buyer Persona" ? <><div><label className={lbl}>Rubro</label>{fi("rubro","Sector o industria")}</div><div className="grid grid-cols-2 gap-3"><div><label className={lbl}>Personal</label>{fi("personal","Ej: 10-50 empleados")}</div><div><label className={lbl}>Tiempo de apertura</label>{fi("tiempoApertura","Ej: 5 años")}</div></div><div><label className={lbl}>Metas a futuro</label><RichEditor dark={d} value={p.metas||""} onChange={v => setPersonaField(personaTab,"metas",v)} placeholder="Metas y objetivos a futuro..." /></div></> : <><div><label className={lbl}>Rubro</label>{fi("rubro","Sector o industria")}</div><div><label className={lbl}>Tiempo en el negocio</label>{fi("tiempoNegocio","Ej: 3 años")}</div></>)}
