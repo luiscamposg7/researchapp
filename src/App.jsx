@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback, useMemo, useId, createContext, useContext } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo, createContext, useContext } from "react";
 import { Routes, Route, useNavigate, useParams, useLocation } from "react-router-dom";
 import { supabase } from "./supabase";
 
@@ -1256,7 +1256,7 @@ function HeroGrid({ dark: d }) {
 
     const draw = (now) => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      const COLS = Math.ceil(canvas.width  / SIZE);
+      const COLS = Math.ceil(canvas.width / SIZE);
       const ROWS = Math.ceil(canvas.height / SIZE);
 
       // Grid lines
@@ -3127,8 +3127,7 @@ function Layout({ toast, user }) {
       </div>
       <style>{`
         .line-clamp-2 { display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
-        .hero-grid-cell { transition: background-color 0.4s ease-out; cursor: default; }
-        .hero-grid-cell:hover { background-color: var(--flash); transition: background-color 0s; }
+
       `}</style>
     </div>
   );
