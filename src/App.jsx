@@ -188,7 +188,10 @@ async function deleteFromCloudinary(url) {
   const public_id = cloudinaryPublicId(url);
   if (!public_id) throw new Error("No se pudo extraer el public_id");
   const res = await fetch("/api/cloudinary/delete", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ public_id }) });
-  if (!res.ok) throw new Error("Error al eliminar de Cloudinary");
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data.error || `Error ${res.status} al eliminar de Cloudinary`);
+  }
 }
 async function uploadToCloudinary(file) {
   const fd = new FormData();
