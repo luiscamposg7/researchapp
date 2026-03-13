@@ -1002,10 +1002,10 @@ function AddPage() {
                 {(form.imagenes || []).length > 0 && (
                   <div className="grid grid-cols-3 gap-2">
                     {(form.imagenes || []).map((url, i) => (
-                      <div key={i} className="relative group aspect-video rounded-lg overflow-hidden">
+                      <div key={i} className="relative group aspect-video rounded-lg overflow-hidden cursor-pointer" onClick={() => setShowImagePicker(true)}>
                         <img src={url} alt="" className="w-full h-full object-cover" />
-                        <button type="button" onClick={() => set("imagenes", (form.imagenes || []).filter((_, j) => j !== i))}
-                          className="absolute top-1 right-1 w-6 h-6 flex items-center justify-center rounded-full bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button type="button" onClick={e => { e.stopPropagation(); set("imagenes", (form.imagenes || []).filter((_, j) => j !== i)); }}
+                          className="absolute top-1 right-1 w-6 h-6 flex items-center justify-center rounded-lg bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity">
                           <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/></svg>
                         </button>
                       </div>
@@ -2005,6 +2005,7 @@ function DetailPage() {
 function CoverPickerModal({ dark: d, onSelect, onUpload, onClose }) {
   const [files, setFiles] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [confirmTarget, setConfirmTarget] = useState(null);
 
   useEffect(() => {
     supabase.storage.from('product-covers').list('', { limit: 100 }).then(({ data }) => {
@@ -2014,6 +2015,7 @@ function CoverPickerModal({ dark: d, onSelect, onUpload, onClose }) {
   }, []);
 
   return (
+    <>
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={onClose}>
       <div
         onClick={e => e.stopPropagation()}
@@ -2055,12 +2057,8 @@ function CoverPickerModal({ dark: d, onSelect, onUpload, onClose }) {
                       className={`w-full rounded-xl overflow-hidden border-2 transition-all hover:border-green-500 aspect-video ${d ? "border-gray-700" : "border-gray-200"}`}>
                       <img src={url} alt={f.name} className="w-full h-full object-cover" />
                     </button>
-                    <button onClick={async () => {
-                        if (!window.confirm("¿Eliminar esta imagen?")) return;
-                        await supabase.storage.from("product-covers").remove([f.name]);
-                        setFiles(fs => fs.filter(x => x.name !== f.name));
-                      }}
-                      className="absolute top-1.5 right-1.5 w-6 h-6 flex items-center justify-center rounded-full bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600">
+                    <button onClick={() => setConfirmTarget(f)}
+                      className="absolute top-1.5 right-1.5 flex items-center justify-center w-6 h-6 flex-shrink-0 rounded-lg bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600">
                       <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                     </button>
                   </div>
@@ -2071,12 +2069,29 @@ function CoverPickerModal({ dark: d, onSelect, onUpload, onClose }) {
         </div>
       </div>
     </div>
+    {confirmTarget && (
+      <ConfirmModal
+        title="Eliminar imagen"
+        message="¿Estás seguro de que quieres eliminar esta imagen? Esta acción no se puede deshacer."
+        confirmLabel="Sí, eliminar"
+        danger
+        onConfirm={async () => {
+          const target = confirmTarget;
+          setConfirmTarget(null);
+          await supabase.storage.from("product-covers").remove([target.name]);
+          setFiles(fs => fs.filter(x => x.name !== target.name));
+        }}
+        onCancel={() => setConfirmTarget(null)}
+      />
+    )}
+    </>
   );
 }
 
 function PersonaPhotoPickerModal({ dark: d, onSelect, onUpload, onClose }) {
   const [files, setFiles] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [confirmTarget, setConfirmTarget] = useState(null);
 
   useEffect(() => {
     supabase.storage.from("profile-pic-users").list("", { limit: 200 }).then(({ data }) => {
@@ -2086,6 +2101,7 @@ function PersonaPhotoPickerModal({ dark: d, onSelect, onUpload, onClose }) {
   }, []);
 
   return (
+    <>
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={onClose}>
       <div onClick={e => e.stopPropagation()} className={`w-[480px] max-h-[80vh] rounded-2xl flex flex-col shadow-2xl ${d ? "bg-gray-900 border border-gray-800" : "bg-white border border-gray-200"}`}>
         <div className={`flex items-center justify-between px-6 py-4 border-b ${d ? "border-gray-800" : "border-gray-200"}`}>
@@ -2115,12 +2131,8 @@ function PersonaPhotoPickerModal({ dark: d, onSelect, onUpload, onClose }) {
                     <button onClick={() => onSelect(url)} className={`w-full rounded-full overflow-hidden border-2 transition-all hover:border-green-500 aspect-square ${d ? "border-gray-700" : "border-gray-200"}`}>
                       <img src={url} alt={f.name} className="w-full h-full object-cover" />
                     </button>
-                    <button onClick={async () => {
-                        if (!window.confirm("¿Eliminar esta foto?")) return;
-                        await supabase.storage.from("profile-pic-users").remove([f.name]);
-                        setFiles(fs => fs.filter(x => x.name !== f.name));
-                      }}
-                      className="absolute top-0 right-0 w-5 h-5 flex items-center justify-center rounded-full bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600">
+                    <button onClick={() => setConfirmTarget(f)}
+                      className="absolute top-0 right-0 flex items-center justify-center w-5 h-5 flex-shrink-0 rounded-lg bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600">
                       <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                     </button>
                   </div>
@@ -2131,6 +2143,22 @@ function PersonaPhotoPickerModal({ dark: d, onSelect, onUpload, onClose }) {
         </div>
       </div>
     </div>
+    {confirmTarget && (
+      <ConfirmModal
+        title="Eliminar foto"
+        message="¿Estás seguro de que quieres eliminar esta foto? Esta acción no se puede deshacer."
+        confirmLabel="Sí, eliminar"
+        danger
+        onConfirm={async () => {
+          const target = confirmTarget;
+          setConfirmTarget(null);
+          await supabase.storage.from("profile-pic-users").remove([target.name]);
+          setFiles(fs => fs.filter(x => x.name !== target.name));
+        }}
+        onCancel={() => setConfirmTarget(null)}
+      />
+    )}
+    </>
   );
 }
 
@@ -2144,9 +2172,9 @@ function ImagePickerModal({ dark: d, deliverables, onSelect, onUpload, onDelete,
     return imgs;
   });
   const [deleting, setDeleting] = useState(null);
+  const [confirmTarget, setConfirmTarget] = useState(null);
 
   const handleDelete = async (url) => {
-    if (!window.confirm("¿Eliminar esta imagen? Se quitará de todos los research.")) return;
     setDeleting(url);
     try {
       await deleteFromCloudinary(url);
@@ -2159,6 +2187,7 @@ function ImagePickerModal({ dark: d, deliverables, onSelect, onUpload, onDelete,
   };
 
   return (
+    <>
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={onClose}>
       <div onClick={e => e.stopPropagation()} className={`w-[560px] max-h-[80vh] rounded-2xl flex flex-col shadow-2xl ${d ? "bg-gray-900 border border-gray-800" : "bg-white border border-gray-200"}`}>
         <div className={`flex items-center justify-between px-6 py-4 border-b ${d ? "border-gray-800" : "border-gray-200"}`}>
@@ -2187,8 +2216,8 @@ function ImagePickerModal({ dark: d, deliverables, onSelect, onUpload, onDelete,
                       : <img src={url} alt="" className="w-full h-full object-cover" />}
                   </button>
                   {deleting !== url && (
-                    <button onClick={() => handleDelete(url)}
-                      className="absolute top-1.5 right-1.5 w-6 h-6 flex items-center justify-center rounded-full bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600">
+                    <button onClick={() => setConfirmTarget(url)}
+                      className="absolute top-1.5 right-1.5 flex items-center justify-center w-6 h-6 flex-shrink-0 rounded-lg bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600">
                       <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                     </button>
                   )}
@@ -2199,6 +2228,17 @@ function ImagePickerModal({ dark: d, deliverables, onSelect, onUpload, onDelete,
         </div>
       </div>
     </div>
+    {confirmTarget && (
+      <ConfirmModal
+        title="Eliminar imagen"
+        message="¿Estás seguro de que quieres eliminar esta imagen? Se quitará de todos los research."
+        confirmLabel="Sí, eliminar"
+        danger
+        onConfirm={() => { handleDelete(confirmTarget); setConfirmTarget(null); }}
+        onCancel={() => setConfirmTarget(null)}
+      />
+    )}
+    </>
   );
 }
 
@@ -3195,10 +3235,10 @@ function EditPage() {
                 {(form.imagenes || []).length > 0 && (
                   <div className="grid grid-cols-3 gap-2">
                     {(form.imagenes || []).map((url, i) => (
-                      <div key={i} className="relative group aspect-video rounded-lg overflow-hidden">
+                      <div key={i} className="relative group aspect-video rounded-lg overflow-hidden cursor-pointer" onClick={() => setShowImagePicker(true)}>
                         <img src={url} alt="" className="w-full h-full object-cover" />
-                        <button type="button" onClick={() => set("imagenes", (form.imagenes || []).filter((_, j) => j !== i))}
-                          className="absolute top-1 right-1 w-6 h-6 flex items-center justify-center rounded-full bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button type="button" onClick={e => { e.stopPropagation(); set("imagenes", (form.imagenes || []).filter((_, j) => j !== i)); }}
+                          className="absolute top-1 right-1 w-6 h-6 flex items-center justify-center rounded-lg bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity">
                           <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/></svg>
                         </button>
                       </div>
