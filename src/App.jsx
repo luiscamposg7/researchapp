@@ -2322,12 +2322,12 @@ function HomePage() {
               onChange={e => setSearch(e.target.value)}
               onKeyDown={handleSearch}
               placeholder="Busca un research o producto..."
-              className={`w-full pl-12 pr-28 py-4 text-sm rounded-2xl border focus:outline-none focus:ring-2 focus:ring-green-400 ${d ? "bg-gray-800/80 border-gray-700 text-gray-200 placeholder-gray-500" : "bg-white border-gray-200 text-gray-900 placeholder-gray-400"}`}
+              className={`w-full pl-12 pr-4 sm:pr-28 py-4 text-sm rounded-2xl border focus:outline-none focus:ring-2 focus:ring-green-400 ${d ? "bg-gray-800/80 border-gray-700 text-gray-200 placeholder-gray-500" : "bg-white border-gray-200 text-gray-900 placeholder-gray-400"}`}
               style={{ boxShadow: d ? "0 4px 24px rgba(0,0,0,0.3)" : "0 4px 24px rgba(0,0,0,0.08)" }}
             />
             <button
               onClick={doSearch}
-              className={`absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-lg border transition-colors ${search.trim() ? (d ? "bg-gray-700 border-gray-600 text-gray-200 hover:bg-gray-600" : "bg-gray-100 border-gray-300 text-gray-700 hover:bg-gray-200") : (d ? "bg-gray-800 border-gray-700 text-gray-600 cursor-default" : "bg-gray-50 border-gray-200 text-gray-400 cursor-default")}`}
+              className={`hidden sm:flex absolute right-3 top-1/2 -translate-y-1/2 items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-lg border transition-colors ${search.trim() ? (d ? "bg-gray-700 border-gray-600 text-gray-200 hover:bg-gray-600" : "bg-gray-100 border-gray-300 text-gray-700 hover:bg-gray-200") : (d ? "bg-gray-800 border-gray-700 text-gray-600 cursor-default" : "bg-gray-50 border-gray-200 text-gray-400 cursor-default")}`}
             >
               Enter ↵
             </button>
