@@ -180,6 +180,16 @@ async function uploadPersonaPhoto(file) {
   const { data } = supabase.storage.from("profile-pic-users").getPublicUrl(fileName);
   return data?.publicUrl;
 }
+function cloudinaryPublicId(url) {
+  const m = url.match(/\/upload\/(?:v\d+\/)?(.+)\.[^.]+$/);
+  return m ? m[1] : null;
+}
+async function deleteFromCloudinary(url) {
+  const public_id = cloudinaryPublicId(url);
+  if (!public_id) throw new Error("No se pudo extraer el public_id");
+  const res = await fetch("/api/cloudinary/delete", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ public_id }) });
+  if (!res.ok) throw new Error("Error al eliminar de Cloudinary");
+}
 async function uploadToCloudinary(file) {
   const fd = new FormData();
   fd.append("file", file);
@@ -1014,6 +1024,11 @@ function AddPage() {
                   <ImagePickerModal dark={d} deliverables={deliverables}
                     onSelect={(url) => { if (!(form.imagenes || []).includes(url)) set("imagenes", [...(form.imagenes || []), url]); setShowImagePicker(false); }}
                     onUpload={() => { setShowImagePicker(false); setTimeout(() => imageInputRef.current?.click(), 100); }}
+                    onDelete={async (url) => {
+                      const affected = deliverables.filter(x => (x.imagenes || []).includes(url));
+                      await Promise.all(affected.map(x => supabase.from("deliverables").update({ data: { ...x, imagenes: x.imagenes.filter(u => u !== url) } }).eq("id", x.id)));
+                      if ((form.imagenes || []).includes(url)) set("imagenes", (form.imagenes || []).filter(u => u !== url));
+                    }}
                     onClose={() => setShowImagePicker(false)} />
                 )}
                 <input ref={imageInputRef} type="file" accept="image/*" multiple className="hidden"
@@ -2026,7 +2041,7 @@ function CoverPickerModal({ dark: d, onSelect, onUpload, onClose }) {
         {/* Grid */}
         <div className="flex-1 overflow-y-auto p-6">
           {loading ? (
-            <p className={`text-sm text-center py-8 ${d ? "text-gray-500" : "text-gray-400"}`}>Cargando...</p>
+            <div className="flex justify-center py-8"><div className="w-8 h-8 rounded-full border-4 border-gray-300 border-t-green-500 animate-spin" /></div>
           ) : files.length === 0 ? (
             <p className={`text-sm text-center py-8 ${d ? "text-gray-500" : "text-gray-400"}`}>No hay imágenes subidas aún.</p>
           ) : (
@@ -2035,13 +2050,20 @@ function CoverPickerModal({ dark: d, onSelect, onUpload, onClose }) {
                 const { data } = supabase.storage.from('product-covers').getPublicUrl(f.name);
                 const url = data?.publicUrl;
                 return (
-                  <button
-                    key={f.name}
-                    onClick={() => onSelect(f.name)}
-                    className={`rounded-xl overflow-hidden border-2 transition-all hover:border-green-500 aspect-video ${d ? "border-gray-700" : "border-gray-200"}`}
-                  >
-                    <img src={url} alt={f.name} className="w-full h-full object-cover" />
-                  </button>
+                  <div key={f.name} className="relative group">
+                    <button onClick={() => onSelect(f.name)}
+                      className={`w-full rounded-xl overflow-hidden border-2 transition-all hover:border-green-500 aspect-video ${d ? "border-gray-700" : "border-gray-200"}`}>
+                      <img src={url} alt={f.name} className="w-full h-full object-cover" />
+                    </button>
+                    <button onClick={async () => {
+                        if (!window.confirm("¿Eliminar esta imagen?")) return;
+                        await supabase.storage.from("product-covers").remove([f.name]);
+                        setFiles(fs => fs.filter(x => x.name !== f.name));
+                      }}
+                      className="absolute top-1.5 right-1.5 w-6 h-6 flex items-center justify-center rounded-full bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600">
+                      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                    </button>
+                  </div>
                 );
               })}
             </div>
@@ -2080,7 +2102,7 @@ function PersonaPhotoPickerModal({ dark: d, onSelect, onUpload, onClose }) {
         </div>
         <div className="flex-1 overflow-y-auto p-6">
           {loading ? (
-            <p className={`text-sm text-center py-8 ${d ? "text-gray-500" : "text-gray-400"}`}>Cargando...</p>
+            <div className="flex justify-center py-8"><div className="w-8 h-8 rounded-full border-4 border-gray-300 border-t-green-500 animate-spin" /></div>
           ) : files.length === 0 ? (
             <p className={`text-sm text-center py-8 ${d ? "text-gray-500" : "text-gray-400"}`}>No hay fotos subidas aún.</p>
           ) : (
@@ -2089,9 +2111,19 @@ function PersonaPhotoPickerModal({ dark: d, onSelect, onUpload, onClose }) {
                 const { data } = supabase.storage.from("profile-pic-users").getPublicUrl(f.name);
                 const url = data?.publicUrl;
                 return (
-                  <button key={f.name} onClick={() => onSelect(url)} className={`rounded-full overflow-hidden border-2 transition-all hover:border-green-500 aspect-square ${d ? "border-gray-700" : "border-gray-200"}`}>
-                    <img src={url} alt={f.name} className="w-full h-full object-cover" />
-                  </button>
+                  <div key={f.name} className="relative group">
+                    <button onClick={() => onSelect(url)} className={`w-full rounded-full overflow-hidden border-2 transition-all hover:border-green-500 aspect-square ${d ? "border-gray-700" : "border-gray-200"}`}>
+                      <img src={url} alt={f.name} className="w-full h-full object-cover" />
+                    </button>
+                    <button onClick={async () => {
+                        if (!window.confirm("¿Eliminar esta foto?")) return;
+                        await supabase.storage.from("profile-pic-users").remove([f.name]);
+                        setFiles(fs => fs.filter(x => x.name !== f.name));
+                      }}
+                      className="absolute top-0 right-0 w-5 h-5 flex items-center justify-center rounded-full bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600">
+                      <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                    </button>
+                  </div>
                 );
               })}
             </div>
@@ -2102,15 +2134,29 @@ function PersonaPhotoPickerModal({ dark: d, onSelect, onUpload, onClose }) {
   );
 }
 
-function ImagePickerModal({ dark: d, deliverables, onSelect, onUpload, onClose }) {
-  const allImages = useMemo(() => {
+function ImagePickerModal({ dark: d, deliverables, onSelect, onUpload, onDelete, onClose }) {
+  const [images, setImages] = useState(() => {
     const seen = new Set();
     const imgs = [];
     (deliverables || []).forEach(item => {
       (item.imagenes || []).forEach(url => { if (!seen.has(url)) { seen.add(url); imgs.push(url); } });
     });
     return imgs;
-  }, [deliverables]);
+  });
+  const [deleting, setDeleting] = useState(null);
+
+  const handleDelete = async (url) => {
+    if (!window.confirm("¿Eliminar esta imagen? Se quitará de todos los research.")) return;
+    setDeleting(url);
+    try {
+      await deleteFromCloudinary(url);
+      await onDelete(url);
+      setImages(imgs => imgs.filter(u => u !== url));
+    } catch (err) {
+      alert(err.message);
+    }
+    setDeleting(null);
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={onClose}>
@@ -2128,15 +2174,25 @@ function ImagePickerModal({ dark: d, deliverables, onSelect, onUpload, onClose }
           </button>
         </div>
         <div className="flex-1 overflow-y-auto p-6">
-          {allImages.length === 0 ? (
+          {images.length === 0 ? (
             <p className={`text-sm text-center py-8 ${d ? "text-gray-500" : "text-gray-400"}`}>No hay imágenes subidas aún.</p>
           ) : (
             <div className="grid grid-cols-3 gap-3">
-              {allImages.map((url, i) => (
-                <button key={i} onClick={() => onSelect(url)}
-                  className={`rounded-xl overflow-hidden border-2 transition-all hover:border-green-500 aspect-video ${d ? "border-gray-700" : "border-gray-200"}`}>
-                  <img src={url} alt="" className="w-full h-full object-cover" />
-                </button>
+              {images.map((url, i) => (
+                <div key={i} className="relative group">
+                  <button onClick={() => onSelect(url)}
+                    className={`w-full rounded-xl overflow-hidden border-2 transition-all hover:border-green-500 aspect-video ${d ? "border-gray-700" : "border-gray-200"} ${deleting === url ? "opacity-40" : ""}`}>
+                    {deleting === url
+                      ? <div className="w-full h-full flex items-center justify-center"><div className="w-6 h-6 rounded-full border-2 border-gray-300 border-t-green-500 animate-spin" /></div>
+                      : <img src={url} alt="" className="w-full h-full object-cover" />}
+                  </button>
+                  {deleting !== url && (
+                    <button onClick={() => handleDelete(url)}
+                      className="absolute top-1.5 right-1.5 w-6 h-6 flex items-center justify-center rounded-full bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600">
+                      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                    </button>
+                  )}
+                </div>
               ))}
             </div>
           )}
@@ -3161,6 +3217,11 @@ function EditPage() {
                   <ImagePickerModal dark={d} deliverables={deliverables}
                     onSelect={(url) => { if (!(form.imagenes || []).includes(url)) set("imagenes", [...(form.imagenes || []), url]); setShowImagePicker(false); }}
                     onUpload={() => { setShowImagePicker(false); setTimeout(() => imageInputRef.current?.click(), 100); }}
+                    onDelete={async (url) => {
+                      const affected = deliverables.filter(x => (x.imagenes || []).includes(url));
+                      await Promise.all(affected.map(x => supabase.from("deliverables").update({ data: { ...x, imagenes: x.imagenes.filter(u => u !== url) } }).eq("id", x.id)));
+                      if ((form.imagenes || []).includes(url)) set("imagenes", (form.imagenes || []).filter(u => u !== url));
+                    }}
                     onClose={() => setShowImagePicker(false)} />
                 )}
                 <input ref={imageInputRef} type="file" accept="image/*" multiple className="hidden"
