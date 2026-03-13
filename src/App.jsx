@@ -593,7 +593,7 @@ function SettingsModal({ onClose, dark }) {
 function AddPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { dark: d, handleAdd, showToast, editors } = useApp();
+  const { dark: d, handleAdd, showToast, editors, deliverables } = useApp();
   const prefill = location.state || {};
   const onClose = () => navigate(-1);
   const onSave = (item) => {
@@ -628,6 +628,7 @@ function AddPage() {
   const [saving, setSaving] = useState(false);
   const [jiraError, setJiraError] = useState("");
   const [imageUploading, setImageUploading] = useState(false);
+  const [showImagePicker, setShowImagePicker] = useState(false);
   const imageInputRef = useRef(null);
   const [showLeaveModal, setShowLeaveModal] = useState(false);
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
@@ -984,28 +985,37 @@ function AddPage() {
               </div>
             </div>
 
-            {/* Imágenes */}
+            {/* Imágenes adjuntas */}
             {!PERSONA_TYPES.includes(form.type) && (
               <div className={`rounded-2xl border p-5 space-y-4 ${d ? "bg-gray-900 border-gray-700" : "bg-white border-gray-200"}`}>
-                <SectionTitle>Imágenes</SectionTitle>
-                <div className="grid grid-cols-3 gap-2">
-                  {(form.imagenes || []).map((url, i) => (
-                    <div key={i} className="relative group aspect-video rounded-lg overflow-hidden">
-                      <img src={url} alt="" className="w-full h-full object-cover" />
-                      <button type="button" onClick={() => set("imagenes", (form.imagenes || []).filter((_, j) => j !== i))}
-                        className="absolute top-1 right-1 w-6 h-6 flex items-center justify-center rounded-full bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity">
-                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/></svg>
-                      </button>
-                    </div>
-                  ))}
-                  <button type="button" onClick={() => imageInputRef.current?.click()} disabled={imageUploading}
-                    className={`aspect-video rounded-lg border-2 border-dashed flex flex-col items-center justify-center gap-1 transition-colors ${imageUploading ? "opacity-50 cursor-not-allowed" : ""} ${d ? "border-gray-700 hover:border-gray-500 text-gray-500 hover:text-gray-400" : "border-gray-200 hover:border-green-400 text-gray-400 hover:text-green-500"}`}>
-                    {imageUploading
-                      ? <svg className="w-5 h-5 animate-spin text-green-500" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>
-                      : <><svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg><span className="text-xs font-medium">Subir</span></>
-                    }
-                  </button>
-                </div>
+                <SectionTitle>Imágenes adjuntas</SectionTitle>
+                {(form.imagenes || []).length > 0 && (
+                  <div className="grid grid-cols-3 gap-2">
+                    {(form.imagenes || []).map((url, i) => (
+                      <div key={i} className="relative group aspect-video rounded-lg overflow-hidden">
+                        <img src={url} alt="" className="w-full h-full object-cover" />
+                        <button type="button" onClick={() => set("imagenes", (form.imagenes || []).filter((_, j) => j !== i))}
+                          className="absolute top-1 right-1 w-6 h-6 flex items-center justify-center rounded-full bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity">
+                          <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/></svg>
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <button type="button" onClick={() => setShowImagePicker(true)} disabled={imageUploading}
+                  className={`flex items-center gap-2 text-sm font-semibold px-4 py-2 ${secBtn(d)} ${imageUploading ? "opacity-50 cursor-not-allowed" : ""}`}>
+                  {imageUploading
+                    ? <div className="w-4 h-4 rounded-full border-2 border-gray-300 border-t-green-500 animate-spin" />
+                    : <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                  }
+                  Añadir imágenes
+                </button>
+                {showImagePicker && (
+                  <ImagePickerModal dark={d} deliverables={deliverables}
+                    onSelect={(url) => { if (!(form.imagenes || []).includes(url)) set("imagenes", [...(form.imagenes || []), url]); setShowImagePicker(false); }}
+                    onUpload={() => { setShowImagePicker(false); setTimeout(() => imageInputRef.current?.click(), 100); }}
+                    onClose={() => setShowImagePicker(false)} />
+                )}
                 <input ref={imageInputRef} type="file" accept="image/*" multiple className="hidden"
                   onChange={async (e) => {
                     const files = Array.from(e.target.files || []);
@@ -1703,6 +1713,7 @@ function DetailPage() {
   const fromLabel = location.state?.fromLabel || null;
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [showViews, setShowViews] = useState(false);
+  const [lightbox, setLightbox] = useState(null);
   const item = deliverables.find(x => toSlug(x.title) === slug);
 
   // Registrar vista — debe ir antes del early return (Rules of Hooks)
@@ -1915,14 +1926,40 @@ function DetailPage() {
             )}
             {item.imagenes && item.imagenes.length > 0 && (
               <div>
-                <h3 className={`text-xl font-bold mb-3 ${d ? "text-gray-100" : "text-gray-900"}`}>Imágenes</h3>
+                <h3 className={`text-xl font-bold mb-3 ${d ? "text-gray-100" : "text-gray-900"}`}>Imágenes adjuntas</h3>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                   {item.imagenes.map((url, i) => (
-                    <a key={i} href={url} target="_blank" rel="noreferrer" className="block rounded-xl overflow-hidden aspect-video group">
+                    <button key={i} onClick={() => setLightbox(i)} className="block rounded-xl overflow-hidden aspect-video group cursor-zoom-in">
                       <img src={url} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200" />
-                    </a>
+                    </button>
                   ))}
                 </div>
+              </div>
+            )}
+            {lightbox !== null && item.imagenes && (
+              <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center" onClick={() => setLightbox(null)}>
+                <button onClick={() => setLightbox(null)} className="absolute top-4 right-4 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors">
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+                {lightbox > 0 && (
+                  <button onClick={e => { e.stopPropagation(); setLightbox(l => l - 1); }} className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors">
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7"/></svg>
+                  </button>
+                )}
+                {lightbox < item.imagenes.length - 1 && (
+                  <button onClick={e => { e.stopPropagation(); setLightbox(l => l + 1); }} className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors">
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7"/></svg>
+                  </button>
+                )}
+                <img src={item.imagenes[lightbox]} alt="" className="max-w-[90vw] max-h-[90vh] object-contain rounded-lg shadow-2xl" onClick={e => e.stopPropagation()} />
+                {item.imagenes.length > 1 && (
+                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5">
+                    {item.imagenes.map((_, i) => (
+                      <button key={i} onClick={e => { e.stopPropagation(); setLightbox(i); }}
+                        className={`w-2 h-2 rounded-full transition-colors ${i === lightbox ? "bg-white" : "bg-white/30 hover:bg-white/60"}`} />
+                    ))}
+                  </div>
+                )}
               </div>
             )}
             {PERSONA_TYPES.includes(item.type) && item.personas && item.personas.length > 0 && (
@@ -2057,6 +2094,50 @@ function PersonaPhotoPickerModal({ dark: d, onSelect, onUpload, onClose }) {
                   </button>
                 );
               })}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ImagePickerModal({ dark: d, deliverables, onSelect, onUpload, onClose }) {
+  const allImages = useMemo(() => {
+    const seen = new Set();
+    const imgs = [];
+    (deliverables || []).forEach(item => {
+      (item.imagenes || []).forEach(url => { if (!seen.has(url)) { seen.add(url); imgs.push(url); } });
+    });
+    return imgs;
+  }, [deliverables]);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={onClose}>
+      <div onClick={e => e.stopPropagation()} className={`w-[560px] max-h-[80vh] rounded-2xl flex flex-col shadow-2xl ${d ? "bg-gray-900 border border-gray-800" : "bg-white border border-gray-200"}`}>
+        <div className={`flex items-center justify-between px-6 py-4 border-b ${d ? "border-gray-800" : "border-gray-200"}`}>
+          <h2 className={`font-semibold text-base ${d ? "text-gray-100" : "text-gray-900"}`}>Imágenes adjuntas</h2>
+          <button onClick={onClose} className={`w-8 h-8 flex items-center justify-center rounded-lg ${d ? "hover:bg-gray-800 text-gray-400" : "hover:bg-gray-100 text-gray-500"}`}>
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <div className={`px-6 py-3 border-b ${d ? "border-gray-800" : "border-gray-200"}`}>
+          <button onClick={onUpload} className={`flex items-center gap-2 text-sm font-semibold px-4 py-2 ${secBtn(d)}`}>
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+            Subir nueva imagen
+          </button>
+        </div>
+        <div className="flex-1 overflow-y-auto p-6">
+          {allImages.length === 0 ? (
+            <p className={`text-sm text-center py-8 ${d ? "text-gray-500" : "text-gray-400"}`}>No hay imágenes subidas aún.</p>
+          ) : (
+            <div className="grid grid-cols-3 gap-3">
+              {allImages.map((url, i) => (
+                <button key={i} onClick={() => onSelect(url)}
+                  className={`rounded-xl overflow-hidden border-2 transition-all hover:border-green-500 aspect-video ${d ? "border-gray-700" : "border-gray-200"}`}>
+                  <img src={url} alt="" className="w-full h-full object-cover" />
+                </button>
+              ))}
             </div>
           )}
         </div>
@@ -2835,6 +2916,7 @@ function EditPage() {
   const [saving, setSaving] = useState(false);
   const [jiraError, setJiraError] = useState("");
   const [imageUploading, setImageUploading] = useState(false);
+  const [showImagePicker, setShowImagePicker] = useState(false);
   const imageInputRef = useRef(null);
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
@@ -3050,28 +3132,37 @@ function EditPage() {
               </div>
             </div>
 
-            {/* Imágenes */}
+            {/* Imágenes adjuntas */}
             {!PERSONA_TYPES.includes(form.type) && (
               <div className={`rounded-2xl border p-5 space-y-4 ${d ? "bg-gray-900 border-gray-700" : "bg-white border-gray-200"}`}>
-                <SectionTitle>Imágenes</SectionTitle>
-                <div className="grid grid-cols-3 gap-2">
-                  {(form.imagenes || []).map((url, i) => (
-                    <div key={i} className="relative group aspect-video rounded-lg overflow-hidden">
-                      <img src={url} alt="" className="w-full h-full object-cover" />
-                      <button type="button" onClick={() => set("imagenes", (form.imagenes || []).filter((_, j) => j !== i))}
-                        className="absolute top-1 right-1 w-6 h-6 flex items-center justify-center rounded-full bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity">
-                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/></svg>
-                      </button>
-                    </div>
-                  ))}
-                  <button type="button" onClick={() => imageInputRef.current?.click()} disabled={imageUploading}
-                    className={`aspect-video rounded-lg border-2 border-dashed flex flex-col items-center justify-center gap-1 transition-colors ${imageUploading ? "opacity-50 cursor-not-allowed" : ""} ${d ? "border-gray-700 hover:border-gray-500 text-gray-500 hover:text-gray-400" : "border-gray-200 hover:border-green-400 text-gray-400 hover:text-green-500"}`}>
-                    {imageUploading
-                      ? <svg className="w-5 h-5 animate-spin text-green-500" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>
-                      : <><svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg><span className="text-xs font-medium">Subir</span></>
-                    }
-                  </button>
-                </div>
+                <SectionTitle>Imágenes adjuntas</SectionTitle>
+                {(form.imagenes || []).length > 0 && (
+                  <div className="grid grid-cols-3 gap-2">
+                    {(form.imagenes || []).map((url, i) => (
+                      <div key={i} className="relative group aspect-video rounded-lg overflow-hidden">
+                        <img src={url} alt="" className="w-full h-full object-cover" />
+                        <button type="button" onClick={() => set("imagenes", (form.imagenes || []).filter((_, j) => j !== i))}
+                          className="absolute top-1 right-1 w-6 h-6 flex items-center justify-center rounded-full bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity">
+                          <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/></svg>
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <button type="button" onClick={() => setShowImagePicker(true)} disabled={imageUploading}
+                  className={`flex items-center gap-2 text-sm font-semibold px-4 py-2 ${secBtn(d)} ${imageUploading ? "opacity-50 cursor-not-allowed" : ""}`}>
+                  {imageUploading
+                    ? <div className="w-4 h-4 rounded-full border-2 border-gray-300 border-t-green-500 animate-spin" />
+                    : <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                  }
+                  Añadir imágenes
+                </button>
+                {showImagePicker && (
+                  <ImagePickerModal dark={d} deliverables={deliverables}
+                    onSelect={(url) => { if (!(form.imagenes || []).includes(url)) set("imagenes", [...(form.imagenes || []), url]); setShowImagePicker(false); }}
+                    onUpload={() => { setShowImagePicker(false); setTimeout(() => imageInputRef.current?.click(), 100); }}
+                    onClose={() => setShowImagePicker(false)} />
+                )}
                 <input ref={imageInputRef} type="file" accept="image/*" multiple className="hidden"
                   onChange={async (e) => {
                     const files = Array.from(e.target.files || []);
