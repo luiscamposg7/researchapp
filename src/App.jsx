@@ -1463,7 +1463,7 @@ function PersonaDetailTabs({ personas, type, dark: d }) {
       {/* Two-column layout */}
       <div className="flex flex-col md:flex-row gap-5">
         {/* LEFT sidebar — below main on mobile */}
-        <div className="w-full md:w-64 md:flex-shrink-0 space-y-5 order-2 md:order-1">
+        <div className="w-full md:w-64 md:flex-shrink-0 space-y-5">
           <SideSection title="Información personal">
             <FieldCard label="Cargo" value={p.cargo} />
             <FieldCard label="Edad" value={p.edad} />
@@ -1490,7 +1490,7 @@ function PersonaDetailTabs({ personas, type, dark: d }) {
         </div>
 
         {/* RIGHT content */}
-        <div className="flex-1 min-w-0 space-y-5 order-1 md:order-2">
+        <div className="flex-1 min-w-0 space-y-5">
           {isBuyer ? (
             <>
               {/* Adquisición del producto */}
