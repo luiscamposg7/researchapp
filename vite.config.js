@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import https from 'https'
+import crypto from 'crypto'
 import dotenv from 'dotenv'
 
 dotenv.config({ path: '.env.local' })
@@ -8,23 +9,12 @@ dotenv.config({ path: '.env.local' })
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-function sbRequest(method, path, body) {
+function httpsRequest(options, body) {
   return new Promise((resolve, reject) => {
-    const url = new URL(SUPABASE_URL + path);
-    const payload = body ? JSON.stringify(body) : null;
-    const options = {
-      hostname: url.hostname,
-      path: url.pathname + url.search,
-      method,
-      headers: {
-        'apikey': SUPABASE_KEY,
-        'Authorization': `Bearer ${SUPABASE_KEY}`,
-        'Content-Type': 'application/json',
-        'Prefer': 'return=minimal',
-        ...(payload ? { 'Content-Length': Buffer.byteLength(payload) } : {}),
-      },
-    };
-    const req = https.request(options, (r) => {
+    const opts = body
+      ? { ...options, headers: { ...options.headers, 'Content-Length': Buffer.byteLength(body) } }
+      : options;
+    const req = https.request(opts, (r) => {
       let data = '';
       r.on('data', c => data += c);
       r.on('end', () => {
@@ -33,9 +23,25 @@ function sbRequest(method, path, body) {
       });
     });
     req.on('error', reject);
-    if (payload) req.write(payload);
+    if (body) req.write(body);
     req.end();
   });
+}
+
+function sbRequest(method, path, body) {
+  const url = new URL(SUPABASE_URL + path);
+  const payload = body ? JSON.stringify(body) : null;
+  return httpsRequest({
+    hostname: url.hostname,
+    path: url.pathname + url.search,
+    method,
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Authorization': `Bearer ${SUPABASE_KEY}`,
+      'Content-Type': 'application/json',
+      'Prefer': 'return=minimal',
+    },
+  }, payload);
 }
 
 function localDb() {
@@ -77,6 +83,29 @@ function localDb() {
             if (title) return res.end(JSON.stringify({ title }));
           }
           return res.end(JSON.stringify({ title: null }));
+        }
+
+        // Cloudinary delete
+        if (req.url === '/api/cloudinary/delete' && req.method === 'POST') {
+          res.setHeader('Content-Type', 'application/json');
+          const { public_id } = JSON.parse(await getBody(req));
+          if (!public_id) { res.writeHead(400); return res.end(JSON.stringify({ error: 'Missing public_id' })); }
+          const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
+          const apiKey    = process.env.CLOUDINARY_API_KEY;
+          const apiSecret = process.env.CLOUDINARY_API_SECRET;
+          const timestamp = Math.round(Date.now() / 1000);
+          const signature = crypto.createHash('sha1')
+            .update(`public_id=${public_id}&timestamp=${timestamp}${apiSecret}`)
+            .digest('hex');
+          const formBody = `public_id=${encodeURIComponent(public_id)}&timestamp=${timestamp}&api_key=${apiKey}&signature=${signature}`;
+          const { body: result } = await httpsRequest({
+            hostname: 'api.cloudinary.com',
+            path: `/v1_1/${cloudName}/image/destroy`,
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          }, formBody);
+          if (result.result !== 'ok') { res.writeHead(400); return res.end(JSON.stringify({ error: result.result })); }
+          return res.end(JSON.stringify({ ok: true }));
         }
 
         if (!req.url.startsWith('/api/deliverables')) return next();

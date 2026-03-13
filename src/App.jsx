@@ -2237,7 +2237,7 @@ function ImagePickerModal({ dark: d, deliverables, onSelect, onUpload, onDelete,
         message="¿Estás seguro de que quieres eliminar esta imagen? Se quitará de todos los research."
         confirmLabel="Sí, eliminar"
         danger
-        onConfirm={() => { handleDelete(confirmTarget); setConfirmTarget(null); }}
+        onConfirm={async () => { await handleDelete(confirmTarget); setConfirmTarget(null); }}
         onCancel={() => setConfirmTarget(null)}
       />
     )}
