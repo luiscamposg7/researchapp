@@ -180,6 +180,15 @@ async function uploadPersonaPhoto(file) {
   const { data } = supabase.storage.from("profile-pic-users").getPublicUrl(fileName);
   return data?.publicUrl;
 }
+async function uploadToCloudinary(file) {
+  const fd = new FormData();
+  fd.append("file", file);
+  fd.append("upload_preset", "Subida img");
+  const res = await fetch("https://api.cloudinary.com/v1_1/dswxl3d4l/image/upload", { method: "POST", body: fd });
+  if (!res.ok) throw new Error("Error al subir imagen a Cloudinary");
+  const data = await res.json();
+  return data.secure_url;
+}
 const STATUSES = ["Borrador", "Publicado"];
 const TEAM_MEMBERS = ["Ana R.", "Sofia K.", "Luis M.", "Carlos T."];
 
@@ -607,6 +616,7 @@ function AddPage() {
       objetivo: "", usuario: "", hallazgos: "",
       status: "Borrador", archivo: "", archivoUrl: "", reunionUrl: "",
       date: new Date().toISOString().slice(0, 10),
+      imagenes: [],
       personas,
     };
   });
@@ -617,6 +627,8 @@ function AddPage() {
   const [jiraLoading, setJiraLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [jiraError, setJiraError] = useState("");
+  const [imageUploading, setImageUploading] = useState(false);
+  const imageInputRef = useRef(null);
   const [showLeaveModal, setShowLeaveModal] = useState(false);
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
   const setType = (t) => {
@@ -971,6 +983,45 @@ function AddPage() {
                 )}
               </div>
             </div>
+
+            {/* Imágenes */}
+            {!PERSONA_TYPES.includes(form.type) && (
+              <div className={`rounded-2xl border p-5 space-y-4 ${d ? "bg-gray-900 border-gray-700" : "bg-white border-gray-200"}`}>
+                <SectionTitle>Imágenes</SectionTitle>
+                <div className="grid grid-cols-3 gap-2">
+                  {(form.imagenes || []).map((url, i) => (
+                    <div key={i} className="relative group aspect-video rounded-lg overflow-hidden">
+                      <img src={url} alt="" className="w-full h-full object-cover" />
+                      <button type="button" onClick={() => set("imagenes", (form.imagenes || []).filter((_, j) => j !== i))}
+                        className="absolute top-1 right-1 w-6 h-6 flex items-center justify-center rounded-full bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity">
+                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/></svg>
+                      </button>
+                    </div>
+                  ))}
+                  <button type="button" onClick={() => imageInputRef.current?.click()} disabled={imageUploading}
+                    className={`aspect-video rounded-lg border-2 border-dashed flex flex-col items-center justify-center gap-1 transition-colors ${imageUploading ? "opacity-50 cursor-not-allowed" : ""} ${d ? "border-gray-700 hover:border-gray-500 text-gray-500 hover:text-gray-400" : "border-gray-200 hover:border-green-400 text-gray-400 hover:text-green-500"}`}>
+                    {imageUploading
+                      ? <svg className="w-5 h-5 animate-spin text-green-500" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>
+                      : <><svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg><span className="text-xs font-medium">Subir</span></>
+                    }
+                  </button>
+                </div>
+                <input ref={imageInputRef} type="file" accept="image/*" multiple className="hidden"
+                  onChange={async (e) => {
+                    const files = Array.from(e.target.files || []);
+                    if (!files.length) return;
+                    setImageUploading(true);
+                    try {
+                      const urls = await Promise.all(files.map(uploadToCloudinary));
+                      set("imagenes", [...(form.imagenes || []), ...urls]);
+                    } catch (err) {
+                      showToast({ title: "Error al subir imagen", subtitle: err?.message || "Inténtalo de nuevo." }, "error");
+                    }
+                    setImageUploading(false);
+                    e.target.value = "";
+                  }} />
+              </div>
+            )}
 
             {/* Personas */}
             {PERSONA_TYPES.includes(form.type) && form.personas.length > 0 && (
@@ -1860,6 +1911,18 @@ function DetailPage() {
               <div>
                 <h3 className={`text-xl font-bold mb-2 ${d ? "text-gray-100" : "text-gray-900"}`}>Hallazgos y conclusiones</h3>
                 <div className={`rich-content text-base leading-relaxed ${d ? "text-gray-300" : "text-gray-600"}`} dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.hallazgos) }} />
+              </div>
+            )}
+            {item.imagenes && item.imagenes.length > 0 && (
+              <div>
+                <h3 className={`text-xl font-bold mb-3 ${d ? "text-gray-100" : "text-gray-900"}`}>Imágenes</h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {item.imagenes.map((url, i) => (
+                    <a key={i} href={url} target="_blank" rel="noreferrer" className="block rounded-xl overflow-hidden aspect-video group">
+                      <img src={url} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200" />
+                    </a>
+                  ))}
+                </div>
               </div>
             )}
             {PERSONA_TYPES.includes(item.type) && item.personas && item.personas.length > 0 && (
@@ -2771,6 +2834,8 @@ function EditPage() {
   const [jiraLoading, setJiraLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [jiraError, setJiraError] = useState("");
+  const [imageUploading, setImageUploading] = useState(false);
+  const imageInputRef = useRef(null);
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
   const setType = (t) => {
@@ -2984,6 +3049,45 @@ function EditPage() {
                 )}
               </div>
             </div>
+
+            {/* Imágenes */}
+            {!PERSONA_TYPES.includes(form.type) && (
+              <div className={`rounded-2xl border p-5 space-y-4 ${d ? "bg-gray-900 border-gray-700" : "bg-white border-gray-200"}`}>
+                <SectionTitle>Imágenes</SectionTitle>
+                <div className="grid grid-cols-3 gap-2">
+                  {(form.imagenes || []).map((url, i) => (
+                    <div key={i} className="relative group aspect-video rounded-lg overflow-hidden">
+                      <img src={url} alt="" className="w-full h-full object-cover" />
+                      <button type="button" onClick={() => set("imagenes", (form.imagenes || []).filter((_, j) => j !== i))}
+                        className="absolute top-1 right-1 w-6 h-6 flex items-center justify-center rounded-full bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity">
+                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/></svg>
+                      </button>
+                    </div>
+                  ))}
+                  <button type="button" onClick={() => imageInputRef.current?.click()} disabled={imageUploading}
+                    className={`aspect-video rounded-lg border-2 border-dashed flex flex-col items-center justify-center gap-1 transition-colors ${imageUploading ? "opacity-50 cursor-not-allowed" : ""} ${d ? "border-gray-700 hover:border-gray-500 text-gray-500 hover:text-gray-400" : "border-gray-200 hover:border-green-400 text-gray-400 hover:text-green-500"}`}>
+                    {imageUploading
+                      ? <svg className="w-5 h-5 animate-spin text-green-500" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>
+                      : <><svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg><span className="text-xs font-medium">Subir</span></>
+                    }
+                  </button>
+                </div>
+                <input ref={imageInputRef} type="file" accept="image/*" multiple className="hidden"
+                  onChange={async (e) => {
+                    const files = Array.from(e.target.files || []);
+                    if (!files.length) return;
+                    setImageUploading(true);
+                    try {
+                      const urls = await Promise.all(files.map(uploadToCloudinary));
+                      set("imagenes", [...(form.imagenes || []), ...urls]);
+                    } catch (err) {
+                      showToast({ title: "Error al subir imagen", subtitle: err?.message || "Inténtalo de nuevo." }, "error");
+                    }
+                    setImageUploading(false);
+                    e.target.value = "";
+                  }} />
+              </div>
+            )}
 
             {/* Personas */}
             {PERSONA_TYPES.includes(form.type) && form.personas && form.personas.length > 0 && (
