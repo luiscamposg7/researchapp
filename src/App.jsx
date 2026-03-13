@@ -2341,6 +2341,78 @@ function HomePage() {
         <div className={`rounded-2xl p-4 md:p-6 mb-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 md:gap-6 ${d ? "bg-gray-900 border border-gray-800" : "bg-white border border-gray-200"}`}
           style={{ boxShadow: d ? "0 2px 12px rgba(0,0,0,0.3)" : "0 2px 12px rgba(0,0,0,0.06)" }}>
           <div className="flex items-center gap-4">
+            {/* Researcher walking animation */}
+            <div className="flex-shrink-0 w-16 h-16 relative overflow-hidden">
+              <style>{`
+                @keyframes researcher-walk {
+                  0%   { transform: translateX(-18px); }
+                  100% { transform: translateX(18px); }
+                }
+                @keyframes researcher-lupa {
+                  0%,100% { transform: rotate(-12deg); }
+                  50%      { transform: rotate(10deg); }
+                }
+                @keyframes researcher-leg-f {
+                  0%,100% { transform: rotate(28deg); }
+                  50%      { transform: rotate(-28deg); }
+                }
+                @keyframes researcher-leg-b {
+                  0%,100% { transform: rotate(-28deg); }
+                  50%      { transform: rotate(28deg); }
+                }
+                @keyframes researcher-arm-f {
+                  0%,100% { transform: rotate(-20deg); }
+                  50%      { transform: rotate(20deg); }
+                }
+                @keyframes researcher-arm-b {
+                  0%,100% { transform: rotate(20deg); }
+                  50%      { transform: rotate(-20deg); }
+                }
+                @keyframes researcher-body-bob {
+                  0%,100% { transform: translateY(0px); }
+                  50%      { transform: translateY(-1.5px); }
+                }
+              `}</style>
+              <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"
+                style={{ animation: "researcher-walk 0.55s ease-in-out infinite alternate", position: "absolute", top: 0, left: 0, width: "100%", height: "100%" }}>
+                {/* Body group — bobs up/down */}
+                <g style={{ transformOrigin: "32px 36px", animation: "researcher-body-bob 0.55s ease-in-out infinite" }}>
+                  {/* Back leg */}
+                  <g style={{ transformOrigin: "30px 41px", animation: "researcher-leg-b 0.55s ease-in-out infinite" }}>
+                    <rect x="28" y="41" width="4" height="10" rx="2" fill="#00B369" />
+                    <rect x="26" y="49" width="6" height="3" rx="1.5" fill="#374151" />
+                  </g>
+                  {/* Front leg */}
+                  <g style={{ transformOrigin: "34px 41px", animation: "researcher-leg-f 0.55s ease-in-out infinite" }}>
+                    <rect x="32" y="41" width="4" height="10" rx="2" fill="#00975B" />
+                    <rect x="32" y="49" width="6" height="3" rx="1.5" fill="#374151" />
+                  </g>
+                  {/* Torso */}
+                  <rect x="26" y="30" width="12" height="13" rx="4" fill="#00B369" />
+                  {/* Back arm */}
+                  <g style={{ transformOrigin: "28px 33px", animation: "researcher-arm-b 0.55s ease-in-out infinite" }}>
+                    <rect x="22" y="31" width="8" height="3.5" rx="1.75" fill="#00975B" />
+                  </g>
+                  {/* Front arm + lupa */}
+                  <g style={{ transformOrigin: "36px 33px", animation: "researcher-arm-f 0.55s ease-in-out infinite" }}>
+                    <rect x="34" y="31" width="8" height="3.5" rx="1.75" fill="#00B369" />
+                    {/* Lupa handle */}
+                    <g style={{ transformOrigin: "42px 34.75px", animation: "researcher-lupa 1.1s ease-in-out infinite" }}>
+                      <rect x="46" y="33" width="5" height="2" rx="1" fill="#6B7280" transform="rotate(35 46 34)" />
+                      <circle cx="43" cy="31" r="4" stroke="#00B369" strokeWidth="2" fill="none" />
+                      <line x1="44.8" y1="28.8" x2="46.5" y2="27" stroke="#00B369" strokeWidth="1.5" strokeLinecap="round" />
+                    </g>
+                  </g>
+                  {/* Head */}
+                  <circle cx="32" cy="25" r="6" fill="#FBBF24" />
+                  {/* Eyes */}
+                  <circle cx="30.5" cy="24.5" r="0.8" fill="#1F2937" />
+                  <circle cx="33.5" cy="24.5" r="0.8" fill="#1F2937" />
+                  {/* Smile */}
+                  <path d="M30.5 27 Q32 28.5 33.5 27" stroke="#1F2937" strokeWidth="0.8" strokeLinecap="round" fill="none" />
+                </g>
+              </svg>
+            </div>
             <div>
               <p className={`font-bold text-base ${d ? "text-gray-100" : "text-gray-900"}`}>¿Necesitas un research?</p>
               <p className={`text-sm ${d ? "text-gray-400" : "text-gray-500"}`}>Crea una solicitud directamente en Jira y el equipo la tendrá en el radar.</p>
