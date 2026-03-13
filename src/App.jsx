@@ -2341,75 +2341,84 @@ function HomePage() {
         <div className={`rounded-2xl p-4 md:p-6 mb-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 md:gap-6 ${d ? "bg-gray-900 border border-gray-800" : "bg-white border border-gray-200"}`}
           style={{ boxShadow: d ? "0 2px 12px rgba(0,0,0,0.3)" : "0 2px 12px rgba(0,0,0,0.06)" }}>
           <div className="flex items-center gap-4">
-            {/* Researcher walking animation */}
-            <div className="flex-shrink-0 w-16 h-16 relative overflow-hidden">
+            {/* Inspector Clouseau animation */}
+            <div className="flex-shrink-0 w-20 h-20 relative">
               <style>{`
-                @keyframes researcher-walk {
-                  0%   { transform: translateX(-18px); }
-                  100% { transform: translateX(18px); }
-                }
-                @keyframes researcher-lupa {
-                  0%,100% { transform: rotate(-12deg); }
-                  50%      { transform: rotate(10deg); }
-                }
-                @keyframes researcher-leg-f {
-                  0%,100% { transform: rotate(28deg); }
-                  50%      { transform: rotate(-28deg); }
-                }
-                @keyframes researcher-leg-b {
-                  0%,100% { transform: rotate(-28deg); }
-                  50%      { transform: rotate(28deg); }
-                }
-                @keyframes researcher-arm-f {
-                  0%,100% { transform: rotate(-20deg); }
-                  50%      { transform: rotate(20deg); }
-                }
-                @keyframes researcher-arm-b {
-                  0%,100% { transform: rotate(20deg); }
-                  50%      { transform: rotate(-20deg); }
-                }
-                @keyframes researcher-body-bob {
-                  0%,100% { transform: translateY(0px); }
-                  50%      { transform: translateY(-1.5px); }
-                }
+                @keyframes cl-walk { 0%{transform:translateX(-8px)} 100%{transform:translateX(8px)} }
+                @keyframes cl-bob  { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-2px)} }
+                @keyframes cl-ll   { 0%,100%{transform:rotate(26deg)} 50%{transform:rotate(-26deg)} }
+                @keyframes cl-lr   { 0%,100%{transform:rotate(-26deg)} 50%{transform:rotate(26deg)} }
+                @keyframes cl-al   { 0%,100%{transform:rotate(18deg)} 50%{transform:rotate(-18deg)} }
+                @keyframes cl-lupa { 0%,100%{transform:rotate(-7deg)} 50%{transform:rotate(7deg)} }
               `}</style>
-              <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"
-                style={{ animation: "researcher-walk 0.55s ease-in-out infinite alternate", position: "absolute", top: 0, left: 0, width: "100%", height: "100%" }}>
-                {/* Body group — bobs up/down */}
-                <g style={{ transformOrigin: "32px 36px", animation: "researcher-body-bob 0.55s ease-in-out infinite" }}>
-                  {/* Back leg */}
-                  <g style={{ transformOrigin: "30px 41px", animation: "researcher-leg-b 0.55s ease-in-out infinite" }}>
-                    <rect x="28" y="41" width="4" height="10" rx="2" fill="#00B369" />
-                    <rect x="26" y="49" width="6" height="3" rx="1.5" fill="#374151" />
+              <svg viewBox="0 0 72 80" fill="none" xmlns="http://www.w3.org/2000/svg"
+                className="absolute inset-0 w-full h-full"
+                style={{ animation: "cl-walk 0.5s linear infinite alternate" }}>
+                <g style={{ transformOrigin: "30px 50px", animation: "cl-bob 0.5s ease-in-out infinite" }}>
+
+                  {/* Left arm behind body */}
+                  <g style={{ transformOrigin: "22px 38px", animation: "cl-al 0.5s ease-in-out infinite" }}>
+                    <path d="M22 36 Q17 44 15 50" stroke="#C8B48A" strokeWidth="5" strokeLinecap="round" fill="none"/>
                   </g>
-                  {/* Front leg */}
-                  <g style={{ transformOrigin: "34px 41px", animation: "researcher-leg-f 0.55s ease-in-out infinite" }}>
-                    <rect x="32" y="41" width="4" height="10" rx="2" fill="#00975B" />
-                    <rect x="32" y="49" width="6" height="3" rx="1.5" fill="#374151" />
+
+                  {/* Left leg */}
+                  <g style={{ transformOrigin: "24px 56px", animation: "cl-ll 0.5s ease-in-out infinite" }}>
+                    <path d="M24 54 L21 68" stroke="#3B2E1E" strokeWidth="6" strokeLinecap="round"/>
+                    <ellipse cx="19.5" cy="69.5" rx="6" ry="2.5" fill="#1F2937"/>
                   </g>
-                  {/* Torso */}
-                  <rect x="26" y="30" width="12" height="13" rx="4" fill="#00B369" />
-                  {/* Back arm */}
-                  <g style={{ transformOrigin: "28px 33px", animation: "researcher-arm-b 0.55s ease-in-out infinite" }}>
-                    <rect x="22" y="31" width="8" height="3.5" rx="1.75" fill="#00975B" />
+                  {/* Right leg */}
+                  <g style={{ transformOrigin: "36px 56px", animation: "cl-lr 0.5s ease-in-out infinite" }}>
+                    <path d="M36 54 L39 68" stroke="#3B2E1E" strokeWidth="6" strokeLinecap="round"/>
+                    <ellipse cx="40.5" cy="69.5" rx="6" ry="2.5" fill="#1F2937"/>
                   </g>
-                  {/* Front arm + lupa */}
-                  <g style={{ transformOrigin: "36px 33px", animation: "researcher-arm-f 0.55s ease-in-out infinite" }}>
-                    <rect x="34" y="31" width="8" height="3.5" rx="1.75" fill="#00B369" />
-                    {/* Lupa handle */}
-                    <g style={{ transformOrigin: "42px 34.75px", animation: "researcher-lupa 1.1s ease-in-out infinite" }}>
-                      <rect x="46" y="33" width="5" height="2" rx="1" fill="#6B7280" transform="rotate(35 46 34)" />
-                      <circle cx="43" cy="31" r="4" stroke="#00B369" strokeWidth="2" fill="none" />
-                      <line x1="44.8" y1="28.8" x2="46.5" y2="27" stroke="#00B369" strokeWidth="1.5" strokeLinecap="round" />
-                    </g>
+
+                  {/* Trenchcoat */}
+                  <path d="M19 34 L14 58 L47 58 L42 34 Z" fill="#C8B48A"/>
+                  {/* Left lapel */}
+                  <path d="M28 34 L25 45 L30 40 Z" fill="#B8A47A"/>
+                  {/* Right lapel */}
+                  <path d="M32 34 L35 45 L30 40 Z" fill="#B8A47A"/>
+                  {/* Center line */}
+                  <line x1="30" y1="42" x2="30" y2="58" stroke="#B0A070" strokeWidth="1"/>
+                  {/* Belt */}
+                  <rect x="15" y="47" width="31" height="3.5" rx="1.75" fill="#8B6B3A"/>
+                  {/* Belt buckle */}
+                  <rect x="26.5" y="47.5" width="7" height="2.5" rx="1" fill="#C8A030"/>
+
+                  {/* Right arm + magnifying glass */}
+                  <g style={{ transformOrigin: "40px 37px", animation: "cl-lupa 0.5s ease-in-out infinite" }}>
+                    <path d="M40 36 Q46 28 50 22" stroke="#C8B48A" strokeWidth="5" strokeLinecap="round" fill="none"/>
+                    {/* Magnifying glass frame */}
+                    <circle cx="53" cy="17" r="8.5" stroke="#9CA3AF" strokeWidth="2.5" fill="rgba(186,230,253,0.15)"/>
+                    {/* Lens shine */}
+                    <path d="M48.5 13 Q51 11 54 13" stroke="white" strokeWidth="1.2" strokeLinecap="round" opacity="0.55"/>
+                    {/* Handle */}
+                    <line x1="59.5" y1="23.5" x2="64" y2="28" stroke="#6B7280" strokeWidth="3" strokeLinecap="round"/>
                   </g>
+
+                  {/* Neck */}
+                  <rect x="27" y="30" width="6" height="5" rx="2" fill="#F0C070"/>
                   {/* Head */}
-                  <circle cx="32" cy="25" r="6" fill="#FBBF24" />
-                  {/* Eyes */}
-                  <circle cx="30.5" cy="24.5" r="0.8" fill="#1F2937" />
-                  <circle cx="33.5" cy="24.5" r="0.8" fill="#1F2937" />
-                  {/* Smile */}
-                  <path d="M30.5 27 Q32 28.5 33.5 27" stroke="#1F2937" strokeWidth="0.8" strokeLinecap="round" fill="none" />
+                  <circle cx="30" cy="24" r="8.5" fill="#F0C070"/>
+                  {/* Eyes — looking right toward lupa */}
+                  <circle cx="27.5" cy="23" r="1.3" fill="#1F2937"/>
+                  <circle cx="33" cy="23" r="1.3" fill="#1F2937"/>
+                  <circle cx="28" cy="23" r="0.5" fill="white" opacity="0.6"/>
+                  <circle cx="33.5" cy="23" r="0.5" fill="white" opacity="0.6"/>
+                  {/* Eyebrows — furrowed, detective concentration */}
+                  <path d="M25.5 20 Q27.5 18.5 29.5 20" stroke="#7A4E2A" strokeWidth="1.4" fill="none" strokeLinecap="round"/>
+                  <path d="M30.5 20 Q32.5 18.5 35 20" stroke="#7A4E2A" strokeWidth="1.4" fill="none" strokeLinecap="round"/>
+                  {/* Clouseau mustache */}
+                  <path d="M26.5 26.5 Q28.5 28.5 30 26.5" stroke="#5C3A1E" strokeWidth="1.6" fill="none" strokeLinecap="round"/>
+                  <path d="M30 26.5 Q31.5 28.5 33.5 26.5" stroke="#5C3A1E" strokeWidth="1.6" fill="none" strokeLinecap="round"/>
+
+                  {/* Fedora brim */}
+                  <ellipse cx="30" cy="16.5" rx="13" ry="2.5" fill="#2D2010"/>
+                  {/* Fedora dome */}
+                  <path d="M19.5 17 Q19.5 7 30 7 Q40.5 7 40.5 17 Z" fill="#2D2010"/>
+                  {/* Hat band */}
+                  <path d="M20 16.5 Q30 14.5 40 16.5" stroke="#9B6E20" strokeWidth="1.8" fill="none"/>
+
                 </g>
               </svg>
             </div>
