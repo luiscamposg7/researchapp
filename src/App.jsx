@@ -470,7 +470,7 @@ function SettingsModal({ onClose, dark }) {
     supabase.auth.getUser().then(({ data: { user } }) => {
       supabase.rpc("get_users_with_roles").then(({ data }) => {
         const list = (data || [])
-          .filter(u => !u.email?.endsWith("@gmail.com"))
+          .filter(u => u.email?.endsWith("@prestamype.com"))
           .sort((a, b) => {
             if (a.user_id === user?.id) return -1;
             if (b.user_id === user?.id) return 1;
