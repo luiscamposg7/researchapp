@@ -1000,9 +1000,9 @@ function AddPage() {
               <div className={`rounded-2xl border p-5 space-y-4 ${d ? "bg-gray-900 border-gray-700" : "bg-white border-gray-200"}`}>
                 <SectionTitle>Imágenes adjuntas</SectionTitle>
                 {(form.imagenes || []).length > 0 && (
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid grid-cols-4 gap-2">
                     {(form.imagenes || []).map((url, i) => (
-                      <div key={i} className="relative group aspect-video rounded-lg overflow-hidden cursor-pointer" onClick={() => setShowImagePicker(true)}>
+                      <div key={i} className="relative group aspect-square rounded-lg overflow-hidden cursor-pointer" onClick={() => setShowImagePicker(true)}>
                         <img src={url} alt="" className="w-full h-full object-cover" />
                         <button type="button" onClick={e => { e.stopPropagation(); set("imagenes", (form.imagenes || []).filter((_, j) => j !== i)); }}
                           className="absolute top-1 right-1 w-6 h-6 flex items-center justify-center rounded-lg bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity">
@@ -3233,9 +3233,9 @@ function EditPage() {
               <div className={`rounded-2xl border p-5 space-y-4 ${d ? "bg-gray-900 border-gray-700" : "bg-white border-gray-200"}`}>
                 <SectionTitle>Imágenes adjuntas</SectionTitle>
                 {(form.imagenes || []).length > 0 && (
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid grid-cols-4 gap-2">
                     {(form.imagenes || []).map((url, i) => (
-                      <div key={i} className="relative group aspect-video rounded-lg overflow-hidden cursor-pointer" onClick={() => setShowImagePicker(true)}>
+                      <div key={i} className="relative group aspect-square rounded-lg overflow-hidden cursor-pointer" onClick={() => setShowImagePicker(true)}>
                         <img src={url} alt="" className="w-full h-full object-cover" />
                         <button type="button" onClick={e => { e.stopPropagation(); set("imagenes", (form.imagenes || []).filter((_, j) => j !== i)); }}
                           className="absolute top-1 right-1 w-6 h-6 flex items-center justify-center rounded-lg bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity">
