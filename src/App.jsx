@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback, createContext, useContext } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo, useId, createContext, useContext } from "react";
 import { Routes, Route, useNavigate, useParams, useLocation } from "react-router-dom";
 import { supabase } from "./supabase";
 
@@ -113,7 +113,7 @@ const JIRA_STATUSES = ["EN CURSO", "FINALIZADO"];
 const PRODUCT_COLORS = {
   "PGH": "#00CB75",
   "Factoring": "#3DD68C",
-  "Gestora": "#009A58",
+  "Gestora": "#5EBDB3",
   "Tandia": "#2F6DEA",
   "Recadia": "#2D8E5F",
   "Cambio Seguro": "#7C3AED",
@@ -1221,6 +1221,99 @@ function ProductCard({ product: p, deliverables, coverUrl, dark: d, onClick }) {
 }
 
 
+function HeroGrid({ dark: d }) {
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+    const SIZE = 64;
+    const DURATION = 5.5; // seconds per ripple
+    const PAUSE    = 1.2; // gap between ripples
+    let rafId, timeoutId;
+    let ripple = null;
+
+    const resize = () => {
+      canvas.width  = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
+    };
+    resize();
+    window.addEventListener("resize", resize);
+
+    const spawnRipple = () => {
+      const COLS = Math.ceil(canvas.width  / SIZE);
+      const ROWS = Math.ceil(canvas.height / SIZE);
+      ripple = {
+        col: Math.floor(Math.random() * COLS),
+        row: Math.floor(Math.random() * ROWS),
+        start: performance.now(),
+      };
+      timeoutId = setTimeout(spawnRipple, (DURATION + PAUSE) * 1000);
+    };
+    spawnRipple();
+
+    const [cr, cg, cb] = d ? [0, 210, 115] : [0, 179, 105];
+
+    const draw = (now) => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const COLS = Math.ceil(canvas.width  / SIZE);
+      const ROWS = Math.ceil(canvas.height / SIZE);
+
+      // Grid lines
+      ctx.strokeStyle = `rgba(${cr},${cg},${cb},${d ? 0.06 : 0.11})`;
+      ctx.lineWidth = 1;
+      for (let c = 1; c < COLS; c++) {
+        ctx.beginPath(); ctx.moveTo(c * SIZE, 0); ctx.lineTo(c * SIZE, canvas.height); ctx.stroke();
+      }
+      for (let r = 1; r < ROWS; r++) {
+        ctx.beginPath(); ctx.moveTo(0, r * SIZE); ctx.lineTo(canvas.width, r * SIZE); ctx.stroke();
+      }
+
+      if (ripple) {
+        const elapsed = (now - ripple.start) / 1000;
+        const wave  = elapsed * 2.0;
+        const fade  = Math.max(0, 1 - elapsed / DURATION);
+
+        for (let row = 0; row < ROWS; row++) {
+          for (let col = 0; col < COLS; col++) {
+            const dist = Math.sqrt((col - ripple.col) ** 2 + (row - ripple.row) ** 2);
+
+            // Ripple ring
+            const diff = Math.abs(dist - wave);
+            if (diff < 1.1) {
+              const ring = (1 - diff / 1.1) ** 2;
+              const a = ring * fade * (d ? 0.11 : 0.16);
+              ctx.fillStyle = `rgba(${cr},${cg},${cb},${a})`;
+              ctx.fillRect(col * SIZE + 1, row * SIZE + 1, SIZE - 1, SIZE - 1);
+            }
+
+            // Ambient occlusion — interior del anillo levemente oscurecido
+            if (dist < wave - 0.5 && dist > 0.5) {
+              const depth  = Math.min(1, dist / wave);        // 0=centro, 1=borde
+              const aoBase = (1 - depth) * 0.5 + 0.5 * depth; // más oscuro cerca del centro
+              const ao = (1 - aoBase) * fade * (d ? 0.06 : 0.04);
+              ctx.fillStyle = `rgba(0,0,0,${ao})`;
+              ctx.fillRect(col * SIZE + 1, row * SIZE + 1, SIZE - 1, SIZE - 1);
+            }
+          }
+        }
+      }
+
+      rafId = requestAnimationFrame(draw);
+    };
+
+    rafId = requestAnimationFrame(draw);
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      clearTimeout(timeoutId);
+      window.removeEventListener("resize", resize);
+    };
+  }, [d]);
+
+  return <canvas ref={canvasRef} className="absolute inset-0 w-full h-full pointer-events-none" />;
+}
+
 function ProductCardSkeleton({ dark: d }) {
   const b = d ? "bg-gray-800" : "bg-gray-200";
   return (
@@ -1236,7 +1329,7 @@ function ProductCardSkeleton({ dark: d }) {
   );
 }
 
-function Card({ item, dark }) {
+function Card({ item, dark, fromLabel }) {
   const navigate = useNavigate();
   const d = dark;
   const { editors } = useApp();
@@ -1244,15 +1337,10 @@ function Card({ item, dark }) {
   const pc = productTag ? (PRODUCT_COLORS[productTag] || "#00B369") : null;
 
   return (
-    <div onClick={() => navigate(`/research/${toSlug(item.title)}`)} className={`rounded-2xl border p-6 cursor-pointer group flex flex-col ${d ? "bg-gray-900 border-gray-700 hover:border-green-400 hover:shadow-lg hover:shadow-black/30" : "bg-white border-gray-200 hover:shadow-md hover:border-green-400/40"}`}>
+    <div onClick={() => navigate(`/research/${toSlug(item.title)}`, { state: { fromLabel } })} className={`rounded-2xl border p-6 cursor-pointer group flex flex-col ${d ? "bg-gray-900 border-gray-700 hover:border-green-400 hover:shadow-lg hover:shadow-black/30" : "bg-white border-gray-200 hover:shadow-md hover:border-green-400/40"}`}>
       <div className="flex items-start justify-between mb-4">
         <Badge label={item.type} typeColor={item.typeColor} dark={d} />
-        {productTag && pc && (
-          <span className={`text-sm rounded-lg px-2.5 py-1 border flex items-center gap-1.5 ${d ? "text-gray-300 bg-gray-800 border-gray-700" : "text-gray-600 bg-gray-50 border-gray-200"}`}>
-            <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: pc }} />
-            {productTag}
-          </span>
-        )}
+        <span className={`text-sm ${d ? "text-gray-500" : "text-gray-400"}`}>{item.date}</span>
       </div>
       <h3 className={`font-semibold text-lg leading-snug mb-3 ${d ? "text-gray-100 group-hover:text-green-600" : "text-gray-900 group-hover:text-green-700"}`}>{item.title}</h3>
       <p className={`text-base leading-relaxed mb-4 line-clamp-2 flex-1 ${d ? "text-gray-400" : "text-gray-500"}`}>{item.descripcion || stripHtml(item.objetivo)}</p>
@@ -1271,7 +1359,12 @@ function Card({ item, dark }) {
             <span className={`text-sm ${d ? "text-gray-500" : "text-gray-400"}`}>Sin asignar</span>
           </div>
         ); })()}
-        <span className={`text-sm ${d ? "text-gray-500" : "text-gray-400"}`}>{item.date}</span>
+        {productTag && pc && (
+          <span className={`text-sm rounded-lg px-2.5 py-1 border flex items-center gap-1.5 ${d ? "text-gray-300 bg-gray-800 border-gray-700" : "text-gray-600 bg-gray-50 border-gray-200"}`}>
+            <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: pc }} />
+            {productTag}
+          </span>
+        )}
       </div>
     </div>
   );
@@ -1551,8 +1644,10 @@ function ViewsModal({ researchId, dark: d, onClose }) {
 // ── DETAIL PAGE ──
 function DetailPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { id: slug } = useParams();
   const { dark: d, deliverables, handleDelete, isEditor, editors } = useApp();
+  const fromLabel = location.state?.fromLabel || null;
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [showViews, setShowViews] = useState(false);
   const item = deliverables.find(x => toSlug(x.title) === slug);
@@ -1594,11 +1689,11 @@ function DetailPage() {
       )}
       {/* Top bar */}
       <div className={`border-b px-4 py-3 md:px-8 md:py-4 sticky top-0 z-10 flex items-center justify-between ${d ? "bg-gray-950 border-gray-800" : "bg-gray-50 border-gray-200"}`}>
-        <button onClick={() => navigate("/research")} className={`flex items-center gap-2 text-sm font-semibold ${d ? "text-gray-400 hover:text-gray-200" : "text-gray-500 hover:text-gray-900"}`}>
+        <button onClick={() => window.history.length > 1 ? navigate(-1) : navigate("/research")} className={`flex items-center gap-2 text-sm font-semibold ${d ? "text-gray-400 hover:text-gray-200" : "text-gray-500 hover:text-gray-900"}`}>
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
-          <span className="hidden sm:inline">Volver a todos los research</span>
+          <span className="hidden sm:inline">{fromLabel ? `Volver a ${fromLabel}` : "Volver"}</span>
           <span className="sm:hidden">Volver</span>
         </button>
         <div className="flex gap-2">
@@ -1645,7 +1740,7 @@ function DetailPage() {
         {/* All entregables stacked */}
         <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
           {/* LEFT — file + metadata */}
-          <div className="w-full lg:w-72 lg:flex-shrink-0 space-y-5">
+          <div className="w-full lg:w-80 lg:flex-shrink-0 space-y-5">
             {(() => {
               const driveId = getDriveId(item.archivoUrl || "");
               const thumbUrl = driveId ? `https://drive.google.com/thumbnail?id=${driveId}&sz=w400` : null;
@@ -1779,7 +1874,7 @@ function DetailPage() {
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
               {related.map(r => (
-                <Card key={r.id} item={r} dark={d} />
+                <Card key={r.id} item={r} dark={d} fromLabel={item.title} />
               ))}
             </div>
           </div>
@@ -2126,7 +2221,7 @@ function ProductPage() {
               </div>
               {recentResearch.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {recentResearch.map(item => <Card key={item.id} item={item} dark={d} />)}
+                  {recentResearch.map(item => <Card key={item.id} item={item} dark={d} fromLabel={product} />)}
                 </div>
               ) : (
                 <p className={`text-sm ${d ? "text-gray-500" : "text-gray-400"}`}>Sin research publicados aún.</p>
@@ -2179,20 +2274,21 @@ function HomePage() {
     loadAllProductCoverUrls().then(setProductCovers);
   }, []);
 
-  const handleSearch = (e) => {
-    if (e.key === "Enter" && search.trim()) {
-      const term = search.trim();
-      const matchedProduct = PRODUCTS.find(p => p.toLowerCase() === term.toLowerCase());
-      if (matchedProduct) {
-        setActiveFilter({ type: "Tipo de entregable", team: null, search: "", product: matchedProduct });
-      } else {
-        setActiveFilter({ type: "Tipo de entregable", team: null, search: term, product: null });
-      }
-      navigate("/research");
+  const doSearch = () => {
+    if (!search.trim()) return;
+    const term = search.trim();
+    const matchedProduct = PRODUCTS.find(p => p.toLowerCase() === term.toLowerCase());
+    if (matchedProduct) {
+      setActiveFilter({ type: "Tipo de entregable", team: null, search: "", product: matchedProduct });
+    } else {
+      setActiveFilter({ type: "Tipo de entregable", team: null, search: term, product: null });
     }
+    navigate("/research");
   };
 
-  const recent = [...deliverables].slice(0, 4);
+  const handleSearch = (e) => { if (e.key === "Enter") doSearch(); };
+
+  const recent = [...deliverables].slice(0, 6);
 
   return (
     <div className={`flex-1 overflow-y-auto ${d ? "bg-gray-950" : "bg-gray-50"}`}>
@@ -2200,16 +2296,16 @@ function HomePage() {
       {/* Hero — centered */}
       <div className="relative overflow-hidden" style={{
         background: d
-          ? "linear-gradient(160deg,#0a1628 0%,#0d1f12 50%,#0a1628 100%)"
-          : "linear-gradient(160deg,#e8f5ee 0%,#f0fdf4 40%,#dff2ea 100%)",
+          ? "linear-gradient(160deg,#0a1628 0%,#071a0e 30%,#0d1f12 60%,#0a1628 100%)"
+          : "linear-gradient(160deg,#e8f5ee 0%,#f0fdf4 35%,#d6f5e8 65%,#e8f5ee 100%)",
         borderBottom: `1px solid ${d ? "#1a2535" : "#b6e8cc"}`
       }}>
-        <div className="absolute -top-16 -right-16 w-72 h-72 opacity-10" style={{ background: "radial-gradient(circle,#00B369,transparent)", borderRadius: "2.5rem", transform: "rotate(15deg)" }} />
-        <div className="absolute -bottom-12 -left-12 w-60 h-60 opacity-15" style={{ borderRadius: "2rem", transform: "rotate(20deg)", border: "solid 1px #00B369" }} />
+        {/* Grid */}
+        <HeroGrid dark={d} />
 
         <div className="relative w-full mx-auto px-4 md:px-8 pt-12 pb-10 md:pt-20 md:pb-16 text-center" style={{ maxWidth: 800 }}>
           <div className="inline-flex items-center text-sm font-semibold mb-4" style={{ color: "#00B369" }}>
-            Research Portal
+            Strategic Design
           </div>
           <h1 className={`text-3xl md:text-5xl font-bold mb-4 leading-tight ${d ? "text-gray-100" : "text-gray-900"}`}>
             Repositorio de <span style={{ color: "#00B369" }}>research</span>
@@ -2223,10 +2319,16 @@ function HomePage() {
               type="text" value={search}
               onChange={e => setSearch(e.target.value)}
               onKeyDown={handleSearch}
-              placeholder="Busca un research o producto y presiona enter"
-              className={`w-full pl-12 pr-4 py-4 text-sm rounded-2xl border focus:outline-none focus:ring-2 focus:ring-green-400 ${d ? "bg-gray-800/80 border-gray-700 text-gray-200 placeholder-gray-500" : "bg-white border-gray-200 text-gray-900 placeholder-gray-400"}`}
+              placeholder="Busca un research o producto..."
+              className={`w-full pl-12 pr-28 py-4 text-sm rounded-2xl border focus:outline-none focus:ring-2 focus:ring-green-400 ${d ? "bg-gray-800/80 border-gray-700 text-gray-200 placeholder-gray-500" : "bg-white border-gray-200 text-gray-900 placeholder-gray-400"}`}
               style={{ boxShadow: d ? "0 4px 24px rgba(0,0,0,0.3)" : "0 4px 24px rgba(0,0,0,0.08)" }}
             />
+            <button
+              onClick={doSearch}
+              className={`absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-lg border transition-colors ${search.trim() ? (d ? "bg-gray-700 border-gray-600 text-gray-200 hover:bg-gray-600" : "bg-gray-100 border-gray-300 text-gray-700 hover:bg-gray-200") : (d ? "bg-gray-800 border-gray-700 text-gray-600 cursor-default" : "bg-gray-50 border-gray-200 text-gray-400 cursor-default")}`}
+            >
+              Enter ↵
+            </button>
           </div>
         </div>
       </div>
@@ -2237,9 +2339,6 @@ function HomePage() {
         <div className={`rounded-2xl p-4 md:p-6 mb-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 md:gap-6 ${d ? "bg-gray-900 border border-gray-800" : "bg-white border border-gray-200"}`}
           style={{ boxShadow: d ? "0 2px 12px rgba(0,0,0,0.3)" : "0 2px 12px rgba(0,0,0,0.06)" }}>
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "linear-gradient(135deg,#00B369,#00a560)" }}>
-              <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
-            </div>
             <div>
               <p className={`font-bold text-base ${d ? "text-gray-100" : "text-gray-900"}`}>¿Necesitas un research?</p>
               <p className={`text-sm ${d ? "text-gray-400" : "text-gray-500"}`}>Crea una solicitud directamente en Jira y el equipo la tendrá en el radar.</p>
@@ -2289,7 +2388,7 @@ function HomePage() {
               const productTag = item.tags && item.tags.find(t => PRODUCTS.includes(t));
               const pc = productTag ? (PRODUCT_COLORS[productTag] || "#00B369") : null;
               return (
-                <button key={item.id} onClick={() => navigate(`/research/${toSlug(item.title)}`)}
+                <button key={item.id} onClick={() => navigate(`/research/${toSlug(item.title)}`, { state: { fromLabel: "Inicio" } })}
                   className={`text-left rounded-xl border p-4 flex flex-col transition-all group ${d ? "bg-gray-900 border-gray-800 hover:border-green-700" : "bg-white border-gray-200 hover:border-green-400 hover:shadow-sm"}`}>
                   <div className="min-w-0 w-full">
                     <p className={`font-semibold text-sm leading-snug mb-1.5 truncate ${d ? "text-gray-100" : "text-gray-900"}`}>{item.title}</p>
@@ -2451,7 +2550,7 @@ function ListPage() {
         ) : filtered.length > 0 ? (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-              {shown.map(item => <Card key={item.id} item={item} dark={dk} />)}
+              {shown.map(item => <Card key={item.id} item={item} dark={dk} fromLabel="Todos los research" />)}
             </div>
             <div ref={sentinelRef} className="h-10 flex items-center justify-center mt-4">
               {hasMore && <div className="w-6 h-6 rounded-full border-2 border-gray-300 border-t-green-500 animate-spin" />}
@@ -2544,7 +2643,7 @@ function Sidebar({ onSettings, user, mobileOpen = false, onMobileClose }) {
               </button>
             ) : (
               <button
-                onClick={() => setPinned(!pinned)}
+                onClick={() => { const next = !pinned; setPinned(next); if (!next) setHovered(false); }}
                 title={pinned ? "Desfijar sidebar" : "Fijar sidebar"}
                 className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${pinned ? (dk ? "text-green-500" : "text-green-700") : s.pinBtn}`}
               >
@@ -2657,6 +2756,7 @@ function EditPage() {
   const { slug } = useParams();
   const { dark: d, deliverables, handleUpdate, showToast, editors } = useApp();
   const item = deliverables.find(x => toSlug(x.title) === slug) || location.state?.item;
+  const fromLabel = location.state?.fromLabel || null;
 
   if (!item) return <div className={`flex-1 flex items-center justify-center ${d ? "bg-gray-950 text-gray-400" : "bg-gray-50 text-gray-500"}`}>Research no encontrado.</div>;
 
@@ -2811,9 +2911,9 @@ function EditPage() {
 
       {/* Top bar */}
       <div className={`border-b px-4 py-3 md:px-8 md:py-4 sticky top-0 z-10 ${d ? "bg-gray-950 border-gray-800" : "bg-gray-50 border-gray-200"}`}>
-        <button onClick={() => navigate("/research")} className={`flex items-center gap-2 text-sm font-semibold ${d ? "text-gray-400 hover:text-gray-200" : "text-gray-500 hover:text-gray-900"}`}>
+        <button onClick={() => window.history.length > 1 ? navigate(-1) : navigate("/research")} className={`flex items-center gap-2 text-sm font-semibold ${d ? "text-gray-400 hover:text-gray-200" : "text-gray-500 hover:text-gray-900"}`}>
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7"/></svg>
-          <span className="hidden sm:inline">Volver a todos los research</span>
+          <span className="hidden sm:inline">{fromLabel ? `Volver a ${fromLabel}` : "Volver"}</span>
           <span className="sm:hidden">Volver</span>
         </button>
       </div>
@@ -3027,6 +3127,8 @@ function Layout({ toast, user }) {
       </div>
       <style>{`
         .line-clamp-2 { display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+        .hero-grid-cell { transition: background-color 0.4s ease-out; cursor: default; }
+        .hero-grid-cell:hover { background-color: var(--flash); transition: background-color 0s; }
       `}</style>
     </div>
   );
