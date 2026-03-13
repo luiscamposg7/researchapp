@@ -469,11 +469,13 @@ function SettingsModal({ onClose, dark }) {
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
       supabase.rpc("get_users_with_roles").then(({ data }) => {
-        const list = (data || []).sort((a, b) => {
-          if (a.user_id === user?.id) return -1;
-          if (b.user_id === user?.id) return 1;
-          return 0;
-        });
+        const list = (data || [])
+          .filter(u => !u.email?.endsWith("@gmail.com"))
+          .sort((a, b) => {
+            if (a.user_id === user?.id) return -1;
+            if (b.user_id === user?.id) return 1;
+            return 0;
+          });
         setUsers(list);
         setUsersLoading(false);
       });
