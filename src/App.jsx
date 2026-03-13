@@ -1208,7 +1208,7 @@ function ProductCard({ product: p, deliverables, coverUrl, dark: d, onClick }) {
           <div className="flex items-center gap-2.5">
             <span className={`font-semibold text-base ${d ? "text-gray-100" : "text-gray-900"}`}>{p}</span>
           </div>
-          <svg className={`w-4 h-4 transition-transform group-hover:translate-x-0.5 ${d ? "text-gray-700" : "text-gray-300"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+          <svg className={`hidden lg:block w-4 h-4 transition-transform group-hover:translate-x-0.5 ${d ? "text-gray-700" : "text-gray-300"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
         </div>
         <div className={`text-xs space-y-1.5 ${d ? "text-gray-500" : "text-gray-400"}`}>
           <div className="flex justify-between"><span>Research</span><span className={`font-semibold ${d ? "text-gray-300" : "text-gray-600"}`}>{research}</span></div>
@@ -1461,9 +1461,9 @@ function PersonaDetailTabs({ personas, type, dark: d }) {
       </div>
 
       {/* Two-column layout */}
-      <div className="flex gap-5">
-        {/* LEFT sidebar */}
-        <div className="w-64 flex-shrink-0 space-y-5">
+      <div className="flex flex-col md:flex-row gap-5">
+        {/* LEFT sidebar — below main on mobile */}
+        <div className="w-full md:w-64 md:flex-shrink-0 space-y-5 order-2 md:order-1">
           <SideSection title="Información personal">
             <FieldCard label="Cargo" value={p.cargo} />
             <FieldCard label="Edad" value={p.edad} />
@@ -1490,7 +1490,7 @@ function PersonaDetailTabs({ personas, type, dark: d }) {
         </div>
 
         {/* RIGHT content */}
-        <div className="flex-1 min-w-0 space-y-5">
+        <div className="flex-1 min-w-0 space-y-5 order-1 md:order-2">
           {isBuyer ? (
             <>
               {/* Adquisición del producto */}
