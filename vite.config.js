@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react'
 import https from 'https'
 import crypto from 'crypto'
 import dotenv from 'dotenv'
+import path from 'path'
 
 dotenv.config({ path: '.env.local' })
 
@@ -150,6 +151,11 @@ function localDb() {
 
 export default defineConfig({
   plugins: [react(), localDb()],
+  resolve: {
+    alias: {
+      '@': path.resolve(path.dirname(new URL(import.meta.url).pathname), './src'),
+    },
+  },
   server: {
     proxy: {
       '/api/jira': {

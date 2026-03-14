@@ -2,6 +2,9 @@ import { useState, useEffect, useRef, useCallback, useMemo, createContext, useCo
 import { flushSync } from "react-dom";
 import { Routes, Route, useNavigate, useParams, useLocation } from "react-router-dom";
 import { supabase } from "./supabase";
+import { Button } from "./components/ui/button";
+import { Badge as UIBadge, BadgeWithDot } from "./components/ui/badges";
+import { Avatar as UIAvatar } from "./components/ui/avatar";
 
 const AppCtx = createContext(null);
 const useApp = () => useContext(AppCtx);
@@ -105,9 +108,9 @@ const getDriveId = (url = "") => {
   return m2 ? m2[1] : null;
 };
 
-const TYPE_COLORS = { "Research": "amber", "Otros entregables": "violet", "Pruebas de usabilidad": "blue", "Buyer Persona": "green", "User Persona": "violet" };
-const secBtn = (d) => `rounded-lg border ${d ? "bg-gray-800 border-gray-700 text-gray-200 hover:bg-gray-700" : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"}`;
-const primBtn = "rounded-lg text-white font-semibold";
+const TYPE_COLORS = { "Research": "warning", "Otros entregables": "indigo", "Pruebas de usabilidad": "blue", "Buyer Persona": "success", "User Persona": "indigo" };
+const OLD_TO_NEW_COLOR = { amber: "warning", violet: "indigo", green: "success" };
+const getBadgeColor = (c) => OLD_TO_NEW_COLOR[c] || c;
 const METODOLOGIAS = ["Cualitativa", "Cuantitativa", "Mixta", "Desk Research"];
 const JIRA_STATUSES = ["EN CURSO", "FINALIZADO"];
 
@@ -596,7 +599,7 @@ function SettingsModal({ onClose, dark }) {
         </div>
 
         <div className={`flex justify-end px-6 py-4 border-t ${d ? "border-gray-800" : "border-gray-200"}`}>
-          <button onClick={onClose} className={`px-4 py-2 text-sm font-semibold ${secBtn(d)}`}>Cerrar</button>
+          <Button color="secondary" dark={d} onClick={onClose}>Cerrar</Button>
         </div>
       </div>
     </div>
@@ -863,9 +866,9 @@ function AddPage() {
               <h3 className={`text-base font-semibold mb-1 ${d ? "text-gray-100" : "text-gray-900"}`}>¿Descartar cambios?</h3>
               <p className={`text-sm mb-5 ${d ? "text-gray-400" : "text-gray-500"}`}>Si vuelves ahora, perderás toda la información que has añadido.</p>
               <div className="flex gap-3 justify-end">
-                <button onClick={() => setShowLeaveModal(false)} className={`px-4 py-2 text-sm font-semibold ${secBtn(d)}`}>
+                <Button color="secondary" dark={d} onClick={() => setShowLeaveModal(false)}>
                   Cancelar
-                </button>
+                </Button>
                 <button onClick={onClose} className="px-4 py-2 rounded-lg text-sm font-semibold text-white bg-red-600 hover:bg-red-700">
                   Sí, descartar
                 </button>
@@ -1016,14 +1019,13 @@ function AddPage() {
                     ))}
                   </div>
                 )}
-                <button type="button" onClick={() => setShowImagePicker(true)} disabled={imageUploading}
-                  className={`flex items-center gap-2 text-sm font-semibold px-4 py-2 ${secBtn(d)} ${imageUploading ? "opacity-50 cursor-not-allowed" : ""}`}>
+                <Button type="button" color="secondary" dark={d} disabled={imageUploading} className="flex items-center gap-2" onClick={() => setShowImagePicker(true)}>
                   {imageUploading
                     ? <div className="w-4 h-4 rounded-full border-2 border-gray-300 border-t-green-500 animate-spin" />
                     : <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                   }
                   Añadir imágenes
-                </button>
+                </Button>
                 {showImagePicker && (
                   <ImagePickerModal dark={d} deliverables={deliverables}
                     onSelect={(url) => { if (!(form.imagenes || []).includes(url)) set("imagenes", [...(form.imagenes || []), url]); setShowImagePicker(false); }}
@@ -1058,10 +1060,10 @@ function AddPage() {
                 <div className="flex items-center justify-between mb-4">
                   <SectionTitle>Personas</SectionTitle>
                   {form.personas.length < 3 && (
-                    <button type="button" onClick={addPersona} className={`flex items-center gap-1 text-xs font-semibold px-2.5 py-1 ${secBtn(d)}`}>
+                    <Button type="button" size="xs" color="secondary" dark={d} onClick={addPersona}>
                       <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/></svg>
                       Añadir
-                    </button>
+                    </Button>
                   )}
                 </div>
                 <div className={`flex border-b mb-4 ${d ? "border-gray-700" : "border-gray-200"}`}>
@@ -1094,9 +1096,9 @@ function AddPage() {
                         <div className="space-y-1">
                           <p className={`text-xs font-semibold ${d ? "text-gray-400" : "text-gray-600"}`}>Imagen de perfil</p>
                           <p className={`text-xs ${d ? "text-gray-500" : "text-gray-400"}`}>500×500 px · JPG</p>
-                          <button type="button" onClick={() => setShowPersonaPhotoPicker(true)} disabled={personaPhotoUploading} className={`flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-lg ${secBtn(d)} disabled:opacity-50`}>
+                          <Button type="button" size="xs" color="secondary" dark={d} onClick={() => setShowPersonaPhotoPicker(true)} isDisabled={personaPhotoUploading} className="flex items-center gap-2">
                             {personaPhotoUploading ? "Subiendo..." : (p.foto ? "Cambiar foto" : "Subir foto")}
-                          </button>
+                          </Button>
                         </div>
                       </div>
                       <div><label className={lbl}>Nombre</label>{fi("nombre", "Nombre de la persona")}</div>
@@ -1152,12 +1154,12 @@ function AddPage() {
                 <DateInput value={form.date} onChange={v => set("date", v)} />
               </div>
               <div className="flex gap-2 pt-1">
-                <button onClick={() => handleSave("Borrador")} disabled={!form.title.trim() || saving} className={`flex-1 px-3 py-2 text-sm font-semibold disabled:opacity-40 transition-opacity ${secBtn(d)}`}>
+                <Button color="secondary" dark={d} onClick={() => handleSave("Borrador")} disabled={!form.title.trim() || saving} className="flex-1 disabled:opacity-40 transition-opacity">
                   Guardar
-                </button>
-                <button onClick={() => handleSave("Publicado")} disabled={!form.title.trim() || saving} className={`flex-1 px-3 py-2 text-sm disabled:opacity-40 transition-opacity ${primBtn}`} style={{ backgroundColor: "#00B369" }}>
+                </Button>
+                <Button color="primary" onClick={() => handleSave("Publicado")} disabled={!form.title.trim() || saving} className="flex-1 disabled:opacity-40 transition-opacity">
                   Publicar
-                </button>
+                </Button>
               </div>
             </div>
 
@@ -1202,49 +1204,6 @@ function AddPage() {
   );
 }
 
-const avatarPalette = [
-  { l: "bg-green-100 text-green-700", d: "bg-green-900 text-green-300" },
-  { l: "bg-blue-100 text-blue-700", d: "bg-blue-900 text-blue-300" },
-  { l: "bg-pink-100 text-pink-700", d: "bg-pink-900 text-pink-300" },
-  { l: "bg-teal-100 text-teal-700", d: "bg-teal-900 text-teal-300" },
-];
-
-function Avatar({ name, index = 0, dark }) {
-  if (!name) return (
-    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold border-2 ${dark ? "bg-gray-700 text-gray-400 border-gray-800" : "bg-gray-100 text-gray-400 border-white"}`}>
-      ?
-    </div>
-  );
-  const initials = name.split(" ").map(n => n[0]).join("").slice(0, 2);
-  const p = avatarPalette[index % avatarPalette.length];
-  return (
-    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold border-2 ${dark ? p.d + " border-gray-800" : p.l + " border-white"}`}>
-      {initials}
-    </div>
-  );
-}
-
-function Badge({ label, typeColor, dark }) {
-  const tm = {
-    blue:   dark ? "bg-blue-900/60 text-blue-300 border border-blue-700"       : "bg-blue-50 text-blue-700 border border-blue-200",
-    violet: dark ? "bg-teal-900/60 text-teal-300 border border-teal-700" : "bg-teal-50 text-teal-700 border border-teal-200",
-    amber:  dark ? "bg-amber-900/60 text-amber-300 border border-amber-700"    : "bg-amber-50 text-amber-700 border border-amber-200",
-    green:  dark ? "bg-teal-900/60 text-teal-300 border border-teal-700"       : "bg-teal-50 text-teal-700 border border-teal-200",
-  };
-  // Status badges: dot + label style with border, white/dark bg
-  const statusPill = {
-    "Publicado": dark ? "bg-green-900/40 text-green-400 border-green-700" : "bg-green-50 text-green-600 border-green-300",
-    "Borrador":  dark ? "bg-gray-800 text-gray-400 border-gray-600"       : "bg-gray-100 text-gray-500 border-gray-300",
-  };
-  if (!typeColor && statusPill[label]) {
-    return (
-      <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border ${statusPill[label]}`}>
-        {label}
-      </span>
-    );
-  }
-  return <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${typeColor ? tm[typeColor] : ""}`}>{label}</span>;
-}
 
 function CardSkeleton({ dark: d }) {
   const b = d ? "bg-gray-800" : "bg-gray-200";
@@ -1421,7 +1380,7 @@ function Card({ item, dark, fromLabel }) {
   return (
     <div onClick={() => navigate(`/research/${toSlug(item.title)}`, { state: { fromLabel } })} className={`rounded-2xl border p-6 cursor-pointer group flex flex-col ${d ? "bg-gray-900 border-gray-700 hover:border-green-400 hover:shadow-lg hover:shadow-black/30" : "bg-white border-gray-200 hover:shadow-md hover:border-green-400/40"}`}>
       <div className="flex items-start justify-between mb-4">
-        <Badge label={item.type} typeColor={item.typeColor} dark={d} />
+        <UIBadge color={getBadgeColor(item.typeColor)} dark={d}>{item.type}</UIBadge>
         <span className={`text-sm ${d ? "text-gray-500" : "text-gray-400"}`}>{item.date}</span>
       </div>
       <h3 className={`font-semibold text-lg leading-snug mb-3 ${d ? "text-gray-100 group-hover:text-green-600" : "text-gray-900 group-hover:text-green-700"}`}>{item.title}</h3>
@@ -1432,12 +1391,12 @@ function Card({ item, dark, fromLabel }) {
       <div className={`flex items-center justify-between pt-4 border-t ${d ? "border-gray-800" : "border-gray-100"}`}>
         {(() => { const validTeam = (item.team || []).filter(n => editors.includes(n)); return validTeam.length ? (
           <div className="flex items-center gap-2">
-            <div className="flex -space-x-2">{validTeam.map((name, i) => <Avatar key={name} name={name} index={i} dark={d} />)}</div>
+            <div className="flex -space-x-2">{validTeam.map((name, i) => <UIAvatar key={name} name={name} index={i} dark={d} />)}</div>
             <span className={`text-sm ${d ? "text-gray-400" : "text-gray-500"}`}>{validTeam[0]}</span>
           </div>
         ) : (
           <div className="flex items-center gap-1.5">
-            <Avatar name={null} dark={d} />
+            <UIAvatar name={null} dark={d} />
             <span className={`text-sm ${d ? "text-gray-500" : "text-gray-400"}`}>Sin asignar</span>
           </div>
         ); })()}
@@ -1655,9 +1614,9 @@ function ConfirmModal({ title, message, confirmLabel = "Confirmar", danger = fal
           <p className={`text-sm ${d ? "text-gray-400" : "text-gray-500"}`}>{message}</p>
         </div>
         <div className="flex gap-3 px-6 pb-6">
-          <button onClick={onCancel} className={`flex-1 px-4 py-2 text-sm font-semibold ${secBtn(d)}`}>
+          <Button color="secondary" dark={d} onClick={onCancel} className="flex-1">
             Cancelar
-          </button>
+          </Button>
           <button onClick={onConfirm} className={`flex-1 px-4 py-2 text-sm font-semibold rounded-lg text-white ${danger ? "bg-red-500 hover:bg-red-600" : "bg-amber-500 hover:bg-amber-600"}`}>
             {confirmLabel}
           </button>
@@ -1716,7 +1675,7 @@ function ViewsModal({ researchId, dark: d, onClose }) {
           )}
         </div>
         <div className={`flex justify-end px-6 py-4 border-t ${d ? "border-gray-800" : "border-gray-200"}`}>
-          <button onClick={onClose} className={`px-4 py-2 text-sm font-semibold ${secBtn(d)}`}>Cerrar</button>
+          <Button color="secondary" dark={d} onClick={onClose}>Cerrar</Button>
         </div>
       </div>
     </div>
@@ -1781,20 +1740,20 @@ function DetailPage() {
         </button>
         <div className="flex gap-2">
           {isEditor && (
-            <button onClick={() => setShowViews(true)} className={`flex items-center gap-1.5 px-3 py-2 text-sm font-semibold ${secBtn(d)}`}>
+            <Button color="secondary" dark={d} onClick={() => setShowViews(true)} className="flex items-center gap-1.5">
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
               Ver vistas
-            </button>
+            </Button>
           )}
           {item.isCustom && isEditor && (
-            <button
+            <Button
+              color="primary"
               onClick={() => navigate(`/editar-research/${toSlug(item.title)}`)}
-              className={`flex items-center gap-1.5 px-3 py-2 text-sm font-semibold ${primBtn}`}
-              style={{ backgroundColor: "#00B369" }}
+              className="flex items-center gap-1.5"
             >
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125" /></svg>
               Editar
-            </button>
+            </Button>
           )}
         </div>
       </div>
@@ -1811,14 +1770,14 @@ function DetailPage() {
         {/* Page title */}
         <div className="flex items-center gap-3 mb-2">
           {(() => { const assigned = (item.team || []).find(n => editors.includes(n)) || null; return (<>
-            <Avatar name={assigned} index={0} dark={d} />
+            <UIAvatar name={assigned} index={0} dark={d} />
             <span className={`text-sm ${d ? "text-gray-400" : "text-gray-500"}`}>
               {assigned || "Sin asignar"} · {item.date}
             </span>
           </>); })()}
         </div>
         <h1 className={`text-3xl font-bold mb-3 ${d ? "text-gray-100" : "text-gray-900"}`}>{item.title}</h1>
-        <div className="mb-8"><Badge label={item.status} dark={d} /></div>
+        <div className="mb-8"><BadgeWithDot color={item.status === "Publicado" ? "success" : "gray"} dark={d}>{item.status}</BadgeWithDot></div>
 
         {/* All entregables stacked */}
         <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
@@ -2035,13 +1994,15 @@ function CoverPickerModal({ dark: d, onSelect, onUpload, onClose }) {
 
         {/* Upload button */}
         <div className={`px-6 py-3 border-b ${d ? "border-gray-800" : "border-gray-200"}`}>
-          <button
+          <Button
+            color="secondary"
+            dark={d}
             onClick={onUpload}
-            className={`flex items-center gap-2 text-sm font-semibold px-4 py-2 ${secBtn(d)}`}
+            className="flex items-center gap-2"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
             Subir nueva imagen
-          </button>
+          </Button>
         </div>
 
         {/* Grid */}
@@ -2115,10 +2076,10 @@ function PersonaPhotoPickerModal({ dark: d, onSelect, onUpload, onClose }) {
           </button>
         </div>
         <div className={`px-6 py-3 border-b ${d ? "border-gray-800" : "border-gray-200"}`}>
-          <button onClick={onUpload} className={`flex items-center gap-2 text-sm font-semibold px-4 py-2 ${secBtn(d)}`}>
+          <Button color="secondary" dark={d} onClick={onUpload} className="flex items-center gap-2">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
             Subir nueva foto
-          </button>
+          </Button>
         </div>
         <div className="flex-1 overflow-y-auto p-6">
           {loading ? (
@@ -2201,10 +2162,10 @@ function ImagePickerModal({ dark: d, deliverables, onSelect, onUpload, onDelete,
           </button>
         </div>
         <div className={`px-6 py-3 border-b ${d ? "border-gray-800" : "border-gray-200"}`}>
-          <button onClick={onUpload} className={`flex items-center gap-2 text-sm font-semibold px-4 py-2 ${secBtn(d)}`}>
+          <Button color="secondary" dark={d} onClick={onUpload} className="flex items-center gap-2">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
             Subir nueva imagen
-          </button>
+          </Button>
         </div>
         <div className="flex-1 overflow-y-auto p-6">
           {images.length === 0 ? (
@@ -2360,14 +2321,14 @@ function ProductPage() {
               <div className="flex items-center justify-between mb-5">
                 <h2 className={`text-xl font-bold ${d ? "text-gray-100" : "text-gray-900"}`}>{type}</h2>
                 {isEditor && (
-                  <button
+                  <Button
+                    color="primary"
                     onClick={() => navigate("/añadir-research", { state: { type, product } })}
-                    className={`flex items-center gap-1.5 px-3 py-2 text-sm font-semibold ${primBtn}`}
-                    style={{backgroundColor:"#00B369"}}
+                    className="flex items-center gap-1.5"
                   >
                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
                     Añadir
-                  </button>
+                  </Button>
                 )}
               </div>
 
@@ -2463,7 +2424,7 @@ function ProductPage() {
             <div className="mb-10">
               <div className="flex items-center justify-between mb-5">
                 <h2 className={`text-xl font-bold ${d ? "text-gray-100" : "text-gray-900"}`}>Todos los research</h2>
-                <button onClick={() => navigate("/research")} className={`px-3 py-2 text-sm font-semibold ${secBtn(d)}`}>Ver todos</button>
+                <Button color="secondary" dark={d} onClick={() => navigate("/research")}>Ver todos</Button>
               </div>
               {recentResearch.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -2728,13 +2689,13 @@ function ListPage() {
               <p className={`text-sm md:text-base ${s.p2}`}>{filtered.length} research encontrados</p>
             </div>
             {isEditor && (
-              <button onClick={() => navigate("/añadir-research")} className={`flex items-center gap-2 px-3 md:px-4 py-2 md:py-2.5 text-sm ${primBtn}`} style={{backgroundColor:"#00B369"}}>
+              <Button color="primary" onClick={() => navigate("/añadir-research")} className="flex items-center gap-2 md:px-4 md:py-2.5">
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                 </svg>
                 <span className="hidden sm:inline">Añadir nueva</span>
                 <span className="sm:hidden">Añadir</span>
-              </button>
+              </Button>
             )}
           </div>
           {/* Desktop filters */}
@@ -3249,14 +3210,13 @@ function EditPage() {
                     ))}
                   </div>
                 )}
-                <button type="button" onClick={() => setShowImagePicker(true)} disabled={imageUploading}
-                  className={`flex items-center gap-2 text-sm font-semibold px-4 py-2 ${secBtn(d)} ${imageUploading ? "opacity-50 cursor-not-allowed" : ""}`}>
+                <Button type="button" color="secondary" dark={d} disabled={imageUploading} className="flex items-center gap-2" onClick={() => setShowImagePicker(true)}>
                   {imageUploading
                     ? <div className="w-4 h-4 rounded-full border-2 border-gray-300 border-t-green-500 animate-spin" />
                     : <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                   }
                   Añadir imágenes
-                </button>
+                </Button>
                 {showImagePicker && (
                   <ImagePickerModal dark={d} deliverables={deliverables}
                     onSelect={(url) => { if (!(form.imagenes || []).includes(url)) set("imagenes", [...(form.imagenes || []), url]); setShowImagePicker(false); }}
@@ -3290,7 +3250,7 @@ function EditPage() {
               <div className={`rounded-2xl border p-5 ${d ? "bg-gray-900 border-gray-700" : "bg-white border-gray-200"}`}>
                 <div className="flex items-center justify-between mb-4">
                   <SectionTitle>Personas</SectionTitle>
-                  {form.personas.length < 3 && <button type="button" onClick={addPersona} className={`flex items-center gap-1 text-xs font-semibold px-2.5 py-1 ${secBtn(d)}`}><svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/></svg>Añadir</button>}
+                  {form.personas.length < 3 && <Button type="button" size="xs" color="secondary" dark={d} onClick={addPersona} className="flex items-center gap-1"><svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/></svg>Añadir</Button>}
                 </div>
                 <div className={`flex border-b mb-4 ${d ? "border-gray-700" : "border-gray-200"}`}>
                   {form.personas.map((p, i) => <div key={i} className="flex items-center"><button type="button" onClick={() => setPersonaTab(i)} className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${personaTab === i ? "border-green-500 text-green-600" : d ? "border-transparent text-gray-400 hover:text-gray-200" : "border-transparent text-gray-500 hover:text-gray-800"}`}>{p.nombre || `Persona ${i+1}`}</button>{form.personas.length > 1 && <button type="button" onClick={() => removePersona(i)} className={`-ml-1 mb-px w-4 h-4 flex items-center justify-center text-xs ${d ? "text-gray-600 hover:text-gray-300" : "text-gray-300 hover:text-gray-600"}`}>✕</button>}</div>)}
@@ -3308,9 +3268,9 @@ function EditPage() {
                         <div className="space-y-1">
                           <p className={`text-xs font-semibold ${d ? "text-gray-400" : "text-gray-600"}`}>Imagen de perfil</p>
                           <p className={`text-xs ${d ? "text-gray-500" : "text-gray-400"}`}>500×500 px · JPG</p>
-                          <button type="button" onClick={() => setShowPersonaPhotoPicker(true)} disabled={personaPhotoUploading} className={`flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-lg ${secBtn(d)} disabled:opacity-50`}>
+                          <Button type="button" size="xs" color="secondary" dark={d} onClick={() => setShowPersonaPhotoPicker(true)} isDisabled={personaPhotoUploading} className="flex items-center gap-2">
                             {personaPhotoUploading ? "Subiendo..." : (p.foto ? "Cambiar foto" : "Subir foto")}
-                          </button>
+                          </Button>
                         </div>
                       </div>
                       <div><label className={lbl}>Nombre</label>{fi("nombre","Nombre de la persona")}</div>
@@ -3343,16 +3303,16 @@ function EditPage() {
               </div>
               <div className="flex gap-2 pt-1">
                 {form.status !== "Publicado" && (
-                  <button onClick={() => handleSave(form.status)} disabled={!form.title.trim() || saving} className={`flex-1 px-3 py-2 text-sm font-semibold disabled:opacity-40 ${secBtn(d)}`}>Guardar</button>
+                  <Button color="secondary" dark={d} onClick={() => handleSave(form.status)} disabled={!form.title.trim() || saving} className="flex-1 disabled:opacity-40">Guardar</Button>
                 )}
-                <button
+                <Button
+                  color="primary"
                   onClick={() => handleSave(form.status === "Publicado" ? "Publicado" : "Publicado")}
                   disabled={!form.title.trim() || saving}
-                  className={`flex-1 px-3 py-2 text-sm disabled:opacity-40 ${primBtn}`}
-                  style={{ backgroundColor: "#00B369" }}
+                  className="flex-1 disabled:opacity-40"
                 >
                   {form.status === "Publicado" ? "Guardar cambios" : "Publicar"}
-                </button>
+                </Button>
               </div>
             </div>
 
