@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback, useMemo, createContext, useContext } from "react";
+import { flushSync } from "react-dom";
 import { Routes, Route, useNavigate, useParams, useLocation } from "react-router-dom";
 import { supabase } from "./supabase";
 
@@ -3536,7 +3537,7 @@ export default function App() {
   };
 
   const handleUpdate = (item) => {
-    setDeliverables(prev => prev.map(d => d.id === item.id ? item : d));
+    flushSync(() => setDeliverables(prev => prev.map(d => d.id === item.id ? item : d)));
     fetch(`/api/deliverables/${item.id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
