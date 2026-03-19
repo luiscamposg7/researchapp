@@ -19,6 +19,7 @@ export interface ButtonProps
     extends DetailedHTMLProps<Omit<ButtonHTMLAttributes<HTMLButtonElement>, "color">, HTMLButtonElement> {
     size?: ButtonSize;
     color?: ButtonColor;
+    /** @deprecated handled automatically via CSS tokens */
     dark?: boolean;
     isDisabled?: boolean;
     isLoading?: boolean;
@@ -40,70 +41,61 @@ const sizeStyles: Record<ButtonSize, string> = {
 
 const SHADOW_SKEU = "shadow-[0px_1px_2px_rgba(10,13,18,0.05),0px_0px_0px_1px_rgba(10,13,18,0.18)_inset,0px_-2px_0px_rgba(10,13,18,0.05)_inset]";
 
-function colorStyle(color: ButtonColor, dark: boolean): string {
-    switch (color) {
-        case "primary":
-            return cx(
-                "bg-[#00B369] text-white ring-1 ring-transparent ring-inset",
-                SHADOW_SKEU,
-                "hover:bg-[#00975B] data-[loading]:bg-[#00975B]",
-                "disabled:bg-gray-100 disabled:text-gray-400 disabled:shadow-sm disabled:ring-gray-200",
-            );
-        case "secondary":
-            return dark
-                ? cx(
-                    "bg-gray-800 text-gray-200 ring-1 ring-gray-700 ring-inset",
-                    "shadow-[0px_1px_2px_rgba(10,13,18,0.05)]",
-                    "hover:bg-gray-700 hover:text-white data-[loading]:bg-gray-700",
-                    "disabled:bg-gray-900 disabled:text-gray-600 disabled:ring-gray-800",
-                  )
-                : cx(
-                    "bg-white text-gray-700 ring-1 ring-gray-300 ring-inset",
-                    SHADOW_SKEU,
-                    "hover:bg-gray-50 hover:text-gray-800 data-[loading]:bg-gray-50",
-                    "disabled:bg-gray-50 disabled:text-gray-400 disabled:ring-gray-200",
-                  );
-        case "tertiary":
-            return dark
-                ? "text-gray-400 hover:bg-gray-800 hover:text-gray-300 data-[loading]:bg-gray-800 disabled:text-gray-600"
-                : "text-gray-600 hover:bg-gray-50 hover:text-gray-700 data-[loading]:bg-gray-50 disabled:text-gray-400";
-        case "link-gray":
-            return dark
-                ? "text-gray-400 hover:text-gray-300 disabled:text-gray-600"
-                : "text-gray-600 hover:text-gray-700 disabled:text-gray-400";
-        case "link-color":
-            return "text-[#00975B] hover:text-[#00B369] disabled:text-gray-400";
-        case "primary-destructive":
-            return cx(
-                "bg-red-600 text-white ring-1 ring-transparent ring-inset",
-                SHADOW_SKEU,
-                "hover:bg-red-700 data-[loading]:bg-red-700",
-                "disabled:bg-gray-100 disabled:text-gray-400 disabled:shadow-sm disabled:ring-gray-200",
-            );
-        case "secondary-destructive":
-            return cx(
-                dark
-                    ? "bg-gray-800 text-red-400 ring-1 ring-red-800 ring-inset hover:bg-red-950 hover:text-red-300 data-[loading]:bg-red-950"
-                    : "bg-white text-red-600 ring-1 ring-red-300 ring-inset shadow-[0px_1px_2px_rgba(10,13,18,0.05)] hover:bg-red-50 hover:text-red-700 data-[loading]:bg-red-50",
-                "disabled:opacity-50",
-            );
-        case "tertiary-destructive":
-            return dark
-                ? "text-red-400 hover:bg-red-950 hover:text-red-300 data-[loading]:bg-red-950 disabled:text-gray-600"
-                : "text-red-600 hover:bg-red-50 hover:text-red-700 data-[loading]:bg-red-50 disabled:text-gray-400";
-        case "link-destructive":
-            return dark
-                ? "text-red-400 hover:text-red-300 disabled:text-gray-600"
-                : "text-red-600 hover:text-red-700 disabled:text-gray-400";
-        default:
-            return "";
-    }
-}
+const colorStyles: Record<ButtonColor, string> = {
+    primary: cx(
+        "bg-brand text-white ring-1 ring-transparent ring-inset",
+        SHADOW_SKEU,
+        "hover:bg-[var(--color-brand-hover)] data-[loading]:bg-[var(--color-brand-hover)]",
+        "disabled:bg-muted disabled:text-muted disabled:shadow-sm disabled:ring-[var(--color-border)]",
+    ),
+    secondary: cx(
+        "bg-surface text-secondary ring-1 ring-[var(--color-border)] ring-inset",
+        SHADOW_SKEU,
+        "hover:bg-hover hover:text-primary data-[loading]:bg-hover",
+        "disabled:bg-muted disabled:text-muted disabled:shadow-sm",
+    ),
+    tertiary: cx(
+        "text-tertiary",
+        "hover:bg-hover hover:text-secondary data-[loading]:bg-hover",
+        "disabled:text-muted",
+    ),
+    "link-gray": cx(
+        "text-tertiary",
+        "hover:text-secondary",
+        "disabled:text-muted",
+    ),
+    "link-color": cx(
+        "text-brand",
+        "hover:text-[var(--color-brand-hover)]",
+        "disabled:text-muted",
+    ),
+    "primary-destructive": cx(
+        "bg-red-600 text-white ring-1 ring-transparent ring-inset",
+        SHADOW_SKEU,
+        "hover:bg-red-700 data-[loading]:bg-red-700",
+        "disabled:bg-muted disabled:text-muted disabled:shadow-sm",
+    ),
+    "secondary-destructive": cx(
+        "bg-surface text-red-600 ring-1 ring-red-300 ring-inset shadow-[0px_1px_2px_rgba(10,13,18,0.05)]",
+        "hover:bg-red-50 hover:text-red-700 data-[loading]:bg-red-50",
+        "disabled:opacity-50",
+    ),
+    "tertiary-destructive": cx(
+        "text-red-600",
+        "hover:bg-red-50 hover:text-red-700 data-[loading]:bg-red-50",
+        "disabled:text-muted",
+    ),
+    "link-destructive": cx(
+        "text-red-600",
+        "hover:text-red-700",
+        "disabled:text-muted",
+    ),
+};
 
 export const Button = ({
     size = "sm",
     color = "primary",
-    dark = false,
+    dark: _dark,
     children,
     className,
     noTextPadding,
@@ -127,10 +119,10 @@ export const Button = ({
             disabled={disabled || loading}
             className={cx(
                 "relative inline-flex h-max cursor-pointer items-center justify-center whitespace-nowrap outline-none transition duration-100 ease-linear",
-                "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00B369]",
+                "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-brand)]",
                 "disabled:cursor-not-allowed",
                 sizeStyles[size],
-                colorStyle(color, dark),
+                colorStyles[color],
                 isIconOnly && "!p-2",
                 isLinkType && "!rounded !p-0",
                 loading && "pointer-events-none",
@@ -155,7 +147,7 @@ export const Button = ({
             )}
 
             {children && (
-                <span data-text="" className={cx("transition-all duration-100", !noTextPadding && !isLinkType && "px-0.5")}>
+                <span data-text="" className={cx("inline-flex items-center gap-1 transition-all duration-100", !noTextPadding && !isLinkType && "px-0.5")}>
                     {children}
                 </span>
             )}

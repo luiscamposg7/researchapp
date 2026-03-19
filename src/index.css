@@ -2,6 +2,51 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ─── Design tokens ──────────────────────────────────────────── */
+:root {
+  /* Backgrounds */
+  --color-bg-page:      #f9fafb;   /* gray-50  — full page         */
+  --color-bg-surface:   #ffffff;   /* white    — cards, modals      */
+  --color-bg-muted:     #f3f4f6;   /* gray-100 — inputs, secondary  */
+  --color-bg-hover:     #f9fafb;   /* gray-50  — hover states       */
+  --color-bg-active:    #f3f4f6;   /* gray-100 — pressed states     */
+
+  /* Text */
+  --color-text-primary:   #111827; /* gray-900 */
+  --color-text-secondary: #374151; /* gray-700 */
+  --color-text-tertiary:  #6b7280; /* gray-500 */
+  --color-text-muted:     #9ca3af; /* gray-400 */
+
+  /* Borders */
+  --color-border:        #e5e7eb;  /* gray-200 */
+  --color-border-subtle: #f3f4f6;  /* gray-100 */
+  --color-border-strong: #d1d5db;  /* gray-300 */
+
+  /* Brand */
+  --color-brand:       #00B369;
+  --color-brand-hover: #00975B;
+}
+
+.dark-mode {
+  /* Backgrounds */
+  --color-bg-page:      #030712;   /* gray-950 */
+  --color-bg-surface:   #111827;   /* gray-900 */
+  --color-bg-muted:     #1f2937;   /* gray-800 */
+  --color-bg-hover:     #1f2937;   /* gray-800 */
+  --color-bg-active:    #374151;   /* gray-700 */
+
+  /* Text */
+  --color-text-primary:   #f3f4f6; /* gray-100 */
+  --color-text-secondary: #d1d5db; /* gray-300 */
+  --color-text-tertiary:  #9ca3af; /* gray-400 */
+  --color-text-muted:     #6b7280; /* gray-500 */
+
+  /* Borders */
+  --color-border:        #374151;  /* gray-700 */
+  --color-border-subtle: #1f2937;  /* gray-800 */
+  --color-border-strong: #4b5563;  /* gray-600 */
+}
+
 /* Rich editor placeholder */
 [contenteditable]:empty:before { display: block; }
 

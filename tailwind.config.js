@@ -18,8 +18,36 @@ export default {
           950: "#002515",
         },
       },
+      backgroundColor: {
+        surface:  "var(--color-bg-surface)",
+        page:     "var(--color-bg-page)",
+        muted:    "var(--color-bg-muted)",
+        hover:    "var(--color-bg-hover)",
+        active:   "var(--color-bg-active)",
+        brand:    "var(--color-brand)",
+      },
+      textColor: {
+        primary:   "var(--color-text-primary)",
+        secondary: "var(--color-text-secondary)",
+        tertiary:  "var(--color-text-tertiary)",
+        muted:     "var(--color-text-muted)",
+        brand:     "var(--color-brand)",
+      },
+      borderColor: {
+        DEFAULT:  "var(--color-border)",
+        subtle:   "var(--color-border-subtle)",
+        strong:   "var(--color-border-strong)",
+        brand:    "var(--color-brand)",
+      },
+      ringColor: {
+        DEFAULT:  "var(--color-border)",
+        subtle:   "var(--color-border-subtle)",
+        strong:   "var(--color-border-strong)",
+      },
+      divideColor: {
+        DEFAULT: "var(--color-border)",
+      },
     },
   },
   plugins: [],
 }
-

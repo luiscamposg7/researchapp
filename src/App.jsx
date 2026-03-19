@@ -36,17 +36,17 @@ function CustomSelect({ value, onChange, options, dark, fullWidth }) {
     <div ref={ref} className="relative" style={fullWidth ? {} : { width: 180, flexShrink: 0 }}>
       <button
         onClick={() => setOpen(!open)}
-        className={`w-full flex items-center justify-between pl-3.5 pr-3 text-sm font-medium rounded-lg cursor-pointer focus:outline-none focus:ring-2 focus:ring-green-400 ${dark ? "bg-gray-800 border border-gray-700 text-gray-200" : "text-gray-700"}`}
+        className={`w-full flex items-center justify-between pl-3.5 pr-3 text-sm font-medium rounded-lg cursor-pointer focus:outline-none focus:ring-2 focus:ring-green-400 ${dark ? "bg-surface border border text-primary" : "text-secondary"}`}
         style={!dark ? { height:"40px", borderRadius:"8px", border:"1px solid #D5D7DA", background:"#FFF", boxShadow:"0 1px 2px 0 rgba(10,13,18,0.05)" } : { height:"40px", borderRadius:"8px", boxShadow:"0 1px 2px 0 rgba(10,13,18,0.05)" }}
       >
         <span className="truncate">{selected.label}</span>
-        <svg className={`w-4 h-4 flex-shrink-0 ml-2 transition-transform ${open ? "rotate-180" : ""} ${dark ? "text-gray-400" : "text-gray-500"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg className={`w-4 h-4 flex-shrink-0 ml-2 transition-transform ${open ? "rotate-180" : ""} text-tertiary`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
         </svg>
       </button>
       {open && (
         <ul
-          className={`absolute z-50 w-full mt-1 py-1 text-sm ${dark ? "bg-gray-800 border-gray-700 text-gray-200" : "text-gray-700 bg-white"}`}
+          className="absolute z-50 w-full mt-1 py-1 text-sm bg-surface border text-secondary"
           style={{ borderRadius:"8px", border:"1px solid #D5D7DA", boxShadow:"0 1px 2px 0 rgba(10,13,18,0.05)", top:"100%", left:0 }}
         >
           {options.map(o => (
@@ -55,7 +55,7 @@ function CustomSelect({ value, onChange, options, dark, fullWidth }) {
               onClick={() => { onChange(o.value); setOpen(false); }}
               className={`px-3.5 py-2 cursor-pointer ${value === o.value
                 ? (dark ? "bg-green-900/30 text-green-400" : "bg-green-50 text-green-700 font-medium")
-                : (dark ? "hover:bg-gray-700" : "hover:bg-gray-50")
+                : "hover:bg-hover"
               }`}
             >
               {o.label}
@@ -409,17 +409,17 @@ function RichEditor({ onChange, placeholder, dark }) {
       className={`w-7 h-7 flex items-center justify-center rounded text-sm font-medium transition-colors ${
         active[cmd === "insertUnorderedList" ? "ul" : cmd === "insertOrderedList" ? "ol" : cmd]
           ? "bg-green-100 text-green-700"
-          : dark ? "text-gray-400 hover:bg-gray-700" : "text-gray-500 hover:bg-gray-100"
+          : "text-tertiary hover:bg-active"
       }`}>
       {label}
     </button>
   );
 
-  const divider = <div className={`w-px h-4 mx-1 ${dark ? "bg-gray-600" : "bg-gray-300"}`} />;
+  const divider = <div className="w-px h-4 mx-1 bg-strong" />;
 
   return (
-    <div className={`rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-green-400 ${dark ? "border border-gray-700 bg-gray-800" : "border border-gray-300 bg-white"}`}>
-      <div className={`flex items-center gap-0.5 px-2 py-1 border-b ${dark ? "border-gray-700 bg-gray-850" : "border-gray-200 bg-gray-50"}`}>
+    <div className="rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-green-400 border bg-surface">
+      <div className="flex items-center gap-0.5 px-2 py-1 border-b bg-muted">
         {btn("bold",   <strong>B</strong>, "Negrita")}
         {btn("italic", <em>I</em>,         "Cursiva")}
         {divider}
@@ -433,22 +433,22 @@ function RichEditor({ onChange, placeholder, dark }) {
         <div className="relative">
           <button type="button"
             onMouseDown={e => { e.preventDefault(); setHeadingOpen(o => !o); }}
-            className={`h-7 px-2 flex items-center gap-1 rounded text-xs font-bold transition-colors ${dark ? "text-gray-400 hover:bg-gray-700" : "text-gray-500 hover:bg-gray-100"}`}>
+            className="h-7 px-2 flex items-center gap-1 rounded text-xs font-bold transition-colors text-tertiary hover:bg-active">
             H
             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7"/></svg>
           </button>
           {headingOpen && (
             <>
               <div className="fixed inset-0 z-10" onMouseDown={() => setHeadingOpen(false)} />
-              <div className={`absolute left-0 top-full mt-1 z-20 rounded-lg shadow-lg border overflow-hidden min-w-[110px] ${dark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}`}>
+              <div className="absolute left-0 top-full mt-1 z-20 rounded-lg shadow-lg border overflow-hidden min-w-[110px] bg-surface">
                 <button type="button"
                   onMouseDown={e => { e.preventDefault(); exec("formatBlock", "<h3>"); setHeadingOpen(false); }}
-                  className={`w-full text-left px-3 py-2 text-sm font-bold transition-colors ${dark ? "text-gray-100 hover:bg-gray-700" : "text-gray-800 hover:bg-gray-50"}`}>
+                  className="w-full text-left px-3 py-2 text-sm font-bold transition-colors text-primary hover:bg-active">
                   Título
                 </button>
                 <button type="button"
                   onMouseDown={e => { e.preventDefault(); exec("formatBlock", "<h4>"); setHeadingOpen(false); }}
-                  className={`w-full text-left px-3 py-2 text-sm font-semibold transition-colors ${dark ? "text-gray-300 hover:bg-gray-700" : "text-gray-600 hover:bg-gray-50"}`}>
+                  className="w-full text-left px-3 py-2 text-sm font-semibold transition-colors text-secondary hover:bg-active">
                   Subtítulo
                 </button>
               </div>
@@ -465,7 +465,7 @@ function RichEditor({ onChange, placeholder, dark }) {
         onKeyUp={updateActive}
         onMouseUp={updateActive}
         data-placeholder={placeholder}
-        className={`min-h-[88px] px-3 py-2 text-sm focus:outline-none empty:before:content-[attr(data-placeholder)] empty:before:pointer-events-none ${dark ? "text-gray-200 empty:before:text-gray-500" : "text-gray-900 empty:before:text-gray-400"}`}
+        className="min-h-[88px] px-3 py-2 text-sm focus:outline-none empty:before:content-[attr(data-placeholder)] empty:before:pointer-events-none text-primary empty:before:text-muted"
       />
     </div>
   );
@@ -520,16 +520,16 @@ function SettingsModal({ onClose, dark }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
-      <div className={`w-full max-w-xl rounded-2xl shadow-2xl ${d ? "bg-gray-900 border border-gray-700" : "bg-white border border-gray-200"}`}>
+      <div className="w-full max-w-xl rounded-2xl shadow-2xl bg-surface border">
         {/* Header */}
-        <div className={`flex items-center justify-between px-6 py-4 border-b ${d ? "border-gray-800" : "border-gray-200"}`}>
+        <div className="flex items-center justify-between px-6 py-4 border-b border-subtle">
           <div className="flex items-center gap-2">
             <svg className="w-5 h-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-            <h2 className={`text-lg font-bold ${d ? "text-gray-100" : "text-gray-900"}`}>Roles de usuario</h2>
+            <h2 className="text-lg font-bold text-primary">Roles de usuario</h2>
           </div>
           <div className="flex items-center gap-3">
-            <span className={`text-xs font-medium ${d ? "text-gray-600" : "text-gray-400"}`}>v1.0.3</span>
-            <button onClick={onClose} className={`w-8 h-8 flex items-center justify-center rounded-lg ${d ? "text-gray-400 hover:bg-gray-800" : "text-gray-500 hover:bg-gray-100"}`}>
+            <span className="text-xs font-medium text-muted">v1.0.3</span>
+            <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-lg text-tertiary hover:bg-hover">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
           </div>
@@ -548,32 +548,32 @@ function SettingsModal({ onClose, dark }) {
                 const currentRole = pendingRoles[u.user_id] ?? u.role;
                 const changed = pendingRoles[u.user_id] !== undefined && pendingRoles[u.user_id] !== u.role;
                 return (
-                  <div key={u.user_id} className={`flex items-center justify-between gap-4 px-4 py-3 rounded-xl border ${d ? "bg-gray-800 border-gray-700" : "bg-gray-50 border-gray-200"}`}>
+                  <div key={u.user_id} className="flex items-center justify-between gap-4 px-4 py-3 rounded-xl border bg-muted">
                     <div className="flex items-center gap-3 min-w-0">
                       <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold text-white flex-shrink-0" style={{ backgroundColor: "#00B369" }}>
                         {(u.full_name || u.email || "?")[0].toUpperCase()}
                       </div>
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
-                          <p className={`text-sm font-semibold truncate ${d ? "text-gray-100" : "text-gray-900"}`}>{u.full_name || "—"}</p>
+                          <p className="text-sm font-semibold truncate text-primary">{u.full_name || "—"}</p>
                           {isSelf && <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${d ? "bg-green-900/50 text-green-400" : "bg-green-50 text-green-700"}`}>Tú</span>}
                         </div>
-                        <p className={`text-xs truncate ${d ? "text-gray-400" : "text-gray-500"}`}>{u.email}</p>
+                        <p className="text-xs truncate text-tertiary">{u.email}</p>
                         {u.last_sign_in_at && (
-                          <p className={`text-xs ${d ? "text-gray-600" : "text-gray-400"}`}>
+                          <p className="text-xs text-muted">
                             Último acceso: {new Date(u.last_sign_in_at).toLocaleDateString("es-PE", { day: "numeric", month: "short", year: "numeric" })}
                           </p>
                         )}
                       </div>
                     </div>
                     {isSelf ? (
-                      <span className={`text-xs font-semibold px-3 py-1 rounded-lg ${d ? "bg-gray-700 text-gray-400" : "bg-gray-100 text-gray-500"}`}>Super Admin</span>
+                      <span className="text-xs font-semibold px-3 py-1 rounded-lg bg-active text-tertiary">Super Admin</span>
                     ) : (
                       <div className="flex items-center gap-2 flex-shrink-0">
                         <select
                           value={currentRole ?? ""}
                           onChange={e => setPendingRoles(p => ({ ...p, [u.user_id]: e.target.value }))}
-                          className={`text-xs font-semibold px-2 py-1.5 rounded-lg border focus:outline-none focus:ring-2 focus:ring-green-400 ${d ? "bg-gray-700 border-gray-600 text-gray-200" : "bg-white border-gray-300 text-gray-700"}`}
+                          className="text-xs font-semibold px-2 py-1.5 rounded-lg border border-strong focus:outline-none focus:ring-2 focus:ring-green-400 bg-active text-primary"
                         >
                           {!u.role && <option value="" disabled>Sin acceso</option>}
                           <option value="visitor">Visitante</option>
@@ -584,7 +584,7 @@ function SettingsModal({ onClose, dark }) {
                           disabled={!changed || rolesSaving[u.user_id]}
                           className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors ${changed
                             ? "bg-green-500 text-white hover:bg-green-600"
-                            : (d ? "bg-gray-700 text-gray-500 cursor-not-allowed" : "bg-gray-100 text-gray-400 cursor-not-allowed")}`}
+                            : "bg-muted text-tertiary cursor-not-allowed"}`}
                         >
                           {rolesSaving[u.user_id] ? "..." : "Cambiar"}
                         </button>
@@ -598,8 +598,8 @@ function SettingsModal({ onClose, dark }) {
           )}
         </div>
 
-        <div className={`flex justify-end px-6 py-4 border-t ${d ? "border-gray-800" : "border-gray-200"}`}>
-          <Button color="secondary" dark={d} onClick={onClose}>Cerrar</Button>
+        <div className="flex justify-end px-6 py-4 border-t border-subtle">
+          <Button color="secondary" onClick={onClose}>Cerrar</Button>
         </div>
       </div>
     </div>
@@ -722,12 +722,12 @@ function AddPage() {
     });
   };
 
-  const inp = `w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 ${d ? "bg-gray-800 border-gray-700 text-gray-200 placeholder-gray-500" : "bg-white border-gray-300 text-gray-900 placeholder-gray-400"}`;
-  const lbl = `block text-xs font-semibold mb-1 ${d ? "text-gray-400" : "text-gray-600"}`;
-  const sec = `rounded-xl border p-4 ${d ? "bg-gray-900 border-gray-700" : "bg-gray-50 border-gray-200"}`;
+  const inp = "w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 bg-surface border text-primary placeholder-muted";
+  const lbl = "block text-xs font-semibold mb-1 text-tertiary";
+  const sec = "rounded-xl border p-4 bg-muted";
 
   const SectionTitle = ({ children }) => (
-    <p className={`text-xs font-bold uppercase tracking-widest mb-3 ${d ? "text-gray-500" : "text-gray-400"}`}>{children}</p>
+    <p className="text-xs font-bold uppercase tracking-widest mb-3 text-tertiary">{children}</p>
   );
 
   const DateInput = ({ value, onChange }) => {
@@ -785,23 +785,23 @@ function AddPage() {
         <button
           type="button"
           onClick={() => setOpen(o => !o)}
-          className={`w-full flex items-center gap-2 px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 transition-colors ${d ? "bg-gray-800 border-gray-700 text-gray-200 hover:bg-gray-750" : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"}`}
+          className="w-full flex items-center gap-2 px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 transition-colors bg-surface text-secondary hover:bg-hover"
         >
-          <svg className={`w-4 h-4 flex-shrink-0 ${d ? "text-gray-500" : "text-gray-400"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg className="w-4 h-4 flex-shrink-0 text-tertiary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
           </svg>
-          <span className={value ? "" : (d ? "text-gray-500" : "text-gray-400")}>{display}</span>
+          <span className={value ? "" : "text-tertiary"}>{display}</span>
         </button>
 
         {open && (
-          <div className={`absolute z-50 mt-1 w-72 rounded-2xl border shadow-xl p-4 ${d ? "bg-gray-900 border-gray-700" : "bg-white border-gray-200"}`}>
+          <div className="absolute z-50 mt-1 w-72 rounded-2xl border shadow-xl p-4 bg-surface">
             {/* Navigation */}
             <div className="flex items-center justify-between mb-3">
-              <button type="button" onClick={prev} className={`w-8 h-8 flex items-center justify-center rounded-lg transition-colors ${d ? "text-gray-400 hover:bg-gray-800" : "text-gray-500 hover:bg-gray-100"}`}>
+              <button type="button" onClick={prev} className="w-8 h-8 flex items-center justify-center rounded-lg transition-colors text-tertiary hover:bg-hover">
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7"/></svg>
               </button>
-              <span className={`text-sm font-semibold ${d ? "text-gray-100" : "text-gray-900"}`}>{MONTHS[cursor.m]} {cursor.y}</span>
-              <button type="button" onClick={next} className={`w-8 h-8 flex items-center justify-center rounded-lg transition-colors ${d ? "text-gray-400 hover:bg-gray-800" : "text-gray-500 hover:bg-gray-100"}`}>
+              <span className="text-sm font-semibold text-primary">{MONTHS[cursor.m]} {cursor.y}</span>
+              <button type="button" onClick={next} className="w-8 h-8 flex items-center justify-center rounded-lg transition-colors text-tertiary hover:bg-hover">
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7"/></svg>
               </button>
             </div>
@@ -809,7 +809,7 @@ function AddPage() {
             {/* Day headers */}
             <div className="grid grid-cols-7 mb-1">
               {DAYS.map(day => (
-                <div key={day} className={`text-center text-xs font-medium py-1 ${d ? "text-gray-500" : "text-gray-400"}`}>{day}</div>
+                <div key={day} className="text-center text-xs font-medium py-1 text-tertiary">{day}</div>
               ))}
             </div>
 
@@ -825,8 +825,8 @@ function AddPage() {
                     onClick={() => select(cell.day, cell.cur)}
                     className={`h-9 w-full flex items-center justify-center rounded-lg text-sm transition-colors
                       ${sel ? "text-white font-semibold" : ""}
-                      ${!sel && cell.cur ? (d ? "text-gray-200 hover:bg-gray-800" : "text-gray-700 hover:bg-gray-100") : ""}
-                      ${!cell.cur ? (d ? "text-gray-600 hover:bg-gray-800" : "text-gray-300 hover:bg-gray-50") : ""}
+                      ${!sel && cell.cur ? "text-secondary hover:bg-active" : ""}
+                      ${!cell.cur ? "text-muted hover:bg-hover" : ""}
                       ${tod && !sel ? (d ? "font-semibold text-green-400" : "font-semibold text-green-600") : ""}
                     `}
                     style={sel ? { backgroundColor: "#00B369" } : {}}
@@ -838,15 +838,15 @@ function AddPage() {
             </div>
 
             {/* Footer */}
-            <div className={`mt-3 pt-3 border-t flex justify-between items-center ${d ? "border-gray-700" : "border-gray-100"}`}>
+            <div className="mt-3 pt-3 border-t flex justify-between items-center">
               <button
                 type="button"
                 onClick={() => { const n = new Date(); onChange(`${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,"0")}-${String(n.getDate()).padStart(2,"0")}`); setCursor({ y: n.getFullYear(), m: n.getMonth() }); setOpen(false); }}
-                className={`text-xs font-medium ${d ? "text-gray-400 hover:text-gray-200" : "text-gray-500 hover:text-gray-700"}`}
+                className="text-xs font-medium text-tertiary hover:text-secondary"
               >
                 Hoy
               </button>
-              <button type="button" onClick={() => setOpen(false)} className={`text-xs font-medium ${d ? "text-gray-400 hover:text-gray-200" : "text-gray-500 hover:text-gray-700"}`}>
+              <button type="button" onClick={() => setOpen(false)} className="text-xs font-medium text-tertiary hover:text-secondary">
                 Cancelar
               </button>
             </div>
@@ -857,16 +857,16 @@ function AddPage() {
   };
 
   return (
-    <div className={`flex-1 overflow-y-auto ${d ? "bg-gray-950" : "bg-gray-50"}`}>
+    <div className="flex-1 overflow-y-auto bg-page">
 
         {/* Modal de confirmación */}
         {showLeaveModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-            <div className={`w-full max-w-sm rounded-2xl border p-6 shadow-xl ${d ? "bg-gray-900 border-gray-700" : "bg-white border-gray-200"}`}>
-              <h3 className={`text-base font-semibold mb-1 ${d ? "text-gray-100" : "text-gray-900"}`}>¿Descartar cambios?</h3>
-              <p className={`text-sm mb-5 ${d ? "text-gray-400" : "text-gray-500"}`}>Si vuelves ahora, perderás toda la información que has añadido.</p>
+            <div className="w-full max-w-sm rounded-2xl border p-6 shadow-xl bg-surface">
+              <h3 className="text-base font-semibold mb-1 text-primary">¿Descartar cambios?</h3>
+              <p className="text-sm mb-5 text-tertiary">Si vuelves ahora, perderás toda la información que has añadido.</p>
               <div className="flex gap-3 justify-end">
-                <Button color="secondary" dark={d} onClick={() => setShowLeaveModal(false)}>
+                <Button color="secondary" onClick={() => setShowLeaveModal(false)}>
                   Cancelar
                 </Button>
                 <button onClick={onClose} className="px-4 py-2 rounded-lg text-sm font-semibold text-white bg-red-600 hover:bg-red-700">
@@ -879,7 +879,7 @@ function AddPage() {
 
         {showPersonaPhotoPicker && (
           <PersonaPhotoPickerModal
-            dark={d}
+           
             onClose={() => setShowPersonaPhotoPicker(false)}
             onSelect={(url) => { setPersonaField(personaTab, "foto", url); setShowPersonaPhotoPicker(false); }}
             onUpload={() => { personaPhotoInputRef.current?.click(); setShowPersonaPhotoPicker(false); }}
@@ -893,13 +893,13 @@ function AddPage() {
         }} />
 
         {/* Top bar */}
-        <div className={`border-b px-4 py-3 md:px-8 md:py-4 sticky top-0 z-10 ${d ? "bg-gray-950 border-gray-800" : "bg-gray-50 border-gray-200"}`}>
+        <div className="border-b px-4 py-3 md:px-8 md:py-4 sticky top-0 z-10 bg-page border-subtle">
           <button
             onClick={() => {
               const hasData = form.title.trim() || form.descripcion.trim() || form.objetivo.trim() || form.hallazgos.trim() || form.jiraUrl || form.archivoUrl;
               hasData ? setShowLeaveModal(true) : onClose();
             }}
-            className={`flex items-center gap-2 text-sm font-semibold ${d ? "text-gray-400 hover:text-gray-200" : "text-gray-500 hover:text-gray-900"}`}
+            className="flex items-center gap-2 text-sm font-semibold text-tertiary hover:text-primary"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7"/></svg>
             Volver
@@ -909,11 +909,11 @@ function AddPage() {
       <div className="w-full mx-auto px-4 md:px-8 py-6 md:py-8" style={{ maxWidth: "1600px" }}>
         {/* Header */}
         <div className="mb-6">
-          <h1 className={`text-2xl font-bold mb-1 ${d ? "text-gray-100" : "text-gray-900"}`}>Añadir research</h1>
+          <h1 className="text-2xl font-bold mb-1 text-primary">Añadir research</h1>
           {form.title.trim() && (
             <div className="flex items-center gap-2 min-w-0">
-              <p className={`text-sm font-medium truncate min-w-0 ${d ? "text-gray-400" : "text-gray-500"}`}>{window.location.origin}/research/{toSlug(form.title)}</p>
-              <button type="button" title="Copiar enlace" onClick={() => navigator.clipboard.writeText(`${window.location.origin}/research/${toSlug(form.title)}`)} style={{ width: 32, height: 32 }} className={`flex items-center justify-center rounded-lg border flex-shrink-0 ${d ? "bg-gray-800 border-gray-700 text-gray-400 hover:bg-gray-700 hover:text-gray-200" : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50 hover:text-gray-700"}`}>
+              <p className="text-sm font-medium truncate min-w-0 text-tertiary">{window.location.origin}/research/{toSlug(form.title)}</p>
+              <button type="button" title="Copiar enlace" onClick={() => navigator.clipboard.writeText(`${window.location.origin}/research/${toSlug(form.title)}`)} style={{ width: 32, height: 32 }} className="flex items-center justify-center rounded-lg border flex-shrink-0 bg-surface text-tertiary hover:bg-hover hover:text-secondary">
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
               </button>
             </div>
@@ -929,7 +929,7 @@ function AddPage() {
               <div>
                 <label className={lbl}>Título <span className="text-green-500">*</span></label>
                 <input
-                  className={`w-full px-3 py-2 text-xl font-semibold border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 ${d ? "bg-gray-800 border-gray-700 text-gray-100 placeholder-gray-500" : "bg-white border-gray-300 text-gray-900 placeholder-gray-400"}`}
+                  className="w-full px-3 py-2 text-xl font-semibold border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 bg-surface text-primary placeholder-muted"
                   placeholder="Título del research..."
                   value={form.title}
                   onChange={e => set("title", e.target.value)}
@@ -948,24 +948,24 @@ function AddPage() {
             </div>
 
             {/* Contenido */}
-            <div className={`rounded-2xl border p-5 space-y-4 ${d ? "bg-gray-900 border-gray-700" : "bg-white border-gray-200"}`}>
+            <div className="rounded-2xl border p-5 space-y-4 bg-surface">
               <SectionTitle>Contenido</SectionTitle>
               <div>
                 <label className={lbl}>Objetivo del research</label>
-                <RichEditor dark={d} value={form.objetivo} onChange={v => set("objetivo", v)} placeholder="¿Qué se busca lograr con este entregable?" />
+                <RichEditor value={form.objetivo} onChange={v => set("objetivo", v)} placeholder="¿Qué se busca lograr con este entregable?" />
               </div>
               <div>
                 <label className={lbl}>Usuario</label>
-                <RichEditor dark={d} value={form.usuario} onChange={v => set("usuario", v)} placeholder="Perfil de los usuarios involucrados" />
+                <RichEditor value={form.usuario} onChange={v => set("usuario", v)} placeholder="Perfil de los usuarios involucrados" />
               </div>
               <div>
                 <label className={lbl}>Hallazgos y conclusiones</label>
-                <RichEditor dark={d} value={form.hallazgos} onChange={v => set("hallazgos", v)} placeholder="Principales hallazgos o estado actual" />
+                <RichEditor value={form.hallazgos} onChange={v => set("hallazgos", v)} placeholder="Principales hallazgos o estado actual" />
               </div>
             </div>
 
             {/* Referencias */}
-            <div className={`rounded-2xl border p-5 space-y-4 ${d ? "bg-gray-900 border-gray-700" : "bg-white border-gray-200"}`}>
+            <div className="rounded-2xl border p-5 space-y-4 bg-surface">
               <SectionTitle>Referencias</SectionTitle>
               <div>
                 <label className={lbl}>Link de Google Drive</label>
@@ -991,12 +991,12 @@ function AddPage() {
                 </div>
                 {jiraError && <p className="mt-1 text-xs text-amber-500">{jiraError}</p>}
                 {form.jira && !jiraLoading && (
-                  <div className={`mt-2 rounded-lg border p-3 ${d ? "bg-gray-800 border-gray-600" : "bg-gray-50 border-gray-200"}`}>
-                    <p className={`text-xs font-semibold leading-snug ${d ? "text-gray-100" : "text-gray-800"}`}>{form.jira}</p>
+                  <div className="mt-2 rounded-lg border p-3 bg-muted border-strong">
+                    <p className="text-xs font-semibold leading-snug text-primary">{form.jira}</p>
                     {form.jiraStatus && (
                       <span className={`inline-block mt-1 text-xs font-bold px-2 py-0.5 rounded border ${/done|closed|resolved|finaliz|complet/i.test(form.jiraStatus) ? (d ? "text-green-400 border-green-700 bg-green-900/40" : "text-green-700 border-green-200 bg-green-50") : (d ? "text-blue-400 border-blue-700 bg-blue-900/40" : "text-blue-700 border-blue-200 bg-blue-50")}`}>{form.jiraStatus}</span>
                     )}
-                    <button type="button" onClick={() => { set("jira", ""); set("jiraStatus", ""); set("jiraUrl", ""); }} className={`block mt-1.5 text-xs ${d ? "text-gray-500 hover:text-gray-300" : "text-gray-400 hover:text-gray-600"}`}>Cambiar ticket</button>
+                    <button type="button" onClick={() => { set("jira", ""); set("jiraStatus", ""); set("jiraUrl", ""); }} className="block mt-1.5 text-xs text-tertiary hover:text-secondary">Cambiar ticket</button>
                   </div>
                 )}
               </div>
@@ -1004,7 +1004,7 @@ function AddPage() {
 
             {/* Imágenes adjuntas */}
             {!PERSONA_TYPES.includes(form.type) && (
-              <div className={`rounded-2xl border p-5 space-y-4 ${d ? "bg-gray-900 border-gray-700" : "bg-white border-gray-200"}`}>
+              <div className="rounded-2xl border p-5 space-y-4 bg-surface">
                 <SectionTitle>Imágenes adjuntas</SectionTitle>
                 {(form.imagenes || []).length > 0 && (
                   <div className="grid grid-cols-4 gap-2">
@@ -1019,7 +1019,7 @@ function AddPage() {
                     ))}
                   </div>
                 )}
-                <Button type="button" color="secondary" dark={d} disabled={imageUploading} className="flex items-center gap-2" onClick={() => setShowImagePicker(true)}>
+                <Button type="button" color="secondary" disabled={imageUploading} className="flex items-center gap-2" onClick={() => setShowImagePicker(true)}>
                   {imageUploading
                     ? <div className="w-4 h-4 rounded-full border-2 border-gray-300 border-t-green-500 animate-spin" />
                     : <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
@@ -1027,7 +1027,7 @@ function AddPage() {
                   Añadir imágenes
                 </Button>
                 {showImagePicker && (
-                  <ImagePickerModal dark={d} deliverables={deliverables}
+                  <ImagePickerModal deliverables={deliverables}
                     onSelect={(url) => { if (!(form.imagenes || []).includes(url)) set("imagenes", [...(form.imagenes || []), url]); setShowImagePicker(false); }}
                     onUpload={() => { setShowImagePicker(false); setTimeout(() => imageInputRef.current?.click(), 100); }}
                     onDelete={async (url) => {
@@ -1056,24 +1056,24 @@ function AddPage() {
 
             {/* Personas */}
             {PERSONA_TYPES.includes(form.type) && form.personas.length > 0 && (
-              <div className={`rounded-2xl border p-5 ${d ? "bg-gray-900 border-gray-700" : "bg-white border-gray-200"}`}>
+              <div className="rounded-2xl border p-5 bg-surface">
                 <div className="flex items-center justify-between mb-4">
                   <SectionTitle>Personas</SectionTitle>
                   {form.personas.length < 3 && (
-                    <Button type="button" size="xs" color="secondary" dark={d} onClick={addPersona}>
+                    <Button type="button" size="xs" color="secondary" onClick={addPersona}>
                       <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/></svg>
                       Añadir
                     </Button>
                   )}
                 </div>
-                <div className={`flex border-b mb-4 ${d ? "border-gray-700" : "border-gray-200"}`}>
+                <div className="flex border-b mb-4 border">
                   {form.personas.map((p, i) => (
                     <div key={i} className="flex items-center">
                       <button type="button" onClick={() => setPersonaTab(i)} className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${personaTab === i ? "border-green-500 text-green-600" : d ? "border-transparent text-gray-400 hover:text-gray-200" : "border-transparent text-gray-500 hover:text-gray-800"}`}>
                         {p.nombre || `Persona ${i + 1}`}
                       </button>
                       {form.personas.length > 1 && (
-                        <button type="button" onClick={() => removePersona(i)} className={`-ml-1 mb-px w-4 h-4 flex items-center justify-center text-xs ${d ? "text-gray-600 hover:text-gray-300" : "text-gray-300 hover:text-gray-600"}`}>✕</button>
+                        <button type="button" onClick={() => removePersona(i)} className="-ml-1 mb-px w-4 h-4 flex items-center justify-center text-xs text-muted hover:text-secondary">✕</button>
                       )}
                     </div>
                   ))}
@@ -1083,7 +1083,7 @@ function AddPage() {
                   const fi = (field, placeholder) => <input className={inp} placeholder={placeholder} value={p[field] || ""} onChange={e => setPersonaField(personaTab, field, e.target.value)} />;
                   const group = (title, children) => (
                     <div>
-                      <p className={`text-xs font-bold uppercase tracking-wider mb-3 ${d ? "text-gray-500" : "text-gray-400"}`}>{title}</p>
+                      <p className="text-xs font-bold uppercase tracking-wider mb-3 text-muted">{title}</p>
                       <div className="space-y-3">{children}</div>
                     </div>
                   );
@@ -1094,9 +1094,9 @@ function AddPage() {
                           {p.foto ? <img src={p.foto} alt="Foto" className="w-full h-full object-cover" /> : <svg className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>}
                         </div>
                         <div className="space-y-1">
-                          <p className={`text-xs font-semibold ${d ? "text-gray-400" : "text-gray-600"}`}>Imagen de perfil</p>
-                          <p className={`text-xs ${d ? "text-gray-500" : "text-gray-400"}`}>500×500 px · JPG</p>
-                          <Button type="button" size="xs" color="secondary" dark={d} onClick={() => setShowPersonaPhotoPicker(true)} isDisabled={personaPhotoUploading} className="flex items-center gap-2">
+                          <p className="text-xs font-semibold text-tertiary">Imagen de perfil</p>
+                          <p className="text-xs text-muted">500×500 px · JPG</p>
+                          <Button type="button" size="xs" color="secondary" onClick={() => setShowPersonaPhotoPicker(true)} isDisabled={personaPhotoUploading} className="flex items-center gap-2">
                             {personaPhotoUploading ? "Subiendo..." : (p.foto ? "Cambiar foto" : "Subir foto")}
                           </Button>
                         </div>
@@ -1117,18 +1117,18 @@ function AddPage() {
                           <div><label className={lbl}>Personal</label>{fi("personal","Ej: 10-50 empleados")}</div>
                           <div><label className={lbl}>Tiempo de apertura</label>{fi("tiempoApertura","Ej: 5 años")}</div>
                         </div>
-                        <div><label className={lbl}>Metas a futuro</label><RichEditor dark={d} value={p.metas || ""} onChange={v => setPersonaField(personaTab, "metas", v)} placeholder="Metas y objetivos a futuro..." /></div>
+                        <div><label className={lbl}>Metas a futuro</label><RichEditor value={p.metas || ""} onChange={v => setPersonaField(personaTab, "metas", v)} placeholder="Metas y objetivos a futuro..." /></div>
                       </> : <>
                         <div><label className={lbl}>Rubro</label>{fi("rubro","Sector o industria")}</div>
                         <div><label className={lbl}>Tiempo en el negocio</label>{fi("tiempoNegocio","Ej: 3 años")}</div>
                       </>)}
                       {form.type === "Buyer Persona" && <>
-                        {group("Adquisición del producto", <RichEditor dark={d} value={p.adquisicion || ""} onChange={v => setPersonaField(personaTab, "adquisicion", v)} placeholder="Razones de adquisición..." />)}
-                        {group("Comunicaciones", <RichEditor dark={d} value={p.comunicaciones || ""} onChange={v => setPersonaField(personaTab, "comunicaciones", v)} placeholder="Canales de comunicación..." />)}
+                        {group("Adquisición del producto", <RichEditor value={p.adquisicion || ""} onChange={v => setPersonaField(personaTab, "adquisicion", v)} placeholder="Razones de adquisición..." />)}
+                        {group("Comunicaciones", <RichEditor value={p.comunicaciones || ""} onChange={v => setPersonaField(personaTab, "comunicaciones", v)} placeholder="Canales de comunicación..." />)}
                       </>}
                       {form.type === "User Persona" && <>
-                        {group("Objetivos y metas", <RichEditor dark={d} value={p.objetivos || ""} onChange={v => setPersonaField(personaTab, "objetivos", v)} placeholder="Objetivos y metas del usuario..." />)}
-                        {group("Frustraciones y dolores", <RichEditor dark={d} value={p.dolores || ""} onChange={v => setPersonaField(personaTab, "dolores", v)} placeholder="Frustraciones y dolores..." />)}
+                        {group("Objetivos y metas", <RichEditor value={p.objetivos || ""} onChange={v => setPersonaField(personaTab, "objetivos", v)} placeholder="Objetivos y metas del usuario..." />)}
+                        {group("Frustraciones y dolores", <RichEditor value={p.dolores || ""} onChange={v => setPersonaField(personaTab, "dolores", v)} placeholder="Frustraciones y dolores..." />)}
                       </>}
                     </div>
                   );
@@ -1141,7 +1141,7 @@ function AddPage() {
           <div className="space-y-4">
 
             {/* Estado + Acciones */}
-            <div className={`rounded-2xl border p-5 space-y-4 ${d ? "bg-gray-900 border-gray-700" : "bg-white border-gray-200"}`}>
+            <div className="rounded-2xl border p-5 space-y-4 bg-surface border-gray-700 border-gray-200">
               <div className="flex items-center justify-between">
                 <SectionTitle>Estado</SectionTitle>
                 <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${form.status === "Publicado" ? (d ? "bg-green-900/40 text-green-400 border-green-700" : "bg-green-50 text-green-700 border-green-200") : (d ? "bg-gray-800 text-gray-400 border-gray-600" : "bg-gray-100 text-gray-500 border-gray-300")}`}>
@@ -1154,7 +1154,7 @@ function AddPage() {
                 <DateInput value={form.date} onChange={v => set("date", v)} />
               </div>
               <div className="flex gap-2 pt-1">
-                <Button color="secondary" dark={d} onClick={() => handleSave("Borrador")} disabled={!form.title.trim() || saving} className="flex-1 disabled:opacity-40 transition-opacity">
+                <Button color="secondary" onClick={() => handleSave("Borrador")} disabled={!form.title.trim() || saving} className="flex-1 disabled:opacity-40 transition-opacity">
                   Guardar
                 </Button>
                 <Button color="primary" onClick={() => handleSave("Publicado")} disabled={!form.title.trim() || saving} className="flex-1 disabled:opacity-40 transition-opacity">
@@ -1164,7 +1164,7 @@ function AddPage() {
             </div>
 
             {/* Clasificación */}
-            <div className={`rounded-2xl border p-5 space-y-4 ${d ? "bg-gray-900 border-gray-700" : "bg-white border-gray-200"}`}>
+            <div className="rounded-2xl border p-5 space-y-4 bg-surface border-gray-700 border-gray-200">
               <SectionTitle>Clasificación</SectionTitle>
               <div>
                 <label className={lbl}>Tipo de entregable <span className="text-green-500">*</span></label>
@@ -1208,7 +1208,7 @@ function AddPage() {
 function CardSkeleton({ dark: d }) {
   const b = d ? "bg-gray-800" : "bg-gray-200";
   return (
-    <div className={`rounded-xl border p-5 animate-pulse ${d ? "bg-gray-900 border-gray-800" : "bg-white border-gray-200"}`}>
+    <div className="rounded-xl border p-5 animate-pulse bg-surface border-gray-800 border-gray-200">
       <div className="flex gap-3 mb-4">
         <div className={`h-6 w-24 rounded-full ${b}`} />
         <div className={`h-6 w-16 rounded-full ${b}`} />
@@ -1239,20 +1239,20 @@ function ProductCard({ product: p, deliverables, coverUrl, dark: d, onClick }) {
   const usabilidad = all.filter(i => i.type === "Pruebas de usabilidad").length;
   return (
     <button onClick={onClick}
-      className={`text-left rounded-xl border overflow-hidden transition-all group ${d ? "bg-gray-900 border-gray-800 hover:border-green-600" : "bg-white border-gray-200 hover:border-green-400 hover:shadow-md"}`}
+      className="text-left rounded-xl border overflow-hidden transition-all group bg-surface border-gray-800 hover:border-green-600 border-gray-200 hover:border-green-400 hover:shadow-md"
       style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }}>
       <div className="h-20 w-full flex-shrink-0" style={{ backgroundColor: pc, backgroundImage: coverUrl ? `url(${coverUrl})` : undefined, backgroundSize: "cover", backgroundPosition: "center" }} />
       <div className="p-5">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2.5">
-            <span className={`font-semibold text-base ${d ? "text-gray-100" : "text-gray-900"}`}>{p}</span>
+            <span className="font-semibold text-base text-primary">{p}</span>
           </div>
-          <svg className={`hidden lg:block w-4 h-4 transition-transform group-hover:translate-x-0.5 ${d ? "text-gray-700" : "text-gray-300"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+          <svg className="hidden lg:block w-4 h-4 transition-transform group-hover:translate-x-0.5 text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
         </div>
-        <div className={`text-xs space-y-1.5 ${d ? "text-gray-500" : "text-gray-400"}`}>
-          <div className="flex justify-between"><span>Research</span><span className={`font-semibold ${d ? "text-gray-300" : "text-gray-600"}`}>{research}</span></div>
-          <div className="flex justify-between"><span>Pruebas de usabilidad</span><span className={`font-semibold ${d ? "text-gray-300" : "text-gray-600"}`}>{usabilidad}</span></div>
-          <div className={`flex justify-between pt-1.5 border-t ${d ? "border-gray-800" : "border-gray-100"}`}>
+        <div className="text-xs space-y-1.5 text-muted">
+          <div className="flex justify-between"><span>Research</span><span className="font-semibold text-secondary">{research}</span></div>
+          <div className="flex justify-between"><span>Pruebas de usabilidad</span><span className="font-semibold text-secondary">{usabilidad}</span></div>
+          <div className="flex justify-between pt-1.5 border-t border-subtle">
             <span>Total</span><span className="font-bold" style={{ color: "#00B369" }}>{all.length}</span>
           </div>
         </div>
@@ -1358,7 +1358,7 @@ function HeroGrid({ dark: d }) {
 function ProductCardSkeleton({ dark: d }) {
   const b = d ? "bg-gray-800" : "bg-gray-200";
   return (
-    <div className={`rounded-xl border overflow-hidden animate-pulse ${d ? "bg-gray-900 border-gray-800" : "bg-white border-gray-200"}`}>
+    <div className="rounded-xl border overflow-hidden animate-pulse bg-surface border-gray-800 border-gray-200">
       <div className={`h-20 ${b}`} />
       <div className="p-5 space-y-3">
         <div className={`h-4 w-1/2 rounded-lg ${b}`} />
@@ -1378,30 +1378,30 @@ function Card({ item, dark, fromLabel }) {
   const pc = productTag ? (PRODUCT_COLORS[productTag] || "#00B369") : null;
 
   return (
-    <div onClick={() => navigate(`/research/${toSlug(item.title)}`, { state: { fromLabel } })} className={`rounded-2xl border p-6 cursor-pointer group flex flex-col ${d ? "bg-gray-900 border-gray-700 hover:border-green-400 hover:shadow-lg hover:shadow-black/30" : "bg-white border-gray-200 hover:shadow-md hover:border-green-400/40"}`}>
+    <div onClick={() => navigate(`/research/${toSlug(item.title)}`, { state: { fromLabel } })} className="rounded-2xl border p-6 cursor-pointer group flex flex-col bg-surface border-gray-700 hover:border-green-400 hover:shadow-lg hover:shadow-black/30 border-gray-200 hover:shadow-md hover:border-green-400/40">
       <div className="flex items-start justify-between mb-4">
-        <UIBadge color={getBadgeColor(item.typeColor)} dark={d}>{item.type}</UIBadge>
-        <span className={`text-sm ${d ? "text-gray-500" : "text-gray-400"}`}>{item.date}</span>
+        <UIBadge color={getBadgeColor(item.typeColor)}>{item.type}</UIBadge>
+        <span className="text-sm text-muted">{item.date}</span>
       </div>
-      <h3 className={`font-semibold text-lg leading-snug mb-3 ${d ? "text-gray-100 group-hover:text-green-600" : "text-gray-900 group-hover:text-green-700"}`}>{item.title}</h3>
-      <p className={`text-base leading-relaxed mb-4 line-clamp-2 flex-1 ${d ? "text-gray-400" : "text-gray-500"}`}>{item.descripcion || stripHtml(item.objetivo)}</p>
+      <h3 className="font-semibold text-lg leading-snug mb-3 text-primary group-hover:text-green-600">{item.title}</h3>
+      <p className="text-base leading-relaxed mb-4 line-clamp-2 flex-1 text-tertiary">{item.descripcion || stripHtml(item.objetivo)}</p>
       <div className="flex flex-wrap gap-2 mb-5">
-        {item.tags.filter(tag => !PRODUCTS.includes(tag)).map(tag => <span key={tag} className={`text-sm rounded-lg px-2.5 py-1 border ${d ? "text-gray-400 bg-gray-800 border-gray-700" : "text-gray-500 bg-gray-50 border-gray-200"}`}>{tag}</span>)}
+        {item.tags.filter(tag => !PRODUCTS.includes(tag)).map(tag => <span key={tag} className="text-sm rounded-lg px-2.5 py-1 border text-tertiary bg-muted border">{tag}</span>)}
       </div>
-      <div className={`flex items-center justify-between pt-4 border-t ${d ? "border-gray-800" : "border-gray-100"}`}>
+      <div className="flex items-center justify-between pt-4 border-t border-subtle">
         {(() => { const validTeam = (item.team || []).filter(n => editors.includes(n)); return validTeam.length ? (
           <div className="flex items-center gap-2">
-            <div className="flex -space-x-2">{validTeam.map((name, i) => <UIAvatar key={name} name={name} index={i} dark={d} />)}</div>
-            <span className={`text-sm ${d ? "text-gray-400" : "text-gray-500"}`}>{validTeam[0]}</span>
+            <div className="flex -space-x-2">{validTeam.map((name, i) => <UIAvatar key={name} name={name} index={i} />)}</div>
+            <span className="text-sm text-tertiary">{validTeam[0]}</span>
           </div>
         ) : (
           <div className="flex items-center gap-1.5">
-            <UIAvatar name={null} dark={d} />
-            <span className={`text-sm ${d ? "text-gray-500" : "text-gray-400"}`}>Sin asignar</span>
+            <UIAvatar name={null} />
+            <span className="text-sm text-muted">Sin asignar</span>
           </div>
         ); })()}
         {productTag && pc && (
-          <span className={`text-sm rounded-lg px-2.5 py-1 border flex items-center gap-1.5 ${d ? "text-gray-300 bg-gray-800 border-gray-700" : "text-gray-600 bg-gray-50 border-gray-200"}`}>
+          <span className="text-sm rounded-lg px-2.5 py-1 border flex items-center gap-1.5 text-secondary bg-muted border">
             <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: pc }} />
             {productTag}
           </span>
@@ -1423,55 +1423,55 @@ function PersonaDetailTabs({ personas, type, dark: d }) {
 
   const FieldCard = ({ label, value, description }) =>
     value ? (
-      <div className={`py-2 border-b ${d ? "border-gray-700" : "border-gray-100"}`}>
-        <p className={`text-xs mb-0.5 ${d ? "text-gray-500" : "text-gray-400"}`}>{label}</p>
-        <p className={`text-sm font-semibold leading-snug ${d ? "text-gray-100" : "text-gray-900"}`}>{value}</p>
-        {description && <p className={`text-xs mt-1 leading-snug ${d ? "text-gray-400" : "text-gray-500"}`}>{description}</p>}
+      <div className="py-2 border-b border">
+        <p className="text-xs mb-0.5 text-muted">{label}</p>
+        <p className="text-sm font-semibold leading-snug text-primary">{value}</p>
+        {description && <p className="text-xs mt-1 leading-snug text-tertiary">{description}</p>}
       </div>
     ) : null;
 
   const NivelCard = () =>
     p.nivelTec ? (
-      <div className={`py-2 border-b ${d ? "border-gray-700" : "border-gray-100"}`}>
-        <p className={`text-xs mb-0.5 ${d ? "text-gray-500" : "text-gray-400"}`}>Nivel tecnológico</p>
-        <p className={`text-sm font-semibold mb-1.5 ${d ? "text-gray-100" : "text-gray-900"}`}>{p.nivelTec}</p>
+      <div className="py-2 border-b border">
+        <p className="text-xs mb-0.5 text-muted">Nivel tecnológico</p>
+        <p className="text-sm font-semibold mb-1.5 text-primary">{p.nivelTec}</p>
         {nivelPct && (
-          <div className={`h-1.5 rounded-full overflow-hidden ${d ? "bg-gray-700" : "bg-gray-100"}`}>
+          <div className="h-1.5 rounded-full overflow-hidden bg-active">
             <div className="h-full rounded-full bg-green-500 transition-all" style={{ width: `${nivelPct}%` }} />
           </div>
         )}
-        {p.herramientas && <p className={`text-xs mt-1.5 ${d ? "text-gray-400" : "text-gray-500"}`}>Utiliza <strong>{p.herramientas}</strong></p>}
+        {p.herramientas && <p className="text-xs mt-1.5 text-tertiary">Utiliza <strong>{p.herramientas}</strong></p>}
       </div>
     ) : null;
 
   const SectionHeader = ({ children }) => (
-    <div className={`rounded-lg px-4 py-2.5 mb-3 ${d ? "bg-gray-800" : "bg-gray-100"}`}>
-      <p className={`text-sm font-bold ${d ? "text-gray-100" : "text-gray-800"}`}>{children}</p>
+    <div className="rounded-lg px-4 py-2.5 mb-3 bg-muted">
+      <p className="text-sm font-bold text-primary">{children}</p>
     </div>
   );
 
   const ContentCard = ({ title, description }) =>
     title ? (
-      <div className={`rounded-lg p-4 border ${d ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}`}>
-        <p className={`text-sm font-bold leading-snug ${d ? "text-gray-100" : "text-gray-900"}`}>{title}</p>
-        {description && <p className={`text-sm mt-1.5 leading-snug ${d ? "text-gray-400" : "text-gray-600"}`}>{description}</p>}
+      <div className="rounded-lg p-4 border bg-surface border-gray-700 border-gray-200">
+        <p className="text-sm font-bold leading-snug text-primary">{title}</p>
+        {description && <p className="text-sm mt-1.5 leading-snug text-tertiary">{description}</p>}
       </div>
     ) : null;
 
   const SideSection = ({ title, children }) => (
-    <div className={`rounded-xl border overflow-hidden ${d ? "border-gray-700" : "border-gray-200"}`}>
+    <div className="rounded-xl border overflow-hidden border">
       <div className="px-3 py-2" style={{ backgroundColor: bannerColor }}>
         <p className="text-white font-bold text-sm">{title}</p>
       </div>
-      <div className={`px-3 ${d ? "bg-gray-800" : "bg-white"}`}>{children}</div>
+      <div className="px-3 bg-surface">{children}</div>
     </div>
   );
 
   return (
-    <div className={`rounded-2xl border p-5 ${d ? "bg-gray-900 border-gray-700" : "bg-gray-50 border-gray-200"}`}>
+    <div className="rounded-2xl border p-5 bg-surface border">
       {/* Persona tabs */}
       {personas.length > 1 && (
-        <div className={`flex border-b mb-4 ${d ? "border-gray-700" : "border-gray-200"}`}>
+        <div className="flex border-b mb-4 border">
           {personas.map((persona, i) => (
             <button key={i} onClick={() => setTab(i)}
               className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
@@ -1516,9 +1516,9 @@ function PersonaDetailTabs({ personas, type, dark: d }) {
                 <FieldCard label="Cantidad de personal" value={p.personal} />
                 <FieldCard label="Tiempo de apertura" value={p.tiempoApertura} />
                 {p.metas && (
-                  <div className={`py-2 border-b ${d ? "border-gray-700" : "border-gray-100"}`}>
-                    <p className={`text-xs mb-0.5 ${d ? "text-gray-500" : "text-gray-400"}`}>Metas a futuro</p>
-                    <div className={`rich-content text-sm leading-snug ${d ? "text-gray-100" : "text-gray-900"}`} dangerouslySetInnerHTML={{ __html: sanitizeHtml(p.metas) }} />
+                  <div className="py-2 border-b border">
+                    <p className="text-xs mb-0.5 text-muted">Metas a futuro</p>
+                    <div className="rich-content text-sm leading-snug text-primary" dangerouslySetInnerHTML={{ __html: sanitizeHtml(p.metas) }} />
                   </div>
                 )}
               </>
@@ -1536,14 +1536,14 @@ function PersonaDetailTabs({ personas, type, dark: d }) {
               {p.adquisicion && (
                 <div>
                   <SectionHeader>Adquisición del producto</SectionHeader>
-                  <div className={`rich-content text-sm leading-relaxed ${d ? "text-gray-300" : "text-gray-600"}`} dangerouslySetInnerHTML={{ __html: sanitizeHtml(p.adquisicion) }} />
+                  <div className="rich-content text-sm leading-relaxed text-secondary" dangerouslySetInnerHTML={{ __html: sanitizeHtml(p.adquisicion) }} />
                 </div>
               )}
               {/* Comunicaciones */}
               {p.comunicaciones && (
                 <div>
                   <SectionHeader>Comunicaciones</SectionHeader>
-                  <div className={`rich-content text-sm leading-relaxed ${d ? "text-gray-300" : "text-gray-600"}`} dangerouslySetInnerHTML={{ __html: sanitizeHtml(p.comunicaciones) }} />
+                  <div className="rich-content text-sm leading-relaxed text-secondary" dangerouslySetInnerHTML={{ __html: sanitizeHtml(p.comunicaciones) }} />
                 </div>
               )}
             </>
@@ -1552,13 +1552,13 @@ function PersonaDetailTabs({ personas, type, dark: d }) {
               {p.objetivos && (
                 <div>
                   <SectionHeader>Objetivos y metas</SectionHeader>
-                  <div className={`rich-content text-sm leading-relaxed ${d ? "text-gray-300" : "text-gray-600"}`} dangerouslySetInnerHTML={{ __html: sanitizeHtml(p.objetivos) }} />
+                  <div className="rich-content text-sm leading-relaxed text-secondary" dangerouslySetInnerHTML={{ __html: sanitizeHtml(p.objetivos) }} />
                 </div>
               )}
               {p.dolores && (
                 <div>
                   <SectionHeader>Frustraciones y dolores</SectionHeader>
-                  <div className={`rich-content text-sm leading-relaxed ${d ? "text-gray-300" : "text-gray-600"}`} dangerouslySetInnerHTML={{ __html: sanitizeHtml(p.dolores) }} />
+                  <div className="rich-content text-sm leading-relaxed text-secondary" dangerouslySetInnerHTML={{ __html: sanitizeHtml(p.dolores) }} />
                 </div>
               )}
             </>
@@ -1591,7 +1591,7 @@ function Toast({ toast }) {
         )}
         <div>
           <p className="text-sm font-semibold">{toast.msg.title}</p>
-          {toast.msg.subtitle && <p className={`text-xs mt-0.5 ${d ? "text-gray-400" : "text-gray-500"}`}>{toast.msg.subtitle}</p>}
+          {toast.msg.subtitle && <p className="text-xs mt-0.5 text-tertiary">{toast.msg.subtitle}</p>}
         </div>
       </div>
     </div>
@@ -1603,18 +1603,18 @@ function ConfirmModal({ title, message, confirmLabel = "Confirmar", danger = fal
   const { dark: d } = useApp();
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backgroundColor: "rgba(0,0,0,0.6)" }}>
-      <div className={`rounded-2xl shadow-2xl border w-full max-w-sm ${d ? "bg-gray-900 border-gray-700" : "bg-white border-gray-200"}`}>
+      <div className="rounded-2xl shadow-2xl border w-full max-w-sm bg-surface border-gray-700 border-gray-200">
         <div className="px-6 pt-6 pb-4">
           <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-4 ${danger ? (d ? "bg-red-900/50" : "bg-red-100") : (d ? "bg-amber-900/50" : "bg-amber-100")}`}>
             <svg className={`w-5 h-5 ${danger ? "text-red-500" : "text-amber-500"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
             </svg>
           </div>
-          <h3 className={`text-base font-bold mb-1 ${d ? "text-gray-100" : "text-gray-900"}`}>{title}</h3>
-          <p className={`text-sm ${d ? "text-gray-400" : "text-gray-500"}`}>{message}</p>
+          <h3 className="text-base font-bold mb-1 text-primary">{title}</h3>
+          <p className="text-sm text-tertiary">{message}</p>
         </div>
         <div className="flex gap-3 px-6 pb-6">
-          <Button color="secondary" dark={d} onClick={onCancel} className="flex-1">
+          <Button color="secondary" onClick={onCancel} className="flex-1">
             Cancelar
           </Button>
           <button onClick={onConfirm} className={`flex-1 px-4 py-2 text-sm font-semibold rounded-lg text-white ${danger ? "bg-red-500 hover:bg-red-600" : "bg-amber-500 hover:bg-amber-600"}`}>
@@ -1640,13 +1640,13 @@ function ViewsModal({ researchId, dark: d, onClose }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
-      <div className={`w-full max-w-md rounded-2xl shadow-2xl ${d ? "bg-gray-900 border border-gray-700" : "bg-white border border-gray-200"}`}>
-        <div className={`flex items-center justify-between px-6 py-4 border-b ${d ? "border-gray-800" : "border-gray-200"}`}>
+      <div className="w-full max-w-md rounded-2xl shadow-2xl bg-surface border border-gray-700 border border-gray-200">
+        <div className="flex items-center justify-between px-6 py-4 border-b border">
           <div className="flex items-center gap-2">
             <svg className="w-5 h-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-            <h2 className={`text-lg font-bold ${d ? "text-gray-100" : "text-gray-900"}`}>Vistas</h2>
+            <h2 className="text-lg font-bold text-primary">Vistas</h2>
           </div>
-          <button onClick={onClose} className={`w-8 h-8 flex items-center justify-center rounded-lg ${d ? "text-gray-400 hover:bg-gray-800" : "text-gray-500 hover:bg-gray-100"}`}>
+          <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-lg text-tertiary hover:bg-hover">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/></svg>
           </button>
         </div>
@@ -1654,19 +1654,19 @@ function ViewsModal({ researchId, dark: d, onClose }) {
           {loading ? (
             <div className="flex justify-center py-8"><div className="w-8 h-8 rounded-full border-4 border-gray-300 border-t-green-500 animate-spin" /></div>
           ) : views.length === 0 ? (
-            <p className={`text-sm text-center py-8 ${d ? "text-gray-500" : "text-gray-400"}`}>Nadie ha visto este research aún.</p>
+            <p className="text-sm text-center py-8 text-muted">Nadie ha visto este research aún.</p>
           ) : (
             <div className="space-y-2">
               {views.map((v, i) => (
-                <div key={i} className={`flex items-center gap-3 px-3 py-2.5 rounded-xl ${d ? "bg-gray-800" : "bg-gray-50"}`}>
+                <div key={i} className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-muted">
                   <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0" style={{ backgroundColor: "#00B369" }}>
                     {(v.user_name || v.user_email || "?")[0].toUpperCase()}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className={`text-sm font-semibold truncate ${d ? "text-gray-100" : "text-gray-900"}`}>{v.user_name || "—"}</p>
-                    <p className={`text-xs truncate ${d ? "text-gray-400" : "text-gray-500"}`}>{v.user_email}</p>
+                    <p className="text-sm font-semibold truncate text-primary">{v.user_name || "—"}</p>
+                    <p className="text-xs truncate text-tertiary">{v.user_email}</p>
                   </div>
-                  <p className={`text-xs flex-shrink-0 ${d ? "text-gray-600" : "text-gray-400"}`}>
+                  <p className="text-xs flex-shrink-0 text-muted">
                     {new Date(v.viewed_at).toLocaleDateString("es-PE", { day: "numeric", month: "short" })}
                   </p>
                 </div>
@@ -1674,8 +1674,8 @@ function ViewsModal({ researchId, dark: d, onClose }) {
             </div>
           )}
         </div>
-        <div className={`flex justify-end px-6 py-4 border-t ${d ? "border-gray-800" : "border-gray-200"}`}>
-          <Button color="secondary" dark={d} onClick={onClose}>Cerrar</Button>
+        <div className="flex justify-end px-6 py-4 border-t border">
+          <Button color="secondary" onClick={onClose}>Cerrar</Button>
         </div>
       </div>
     </div>
@@ -1709,7 +1709,7 @@ function DetailPage() {
     });
   }, [item?.id]);
 
-  if (!item) return <div className={`flex-1 flex items-center justify-center ${d ? "bg-gray-950 text-gray-400" : "bg-gray-50 text-gray-500"}`}>Research no encontrado.</div>;
+  if (!item) return <div className="flex-1 flex items-center justify-center bg-page text-gray-400 text-gray-500">Research no encontrado.</div>;
   const related = deliverables.filter(r => r.id !== item.id && r.tags[0] === item.tags[0] && r.status === "Publicado").slice(0, 3);
 
   const jiraDone = /done|closed|resolved|finaliz|complet/i.test(item.jiraStatus || "");
@@ -1718,7 +1718,7 @@ function DetailPage() {
     : (d ? "text-blue-400 border-blue-700 bg-blue-900/40" : "text-blue-700 border-blue-200 bg-blue-50");
 
   return (
-    <div className={`flex-1 overflow-y-auto ${d ? "bg-gray-950" : "bg-gray-50"}`}>
+    <div className="flex-1 overflow-y-auto bg-page">
       {confirmDelete && (
         <ConfirmModal
           title="¿Eliminar research?"
@@ -1730,8 +1730,8 @@ function DetailPage() {
         />
       )}
       {/* Top bar */}
-      <div className={`border-b px-4 py-3 md:px-8 md:py-4 sticky top-0 z-10 flex items-center justify-between ${d ? "bg-gray-950 border-gray-800" : "bg-gray-50 border-gray-200"}`}>
-        <button onClick={() => window.history.length > 1 ? navigate(-1) : navigate("/research")} className={`flex items-center gap-2 text-sm font-semibold ${d ? "text-gray-400 hover:text-gray-200" : "text-gray-500 hover:text-gray-900"}`}>
+      <div className="border-b px-4 py-3 md:px-8 md:py-4 sticky top-0 z-10 flex items-center justify-between bg-page border-gray-800 border-gray-200">
+        <button onClick={() => window.history.length > 1 ? navigate(-1) : navigate("/research")} className="flex items-center gap-2 text-sm font-semibold text-tertiary hover:text-primary">
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
@@ -1740,7 +1740,7 @@ function DetailPage() {
         </button>
         <div className="flex gap-2">
           {isEditor && (
-            <Button color="secondary" dark={d} onClick={() => setShowViews(true)} className="flex items-center gap-1.5">
+            <Button color="secondary" onClick={() => setShowViews(true)} className="flex items-center gap-1.5">
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
               Ver vistas
             </Button>
@@ -1757,27 +1757,27 @@ function DetailPage() {
           )}
         </div>
       </div>
-      {showViews && <ViewsModal researchId={item.id} dark={d} onClose={() => setShowViews(false)} />}
+      {showViews && <ViewsModal researchId={item.id} onClose={() => setShowViews(false)} />}
 
       <div className="w-full mx-auto px-4 md:px-8 py-6 md:py-8 pb-16 md:pb-24" style={{maxWidth:"1600px"}}>
         {/* Breadcrumb */}
-        <div className={`flex items-center gap-2 text-sm mb-2 ${d ? "text-gray-500" : "text-gray-400"}`}>
-          <button onClick={() => navigate("/")} className={`hover:underline ${d ? "hover:text-gray-300" : "hover:text-gray-700"}`}>Inicio</button><span>/</span>
-          <button onClick={() => navigate(`/producto/${toSlug(item.tags[0])}`)} className={`hover:underline ${d ? "hover:text-gray-300" : "hover:text-gray-700"}`}>{item.tags[0]}</button><span>/</span>
+        <div className="flex items-center gap-2 text-sm mb-2 text-muted">
+          <button onClick={() => navigate("/")} className="hover:underline hover:text-secondary">Inicio</button><span>/</span>
+          <button onClick={() => navigate(`/producto/${toSlug(item.tags[0])}`)} className="hover:underline hover:text-secondary">{item.tags[0]}</button><span>/</span>
           <span className={d ? "text-gray-300" : "text-gray-700"}>{item.title}</span>
         </div>
 
         {/* Page title */}
         <div className="flex items-center gap-3 mb-2">
           {(() => { const assigned = (item.team || []).find(n => editors.includes(n)) || null; return (<>
-            <UIAvatar name={assigned} index={0} dark={d} />
-            <span className={`text-sm ${d ? "text-gray-400" : "text-gray-500"}`}>
+            <UIAvatar name={assigned} index={0} />
+            <span className="text-sm text-tertiary">
               {assigned || "Sin asignar"} · {item.date}
             </span>
           </>); })()}
         </div>
-        <h1 className={`text-3xl font-bold mb-3 ${d ? "text-gray-100" : "text-gray-900"}`}>{item.title}</h1>
-        <div className="mb-8"><BadgeWithDot color={item.status === "Publicado" ? "success" : "gray"} dark={d}>{item.status}</BadgeWithDot></div>
+        <h1 className="text-3xl font-bold mb-3 text-primary">{item.title}</h1>
+        <div className="mb-8"><BadgeWithDot color={item.status === "Publicado" ? "success" : "gray"}>{item.status}</BadgeWithDot></div>
 
         {/* All entregables stacked */}
         <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
@@ -1788,7 +1788,7 @@ function DetailPage() {
               const thumbUrl = driveId ? `https://drive.google.com/thumbnail?id=${driveId}&sz=w400` : null;
               const openUrl = item.archivoUrl || null;
               return (
-                <div className={`rounded-xl border overflow-hidden ${d ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}`} style={{boxShadow:"0 1px 4px rgba(0,0,0,0.08)"}}>
+                <div className="rounded-xl border overflow-hidden bg-surface border-gray-700 border-gray-200" style={{boxShadow:"0 1px 4px rgba(0,0,0,0.08)"}}>
                   {/* Thumbnail row */}
                   <div className="flex" style={{minHeight:90}}>
                     <div className="flex-1 p-3 flex flex-col justify-between min-w-0">
@@ -1803,10 +1803,10 @@ function DetailPage() {
                           <path d="m59.8 53h-32.3l-13.75 23.8c1.35.8 2.9 1.2 4.5 1.2h50.8c1.6 0 3.15-.45 4.5-1.2z" fill="#2684fc"/>
                           <path d="m73.4 26.5-12.7-22c-.8-1.4-1.95-2.5-3.3-3.3l-13.75 23.8 16.15 27h27.45c0-1.55-.4-3.1-1.2-4.5z" fill="#ffba00"/>
                         </svg>
-                        <p className={`text-xs font-semibold leading-snug ${d ? "text-gray-100" : "text-gray-800"}`}>{item.archivo || "Archivo"}</p>
+                        <p className="text-xs font-semibold leading-snug text-primary">{item.archivo || "Archivo"}</p>
                       </div>
                       {/* Creado por */}
-                      <p className={`text-xs mt-1 ${d ? "text-gray-500" : "text-gray-400"}`}>· Creado por {(item.team || []).find(n => editors.includes(n)) || "Sin asignar"}</p>
+                      <p className="text-xs mt-1 text-muted">· Creado por {(item.team || []).find(n => editors.includes(n)) || "Sin asignar"}</p>
                     </div>
                     {/* Thumbnail */}
                     {thumbUrl && (
@@ -1817,12 +1817,12 @@ function DetailPage() {
                     )}
                   </div>
                   {/* Footer */}
-                  <div className={`flex items-center justify-between px-3 py-2 border-t ${d ? "border-gray-700" : "border-gray-100"}`}>
+                  <div className="flex items-center justify-between px-3 py-2 border-t border">
                     <svg className="w-14" viewBox="0 0 87.3 24" xmlns="http://www.w3.org/2000/svg">
                       <text y="18" fontSize="18" fontFamily="sans-serif" fill={d ? "#9ca3af" : "#5f6368"} fontWeight="500">Drive</text>
                     </svg>
                     <a href={openUrl || "#"} target={openUrl ? "_blank" : undefined} rel="noreferrer"
-                      className={`text-xs font-semibold px-3 py-1 rounded-lg border ${d ? "border-gray-600 text-green-400 hover:bg-gray-700" : "border-gray-200 text-green-600 hover:bg-gray-50"}`}>
+                      className={`text-xs font-semibold px-3 py-1 rounded-lg border border-strong hover:bg-hover ${d ? "text-green-400" : "text-green-600"}`}>
                       Abrir archivo
                     </a>
                   </div>
@@ -1831,27 +1831,27 @@ function DetailPage() {
             })()}
             <div className="space-y-3">
               <div>
-                <p className={`text-xs font-semibold mb-0.5 ${d ? "text-gray-500" : "text-gray-400"}`}>Fecha</p>
-                <p className={`text-sm ${d ? "text-gray-300" : "text-gray-700"}`}>{item.date}</p>
+                <p className="text-xs font-semibold mb-0.5 text-muted">Fecha</p>
+                <p className="text-sm text-secondary">{item.date}</p>
               </div>
               <div>
-                <p className={`text-xs font-semibold mb-0.5 ${d ? "text-gray-500" : "text-gray-400"}`}>Metodología</p>
-                <p className={`text-sm ${d ? "text-gray-300" : "text-gray-700"}`}>{item.metodologia}</p>
+                <p className="text-xs font-semibold mb-0.5 text-muted">Metodología</p>
+                <p className="text-sm text-secondary">{item.metodologia}</p>
               </div>
               {item.reunionUrl && (
                 <div>
-                  <p className={`text-xs font-semibold mb-1 ${d ? "text-gray-500" : "text-gray-400"}`}>Link de la reunión</p>
+                  <p className="text-xs font-semibold mb-1 text-muted">Link de la reunión</p>
                   <a href={item.reunionUrl} target="_blank" rel="noreferrer"
-                    className={`text-sm font-semibold leading-snug inline-flex items-center gap-1.5 ${d ? "text-green-400 hover:text-green-300" : "text-green-600 hover:text-green-700"}`}>
+                    className="text-sm font-semibold leading-snug inline-flex items-center gap-1.5 text-[var(--color-brand)] hover:text-[var(--color-brand-hover)]">
                     <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
                     Ver grabación
                   </a>
                 </div>
               )}
               <div>
-                <p className={`text-xs font-semibold mb-1 ${d ? "text-gray-500" : "text-gray-400"}`}>Link de Jira</p>
+                <p className="text-xs font-semibold mb-1 text-muted">Link de Jira</p>
                 <a
-                  className={`text-sm font-semibold leading-snug block mb-1.5 break-words ${d ? "text-green-400 hover:text-green-300" : "text-green-600 hover:text-green-700"} ${!item.jiraUrl && "pointer-events-none"}`}
+                  className={`text-sm font-semibold leading-snug block mb-1.5 break-words text-[var(--color-brand)] hover:text-[var(--color-brand-hover)] ${!item.jiraUrl && "pointer-events-none"}`}
                   href={item.jiraUrl || "#"}
                   target={item.jiraUrl ? "_blank" : undefined}
                   rel="noreferrer"
@@ -1861,7 +1861,7 @@ function DetailPage() {
                 {item.jira && item.jiraStatus && <span className={`text-xs font-bold px-2 py-0.5 rounded border ${entryJiraColor}`}>{item.jiraStatus}</span>}
               </div>
               {item.isCustom && isEditor && (
-                <div className={`mt-6 pt-4 border-t ${d ? "border-gray-700" : "border-gray-200"}`}>
+                <div className="mt-6 pt-4 border-t border">
                   <button
                     onClick={() => setConfirmDelete(true)}
                     className="flex items-center gap-1.5 text-sm font-semibold text-red-500 hover:text-red-700 transition-colors"
@@ -1880,31 +1880,31 @@ function DetailPage() {
           <div className="flex-1 min-w-0 space-y-6">
             {item.descripcion && (
               <div>
-                <h3 className={`text-xl font-bold mb-2 ${d ? "text-gray-100" : "text-gray-900"}`}>Descripción corta</h3>
-                <p className={`text-base leading-relaxed ${d ? "text-gray-300" : "text-gray-600"}`}>{item.descripcion}</p>
+                <h3 className="text-xl font-bold mb-2 text-primary">Descripción corta</h3>
+                <p className="text-base leading-relaxed text-secondary">{item.descripcion}</p>
               </div>
             )}
             {item.objetivo && (
               <div>
-                <h3 className={`text-xl font-bold mb-2 ${d ? "text-gray-100" : "text-gray-900"}`}>Objetivo del research</h3>
-                <div className={`rich-content text-base leading-relaxed ${d ? "text-gray-300" : "text-gray-600"}`} dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.objetivo) }} />
+                <h3 className="text-xl font-bold mb-2 text-primary">Objetivo del research</h3>
+                <div className="rich-content text-base leading-relaxed text-secondary" dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.objetivo) }} />
               </div>
             )}
             {item.usuario && (
               <div>
-                <h3 className={`text-xl font-bold mb-2 ${d ? "text-gray-100" : "text-gray-900"}`}>Usuario</h3>
-                <div className={`rich-content text-base leading-relaxed ${d ? "text-gray-300" : "text-gray-600"}`} dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.usuario) }} />
+                <h3 className="text-xl font-bold mb-2 text-primary">Usuario</h3>
+                <div className="rich-content text-base leading-relaxed text-secondary" dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.usuario) }} />
               </div>
             )}
             {item.hallazgos && (
               <div>
-                <h3 className={`text-xl font-bold mb-2 ${d ? "text-gray-100" : "text-gray-900"}`}>Hallazgos y conclusiones</h3>
-                <div className={`rich-content text-base leading-relaxed ${d ? "text-gray-300" : "text-gray-600"}`} dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.hallazgos) }} />
+                <h3 className="text-xl font-bold mb-2 text-primary">Hallazgos y conclusiones</h3>
+                <div className="rich-content text-base leading-relaxed text-secondary" dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.hallazgos) }} />
               </div>
             )}
             {item.imagenes && item.imagenes.length > 0 && (
               <div>
-                <h3 className={`text-xl font-bold mb-3 ${d ? "text-gray-100" : "text-gray-900"}`}>Imágenes adjuntas</h3>
+                <h3 className="text-xl font-bold mb-3 text-primary">Imágenes adjuntas</h3>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                   {item.imagenes.map((url, i) => (
                     <button key={i} onClick={() => setLightbox(i)} className="block rounded-xl overflow-hidden aspect-video group cursor-zoom-in">
@@ -1941,20 +1941,20 @@ function DetailPage() {
               </div>
             )}
             {PERSONA_TYPES.includes(item.type) && item.personas && item.personas.length > 0 && (
-              <PersonaDetailTabs personas={item.personas} type={item.type} dark={d} />
+              <PersonaDetailTabs personas={item.personas} type={item.type} />
             )}
           </div>
         </div>
 
         {/* Related */}
         {related.length > 0 && (
-          <div className={`mt-16 pt-10 border-t ${d ? "border-gray-800" : "border-gray-200"}`}>
-            <h2 className={`text-xl font-bold mb-5 ${d ? "text-gray-100" : "text-gray-900"}`}>
+          <div className="mt-16 pt-10 border-t border">
+            <h2 className="text-xl font-bold mb-5 text-primary">
               Research relacionados
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
               {related.map(r => (
-                <Card key={r.id} item={r} dark={d} fromLabel={item.title} />
+                <Card key={r.id} item={r} fromLabel={item.title} />
               ))}
             </div>
           </div>
@@ -1982,21 +1982,21 @@ function CoverPickerModal({ dark: d, onSelect, onUpload, onClose }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={onClose}>
       <div
         onClick={e => e.stopPropagation()}
-        className={`w-[560px] max-h-[80vh] rounded-2xl flex flex-col shadow-2xl ${d ? "bg-gray-900 border border-gray-800" : "bg-white border border-gray-200"}`}
+        className="w-[560px] max-h-[80vh] rounded-2xl flex flex-col shadow-2xl bg-surface border border-gray-800 border border-gray-200"
       >
         {/* Header */}
-        <div className={`flex items-center justify-between px-6 py-4 border-b ${d ? "border-gray-800" : "border-gray-200"}`}>
-          <h2 className={`font-semibold text-base ${d ? "text-gray-100" : "text-gray-900"}`}>Elegir portada</h2>
-          <button onClick={onClose} className={`w-8 h-8 flex items-center justify-center rounded-lg ${d ? "hover:bg-gray-800 text-gray-400" : "hover:bg-gray-100 text-gray-500"}`}>
+        <div className="flex items-center justify-between px-6 py-4 border-b border">
+          <h2 className="font-semibold text-base text-primary">Elegir portada</h2>
+          <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-hover text-tertiary">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
           </button>
         </div>
 
         {/* Upload button */}
-        <div className={`px-6 py-3 border-b ${d ? "border-gray-800" : "border-gray-200"}`}>
+        <div className="px-6 py-3 border-b border">
           <Button
             color="secondary"
-            dark={d}
+           
             onClick={onUpload}
             className="flex items-center gap-2"
           >
@@ -2010,7 +2010,7 @@ function CoverPickerModal({ dark: d, onSelect, onUpload, onClose }) {
           {loading ? (
             <div className="flex justify-center py-8"><div className="w-8 h-8 rounded-full border-4 border-gray-300 border-t-green-500 animate-spin" /></div>
           ) : files.length === 0 ? (
-            <p className={`text-sm text-center py-8 ${d ? "text-gray-500" : "text-gray-400"}`}>No hay imágenes subidas aún.</p>
+            <p className="text-sm text-center py-8 text-muted">No hay imágenes subidas aún.</p>
           ) : (
             <div className="grid grid-cols-3 gap-3">
               {files.map(f => {
@@ -2019,7 +2019,7 @@ function CoverPickerModal({ dark: d, onSelect, onUpload, onClose }) {
                 return (
                   <div key={f.name} className="relative group">
                     <button onClick={() => onSelect(f.name)}
-                      className={`w-full rounded-xl overflow-hidden border-2 transition-all hover:border-green-500 aspect-video ${d ? "border-gray-700" : "border-gray-200"}`}>
+                      className="w-full rounded-xl overflow-hidden border-2 transition-all hover:border-green-500 aspect-video border">
                       <img src={url} alt={f.name} className="w-full h-full object-cover" />
                     </button>
                     <button onClick={() => setConfirmTarget(f)}
@@ -2068,15 +2068,15 @@ function PersonaPhotoPickerModal({ dark: d, onSelect, onUpload, onClose }) {
   return (
     <>
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={onClose}>
-      <div onClick={e => e.stopPropagation()} className={`w-[480px] max-h-[80vh] rounded-2xl flex flex-col shadow-2xl ${d ? "bg-gray-900 border border-gray-800" : "bg-white border border-gray-200"}`}>
-        <div className={`flex items-center justify-between px-6 py-4 border-b ${d ? "border-gray-800" : "border-gray-200"}`}>
-          <h2 className={`font-semibold text-base ${d ? "text-gray-100" : "text-gray-900"}`}>Elegir foto de perfil</h2>
-          <button onClick={onClose} className={`w-8 h-8 flex items-center justify-center rounded-lg ${d ? "hover:bg-gray-800 text-gray-400" : "hover:bg-gray-100 text-gray-500"}`}>
+      <div onClick={e => e.stopPropagation()} className="w-[480px] max-h-[80vh] rounded-2xl flex flex-col shadow-2xl bg-surface border border-gray-800 border border-gray-200">
+        <div className="flex items-center justify-between px-6 py-4 border-b border">
+          <h2 className="font-semibold text-base text-primary">Elegir foto de perfil</h2>
+          <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-hover text-tertiary">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/></svg>
           </button>
         </div>
-        <div className={`px-6 py-3 border-b ${d ? "border-gray-800" : "border-gray-200"}`}>
-          <Button color="secondary" dark={d} onClick={onUpload} className="flex items-center gap-2">
+        <div className="px-6 py-3 border-b border">
+          <Button color="secondary" onClick={onUpload} className="flex items-center gap-2">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
             Subir nueva foto
           </Button>
@@ -2085,7 +2085,7 @@ function PersonaPhotoPickerModal({ dark: d, onSelect, onUpload, onClose }) {
           {loading ? (
             <div className="flex justify-center py-8"><div className="w-8 h-8 rounded-full border-4 border-gray-300 border-t-green-500 animate-spin" /></div>
           ) : files.length === 0 ? (
-            <p className={`text-sm text-center py-8 ${d ? "text-gray-500" : "text-gray-400"}`}>No hay fotos subidas aún.</p>
+            <p className="text-sm text-center py-8 text-muted">No hay fotos subidas aún.</p>
           ) : (
             <div className="grid grid-cols-4 gap-3">
               {files.map(f => {
@@ -2093,7 +2093,7 @@ function PersonaPhotoPickerModal({ dark: d, onSelect, onUpload, onClose }) {
                 const url = data?.publicUrl;
                 return (
                   <div key={f.name} className="relative group">
-                    <button onClick={() => onSelect(url)} className={`w-full rounded-full overflow-hidden border-2 transition-all hover:border-green-500 aspect-square ${d ? "border-gray-700" : "border-gray-200"}`}>
+                    <button onClick={() => onSelect(url)} className="w-full rounded-full overflow-hidden border-2 transition-all hover:border-green-500 aspect-square border">
                       <img src={url} alt={f.name} className="w-full h-full object-cover" />
                     </button>
                     <button onClick={() => setConfirmTarget(f)}
@@ -2154,28 +2154,28 @@ function ImagePickerModal({ dark: d, deliverables, onSelect, onUpload, onDelete,
   return (
     <>
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={onClose}>
-      <div onClick={e => e.stopPropagation()} className={`w-[560px] max-h-[80vh] rounded-2xl flex flex-col shadow-2xl ${d ? "bg-gray-900 border border-gray-800" : "bg-white border border-gray-200"}`}>
-        <div className={`flex items-center justify-between px-6 py-4 border-b ${d ? "border-gray-800" : "border-gray-200"}`}>
-          <h2 className={`font-semibold text-base ${d ? "text-gray-100" : "text-gray-900"}`}>Imágenes adjuntas</h2>
-          <button onClick={onClose} className={`w-8 h-8 flex items-center justify-center rounded-lg ${d ? "hover:bg-gray-800 text-gray-400" : "hover:bg-gray-100 text-gray-500"}`}>
+      <div onClick={e => e.stopPropagation()} className="w-[560px] max-h-[80vh] rounded-2xl flex flex-col shadow-2xl bg-surface border border-gray-800 border border-gray-200">
+        <div className="flex items-center justify-between px-6 py-4 border-b border">
+          <h2 className="font-semibold text-base text-primary">Imágenes adjuntas</h2>
+          <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-hover text-tertiary">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/></svg>
           </button>
         </div>
-        <div className={`px-6 py-3 border-b ${d ? "border-gray-800" : "border-gray-200"}`}>
-          <Button color="secondary" dark={d} onClick={onUpload} className="flex items-center gap-2">
+        <div className="px-6 py-3 border-b border">
+          <Button color="secondary" onClick={onUpload} className="flex items-center gap-2">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
             Subir nueva imagen
           </Button>
         </div>
         <div className="flex-1 overflow-y-auto p-6">
           {images.length === 0 ? (
-            <p className={`text-sm text-center py-8 ${d ? "text-gray-500" : "text-gray-400"}`}>No hay imágenes subidas aún.</p>
+            <p className="text-sm text-center py-8 text-muted">No hay imágenes subidas aún.</p>
           ) : (
             <div className="grid grid-cols-3 gap-3">
               {images.map((url, i) => (
                 <div key={i} className="relative group">
                   <button onClick={() => onSelect(url)}
-                    className={`w-full rounded-xl overflow-hidden border-2 transition-all hover:border-green-500 aspect-video ${d ? "border-gray-700" : "border-gray-200"} ${deleting === url ? "opacity-40" : ""}`}>
+                    className={`w-full rounded-xl overflow-hidden border-2 transition-all hover:border-green-500 aspect-video border ${deleting === url ? "opacity-40" : ""}`}>
                     {deleting === url
                       ? <div className="w-full h-full flex items-center justify-center"><div className="w-6 h-6 rounded-full border-2 border-gray-300 border-t-green-500 animate-spin" /></div>
                       : <img src={url} alt="" className="w-full h-full object-cover" />}
@@ -2268,10 +2268,10 @@ function ProductPage() {
   };
 
   return (
-    <div className={`flex-1 overflow-y-auto ${d ? "bg-gray-950" : "bg-gray-50"}`}>
+    <div className="flex-1 overflow-y-auto bg-page">
       {showCoverPicker && (
         <CoverPickerModal
-          dark={d}
+         
           onClose={() => setShowCoverPicker(false)}
           onUpload={() => { setShowCoverPicker(false); coverInputRef.current.click(); }}
           onSelect={handleSelectExisting}
@@ -2302,24 +2302,24 @@ function ProductPage() {
       </div>
 
       {/* Nav bar below cover */}
-      <div className={`border-b px-8 py-4 sticky top-0 z-10 flex items-center ${d ? "bg-gray-950 border-gray-800" : "bg-white border-gray-200"}`}>
-        <button onClick={() => navigate("/")} className={`flex items-center gap-2 text-sm font-semibold ${d ? "text-gray-400 hover:text-gray-200" : "text-gray-500 hover:text-gray-900"}`}>
+      <div className="border-b px-8 py-4 sticky top-0 z-10 flex items-center border bg-surface">
+        <button onClick={() => navigate("/")} className="flex items-center gap-2 text-sm font-semibold text-tertiary hover:text-primary">
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
           Volver al inicio
         </button>
       </div>
 
       <div className="w-full mx-auto px-4 md:px-8 py-6 md:py-8 pb-16" style={{ maxWidth: "1600px" }}>
-        <h1 className={`text-2xl md:text-3xl font-bold mb-1 ${d ? "text-gray-100" : "text-gray-900"}`}>{product}</h1>
-        <p className={`text-sm mb-10 ${d ? "text-gray-500" : "text-gray-400"}`}>{productDeliverables.length} entregable{productDeliverables.length !== 1 ? "s" : ""}</p>
+        <h1 className="text-2xl md:text-3xl font-bold mb-1 text-primary">{product}</h1>
+        <p className="text-sm mb-10 text-muted">{productDeliverables.length} entregable{productDeliverables.length !== 1 ? "s" : ""}</p>
 
         {/* Persona sections */}
         {PERSONA_TYPES.map(type => {
           const items = personaByType[type];
           return (
-            <div key={type} className={`mb-10 pb-10 border-b ${d ? "border-gray-800" : "border-gray-100"}`}>
+            <div key={type} className="mb-10 pb-10 border-b border-subtle">
               <div className="flex items-center justify-between mb-5">
-                <h2 className={`text-xl font-bold ${d ? "text-gray-100" : "text-gray-900"}`}>{type}</h2>
+                <h2 className="text-xl font-bold text-primary">{type}</h2>
                 {isEditor && (
                   <Button
                     color="primary"
@@ -2335,16 +2335,16 @@ function ProductPage() {
               {items.length > 0 ? (
                 <div className="space-y-6">
                   {items.map(inv => (
-                    <div key={inv.id} className={`rounded-2xl border overflow-hidden ${d ? "border-gray-700 bg-gray-900" : "border-gray-200 bg-white"}`}>
+                    <div key={inv.id} className="rounded-2xl border overflow-hidden border bg-surface">
                       {/* Investigation title bar */}
-                      <div className={`px-5 py-3 border-b flex items-center justify-between ${d ? "border-gray-700 bg-gray-800/50" : "border-gray-100 bg-gray-50"}`}>
+                      <div className={`px-5 py-3 border-b flex items-center justify-between border ${d ? "bg-gray-800/50" : "bg-gray-50"}`}>
                         <div className="min-w-0">
-                          <p className={`text-sm font-semibold truncate ${d ? "text-gray-100" : "text-gray-900"}`}>{inv.title}</p>
-                          <p className={`text-xs mt-0.5 ${d ? "text-gray-500" : "text-gray-400"}`}>{inv.date} · {inv.personas?.length || 0} persona{(inv.personas?.length || 0) !== 1 ? "s" : ""}</p>
+                          <p className="text-sm font-semibold truncate text-primary">{inv.title}</p>
+                          <p className="text-xs mt-0.5 text-muted">{inv.date} · {inv.personas?.length || 0} persona{(inv.personas?.length || 0) !== 1 ? "s" : ""}</p>
                         </div>
                         <button
                           onClick={() => navigate(`/research/${toSlug(inv.title)}`)}
-                          className={`flex-shrink-0 flex items-center gap-1 text-xs font-semibold ml-3 ${d ? "text-green-400 hover:text-green-300" : "text-green-600 hover:text-green-700"}`}
+                          className="flex-shrink-0 flex items-center gap-1 text-xs font-semibold ml-3 text-[var(--color-brand)] hover:text-[var(--color-brand-hover)]"
                         >
                           Ver research completo
                           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
@@ -2356,7 +2356,7 @@ function ProductPage() {
                           {inv.personas.map((p, i) => {
                             const nivelPct = { "básico": 33, "intermedio": 66, "avanzado": 100 }[(p.nivelTec || "").toLowerCase()] || null;
                             return (
-                              <div key={i} className={`rounded-xl border overflow-hidden ${d ? "border-gray-700" : "border-gray-200"}`}>
+                              <div key={i} className="rounded-xl border overflow-hidden border">
                                 <div className="px-4 py-3 flex items-center gap-2.5" style={{ backgroundColor: type === "Buyer Persona" ? "#2563EB" : "#00B369" }}>
                                   <div className="w-8 h-8 rounded-full flex items-end justify-center overflow-hidden flex-shrink-0" style={{ backgroundColor: "rgba(255,255,255,0.25)" }}>
                                     <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
@@ -2366,32 +2366,32 @@ function ProductPage() {
                                     <p className="text-white text-sm font-bold truncate">{p.nombre || `Persona ${i + 1}`}</p>
                                   </div>
                                 </div>
-                                <div className={`p-3 space-y-2 ${d ? "bg-gray-800" : "bg-white"}`}>
+                                <div className="p-3 space-y-2 bg-surface">
                                   {type === "Buyer Persona" ? (<>
                                     {(p.cargo || p.edad) && <div className="grid grid-cols-2 gap-2">
-                                      {p.cargo && <div><p className={`text-xs ${d ? "text-gray-500" : "text-gray-400"}`}>Cargo</p><p className={`text-xs font-semibold ${d ? "text-gray-200" : "text-gray-800"}`}>{p.cargo}</p></div>}
-                                      {p.edad && <div><p className={`text-xs ${d ? "text-gray-500" : "text-gray-400"}`}>Edad</p><p className={`text-xs font-semibold ${d ? "text-gray-200" : "text-gray-800"}`}>{p.edad}</p></div>}
+                                      {p.cargo && <div><p className="text-xs text-muted">Cargo</p><p className="text-xs font-semibold text-primary">{p.cargo}</p></div>}
+                                      {p.edad && <div><p className="text-xs text-muted">Edad</p><p className="text-xs font-semibold text-primary">{p.edad}</p></div>}
                                     </div>}
                                     {(p.ubicacion || p.nivelTec) && <div className="grid grid-cols-2 gap-2">
-                                      {p.ubicacion && <div><p className={`text-xs ${d ? "text-gray-500" : "text-gray-400"}`}>Ubicación</p><p className={`text-xs font-semibold ${d ? "text-gray-200" : "text-gray-800"}`}>{p.ubicacion}</p></div>}
-                                      {p.nivelTec && <div><p className={`text-xs ${d ? "text-gray-500" : "text-gray-400"}`}>Nivel tec.</p><p className={`text-xs font-semibold mb-1 ${d ? "text-gray-200" : "text-gray-800"}`}>{p.nivelTec}</p>{(() => { const pct = { "básico": 33, "intermedio": 66, "avanzado": 100 }[(p.nivelTec || "").toLowerCase()] || null; return pct ? <div className={`h-1 rounded-full overflow-hidden ${d ? "bg-gray-700" : "bg-gray-100"}`}><div className="h-full rounded-full bg-green-500" style={{ width: `${pct}%` }} /></div> : null; })()}</div>}
+                                      {p.ubicacion && <div><p className="text-xs text-muted">Ubicación</p><p className="text-xs font-semibold text-primary">{p.ubicacion}</p></div>}
+                                      {p.nivelTec && <div><p className="text-xs text-muted">Nivel tec.</p><p className="text-xs font-semibold mb-1 text-primary">{p.nivelTec}</p>{(() => { const pct = { "básico": 33, "intermedio": 66, "avanzado": 100 }[(p.nivelTec || "").toLowerCase()] || null; return pct ? <div className="h-1 rounded-full overflow-hidden bg-active"><div className="h-full rounded-full bg-green-500" style={{ width: `${pct}%` }} /></div> : null; })()}</div>}
                                     </div>}
                                     {(p.rubro || p.personal) && <div className="grid grid-cols-2 gap-2">
-                                      {p.rubro && <div><p className={`text-xs ${d ? "text-gray-500" : "text-gray-400"}`}>Rubro</p><p className={`text-xs font-semibold ${d ? "text-gray-200" : "text-gray-800"}`}>{p.rubro}</p></div>}
-                                      {p.personal && <div><p className={`text-xs ${d ? "text-gray-500" : "text-gray-400"}`}>Personal</p><p className={`text-xs font-semibold ${d ? "text-gray-200" : "text-gray-800"}`}>{p.personal}</p></div>}
+                                      {p.rubro && <div><p className="text-xs text-muted">Rubro</p><p className="text-xs font-semibold text-primary">{p.rubro}</p></div>}
+                                      {p.personal && <div><p className="text-xs text-muted">Personal</p><p className="text-xs font-semibold text-primary">{p.personal}</p></div>}
                                     </div>}
                                   </>) : (<>
                                     {(p.cargo || p.edad) && <div className="grid grid-cols-2 gap-2">
-                                      {p.cargo && <div><p className={`text-xs ${d ? "text-gray-500" : "text-gray-400"}`}>Cargo</p><p className={`text-xs font-semibold ${d ? "text-gray-200" : "text-gray-800"}`}>{p.cargo}</p></div>}
-                                      {p.edad && <div><p className={`text-xs ${d ? "text-gray-500" : "text-gray-400"}`}>Edad</p><p className={`text-xs font-semibold ${d ? "text-gray-200" : "text-gray-800"}`}>{p.edad}</p></div>}
+                                      {p.cargo && <div><p className="text-xs text-muted">Cargo</p><p className="text-xs font-semibold text-primary">{p.cargo}</p></div>}
+                                      {p.edad && <div><p className="text-xs text-muted">Edad</p><p className="text-xs font-semibold text-primary">{p.edad}</p></div>}
                                     </div>}
                                     {(p.ubicacion || p.nivelTec) && <div className="grid grid-cols-2 gap-2">
-                                      {p.ubicacion && <div><p className={`text-xs ${d ? "text-gray-500" : "text-gray-400"}`}>Ubicación</p><p className={`text-xs font-semibold ${d ? "text-gray-200" : "text-gray-800"}`}>{p.ubicacion}</p></div>}
-                                      {p.nivelTec && <div><p className={`text-xs ${d ? "text-gray-500" : "text-gray-400"}`}>Nivel tec.</p><p className={`text-xs font-semibold mb-1 ${d ? "text-gray-200" : "text-gray-800"}`}>{p.nivelTec}</p>{(() => { const pct = { "básico": 33, "intermedio": 66, "avanzado": 100 }[(p.nivelTec || "").toLowerCase()] || null; return pct ? <div className={`h-1 rounded-full overflow-hidden ${d ? "bg-gray-700" : "bg-gray-100"}`}><div className="h-full rounded-full bg-green-500" style={{ width: `${pct}%` }} /></div> : null; })()}</div>}
+                                      {p.ubicacion && <div><p className="text-xs text-muted">Ubicación</p><p className="text-xs font-semibold text-primary">{p.ubicacion}</p></div>}
+                                      {p.nivelTec && <div><p className="text-xs text-muted">Nivel tec.</p><p className="text-xs font-semibold mb-1 text-primary">{p.nivelTec}</p>{(() => { const pct = { "básico": 33, "intermedio": 66, "avanzado": 100 }[(p.nivelTec || "").toLowerCase()] || null; return pct ? <div className="h-1 rounded-full overflow-hidden bg-active"><div className="h-full rounded-full bg-green-500" style={{ width: `${pct}%` }} /></div> : null; })()}</div>}
                                     </div>}
                                     {(p.rubro || p.tiempoNegocio) && <div className="grid grid-cols-2 gap-2">
-                                      {p.rubro && <div><p className={`text-xs ${d ? "text-gray-500" : "text-gray-400"}`}>Rubro</p><p className={`text-xs font-semibold ${d ? "text-gray-200" : "text-gray-800"}`}>{p.rubro}</p></div>}
-                                      {p.tiempoNegocio && <div><p className={`text-xs ${d ? "text-gray-500" : "text-gray-400"}`}>Tiempo negocio</p><p className={`text-xs font-semibold ${d ? "text-gray-200" : "text-gray-800"}`}>{p.tiempoNegocio}</p></div>}
+                                      {p.rubro && <div><p className="text-xs text-muted">Rubro</p><p className="text-xs font-semibold text-primary">{p.rubro}</p></div>}
+                                      {p.tiempoNegocio && <div><p className="text-xs text-muted">Tiempo negocio</p><p className="text-xs font-semibold text-primary">{p.tiempoNegocio}</p></div>}
                                     </div>}
                                   </>)}
                                 </div>
@@ -2404,10 +2404,10 @@ function ProductPage() {
                   ))}
                 </div>
               ) : (
-                <div className={`rounded-xl border-2 border-dashed p-10 flex flex-col items-center justify-center text-center ${d ? "border-gray-700" : "border-gray-200"}`}>
-                  <svg className={`w-8 h-8 mb-3 ${d ? "text-gray-600" : "text-gray-300"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg>
-                  <p className={`text-sm font-medium mb-1 ${d ? "text-gray-400" : "text-gray-600"}`}>No hay research de {type} para {product}</p>
-                  <p className={`text-xs ${d ? "text-gray-600" : "text-gray-400"}`}>Añade la primera para este producto</p>
+                <div className="rounded-xl border-2 border-dashed p-10 flex flex-col items-center justify-center text-center border">
+                  <svg className="w-8 h-8 mb-3 text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg>
+                  <p className="text-sm font-medium mb-1 text-tertiary">No hay research de {type} para {product}</p>
+                  <p className="text-xs text-muted">Añade la primera para este producto</p>
                 </div>
               )}
             </div>
@@ -2423,38 +2423,38 @@ function ProductPage() {
           return (
             <div className="mb-10">
               <div className="flex items-center justify-between mb-5">
-                <h2 className={`text-xl font-bold ${d ? "text-gray-100" : "text-gray-900"}`}>Todos los research</h2>
-                <Button color="secondary" dark={d} onClick={() => navigate("/research")}>Ver todos</Button>
+                <h2 className="text-xl font-bold text-primary">Todos los research</h2>
+                <Button color="secondary" onClick={() => navigate("/research")}>Ver todos</Button>
               </div>
               {recentResearch.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {recentResearch.map(item => <Card key={item.id} item={item} dark={d} fromLabel={product} />)}
+                  {recentResearch.map(item => <Card key={item.id} item={item} fromLabel={product} />)}
                 </div>
               ) : (
-                <p className={`text-sm ${d ? "text-gray-500" : "text-gray-400"}`}>Sin research publicados aún.</p>
+                <p className="text-sm text-muted">Sin research publicados aún.</p>
               )}
             </div>
           );
         })()}
 
         {/* Otros productos */}
-        <div className={`pt-8 border-t ${d ? "border-gray-800" : "border-gray-200"}`}>
-          <h2 className={`text-base font-semibold mb-4 ${d ? "text-gray-400" : "text-gray-500"}`}>Otros productos</h2>
+        <div className="pt-8 border-t border">
+          <h2 className="text-base font-semibold mb-4 text-tertiary">Otros productos</h2>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
             {PRODUCTS.filter(p => p !== product).map(p => {
               const pc = PRODUCT_COLORS[p] || "#00B369";
               const all = deliverables.filter(i => i.tags.includes(p));
               return (
                 <button key={p} onClick={() => navigate(`/producto/${toSlug(p)}`)}
-                  className={`text-left rounded-xl border p-4 transition-all group ${d ? "bg-gray-900 border-gray-800 hover:border-gray-600" : "bg-white border-gray-200 hover:border-gray-300 hover:shadow-sm"}`}>
+                  className="text-left rounded-xl border p-4 transition-all group bg-surface border-gray-800 hover:border-gray-600 border-gray-200 hover:border-gray-300 hover:shadow-sm">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
                       <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: pc }} />
-                      <span className={`font-semibold text-sm ${d ? "text-gray-100" : "text-gray-900"}`}>{p}</span>
+                      <span className="font-semibold text-sm text-primary">{p}</span>
                     </div>
-                    <svg className={`w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5 ${d ? "text-gray-700" : "text-gray-300"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7"/></svg>
+                    <svg className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5 text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7"/></svg>
                   </div>
-                  <p className={`text-xs ${d ? "text-gray-500" : "text-gray-400"}`}>{all.length} entregable{all.length !== 1 ? "s" : ""}</p>
+                  <p className="text-xs text-muted">{all.length} entregable{all.length !== 1 ? "s" : ""}</p>
                 </button>
               );
             })}
@@ -2498,7 +2498,7 @@ function HomePage() {
   const recent = [...deliverables].slice(0, 6);
 
   return (
-    <div className={`flex-1 overflow-y-auto ${d ? "bg-gray-950" : "bg-gray-50"}`}>
+    <div className="flex-1 overflow-y-auto bg-page">
 
       {/* Hero — centered */}
       <div className="relative overflow-hidden" style={{
@@ -2508,16 +2508,16 @@ function HomePage() {
         borderBottom: `1px solid ${d ? "#1a2535" : "#b6e8cc"}`
       }}>
         {/* Grid */}
-        <HeroGrid dark={d} />
+        <HeroGrid />
 
         <div className="relative w-full mx-auto px-4 md:px-8 pt-12 pb-10 md:pt-20 md:pb-16 text-center" style={{ maxWidth: 800 }}>
           <div className="inline-flex items-center text-sm font-semibold mb-4" style={{ color: "#00B369" }}>
             Strategic Design
           </div>
-          <h1 className={`text-3xl md:text-5xl font-bold mb-4 leading-tight ${d ? "text-gray-100" : "text-gray-900"}`}>
+          <h1 className="text-3xl md:text-5xl font-bold mb-4 leading-tight text-primary">
             Repositorio de <span style={{ color: "#00B369" }}>research</span>
           </h1>
-          <p className={`text-lg mb-8 ${d ? "text-gray-400" : "text-gray-500"}`}>
+          <p className="text-lg mb-8 text-tertiary">
             Encuentra las investigaciones realizadas por los researchers del equipo.
           </p>
           <div className="relative max-w-lg mx-auto">
@@ -2527,7 +2527,7 @@ function HomePage() {
               onChange={e => setSearch(e.target.value)}
               onKeyDown={handleSearch}
               placeholder="Busca un research o producto..."
-              className={`w-full pl-12 pr-4 sm:pr-28 py-4 text-sm rounded-2xl border focus:outline-none focus:ring-2 focus:ring-green-400 ${d ? "bg-gray-800/80 border-gray-700 text-gray-200 placeholder-gray-500" : "bg-white border-gray-200 text-gray-900 placeholder-gray-400"}`}
+              className="w-full pl-12 pr-4 sm:pr-28 py-4 text-sm rounded-2xl border focus:outline-none focus:ring-2 focus:ring-green-400 bg-surface/80 border-gray-700 text-gray-200 placeholder-gray-500 border-gray-200 text-gray-900 placeholder-gray-400"
               style={{ boxShadow: d ? "0 4px 24px rgba(0,0,0,0.3)" : "0 4px 24px rgba(0,0,0,0.08)" }}
             />
             <button
@@ -2543,12 +2543,12 @@ function HomePage() {
       <div className="w-full mx-auto px-4 md:px-8 py-8 md:py-10 pb-16" style={{ maxWidth: 1200 }}>
 
         {/* Crear solicitud banner */}
-        <div className={`rounded-2xl p-4 md:p-6 mb-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 md:gap-6 ${d ? "bg-gray-900 border border-gray-800" : "bg-white border border-gray-200"}`}
+        <div className="rounded-2xl p-4 md:p-6 mb-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 md:gap-6 bg-surface border border-gray-800 border border-gray-200"
           style={{ boxShadow: d ? "0 2px 12px rgba(0,0,0,0.3)" : "0 2px 12px rgba(0,0,0,0.06)" }}>
           <div className="flex items-center gap-4">
             <div>
-              <p className={`font-bold text-base ${d ? "text-gray-100" : "text-gray-900"}`}>¿Necesitas un research?</p>
-              <p className={`text-sm ${d ? "text-gray-400" : "text-gray-500"}`}>Crea una solicitud directamente en Jira y el equipo la tendrá en el radar.</p>
+              <p className="font-bold text-base text-primary">¿Necesitas un research?</p>
+              <p className="text-sm text-tertiary">Crea una solicitud directamente en Jira y el equipo la tendrá en el radar.</p>
             </div>
           </div>
           {jiraBaseUrl && (
@@ -2563,12 +2563,12 @@ function HomePage() {
 
         {/* Por producto */}
         <div className="mb-10">
-          <h2 className={`text-lg font-bold mb-4 ${d ? "text-gray-100" : "text-gray-900"}`}>Productos</h2>
+          <h2 className="text-lg font-bold mb-4 text-primary">Productos</h2>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
             {loadingDeliverables
-              ? Array.from({ length: 6 }).map((_, i) => <ProductCardSkeleton key={i} dark={d} />)
+              ? Array.from({ length: 6 }).map((_, i) => <ProductCardSkeleton key={i} />)
               : PRODUCTS.map(p => (
-                  <ProductCard key={p} product={p} deliverables={deliverables} coverUrl={productCovers[p]} dark={d}
+                  <ProductCard key={p} product={p} deliverables={deliverables} coverUrl={productCovers[p]}
                     onClick={() => navigate(`/producto/${toSlug(p)}`)} />
                 ))
             }
@@ -2577,15 +2577,15 @@ function HomePage() {
 
         {/* Recientes */}
         <div>
-          <h2 className={`text-lg font-bold mb-4 ${d ? "text-gray-100" : "text-gray-900"}`}>Recientes</h2>
+          <h2 className="text-lg font-bold mb-4 text-primary">Recientes</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {loadingDeliverables
               ? Array.from({ length: 4 }).map((_, i) => (
-                  <div key={i} className={`rounded-xl border p-4 animate-pulse ${d ? "bg-gray-900 border-gray-800" : "bg-white border-gray-200"}`}>
-                    <div className={`h-4 w-3/4 rounded mb-2 ${d ? "bg-gray-800" : "bg-gray-200"}`} />
+                  <div key={i} className="rounded-xl border p-4 animate-pulse bg-surface border-gray-800 border-gray-200">
+                    <div className="h-4 w-3/4 rounded mb-2 bg-active" />
                     <div className="flex gap-2">
-                      <div className={`h-3 w-16 rounded-full ${d ? "bg-gray-800" : "bg-gray-200"}`} />
-                      <div className={`h-3 w-20 rounded-full ${d ? "bg-gray-800" : "bg-gray-200"}`} />
+                      <div className="h-3 w-16 rounded-full bg-active" />
+                      <div className="h-3 w-20 rounded-full bg-active" />
                     </div>
                   </div>
                 ))
@@ -2596,18 +2596,18 @@ function HomePage() {
               const pc = productTag ? (PRODUCT_COLORS[productTag] || "#00B369") : null;
               return (
                 <button key={item.id} onClick={() => navigate(`/research/${toSlug(item.title)}`, { state: { fromLabel: "Inicio" } })}
-                  className={`text-left rounded-xl border p-4 flex flex-col transition-all group ${d ? "bg-gray-900 border-gray-800 hover:border-green-700" : "bg-white border-gray-200 hover:border-green-400 hover:shadow-sm"}`}>
+                  className="text-left rounded-xl border p-4 flex flex-col transition-all group bg-surface border-gray-800 hover:border-green-700 border-gray-200 hover:border-green-400 hover:shadow-sm">
                   <div className="min-w-0 w-full">
-                    <p className={`font-semibold text-sm leading-snug mb-1.5 truncate ${d ? "text-gray-100" : "text-gray-900"}`}>{item.title}</p>
+                    <p className="font-semibold text-sm leading-snug mb-1.5 truncate text-primary">{item.title}</p>
                     <div className="flex items-center gap-1.5 flex-wrap">
                       <span className={`text-xs px-2 py-0.5 rounded-full border ${color}`}>{item.type}</span>
                       {productTag && pc && (
-                        <span className={`text-xs px-2 py-0.5 rounded-full border flex items-center gap-1 ${d ? "border-gray-700 text-gray-300" : "border-gray-200 text-gray-600"}`}>
+                        <span className="text-xs px-2 py-0.5 rounded-full border flex items-center gap-1 border text-secondary">
                           <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: pc }} />
                           {productTag}
                         </span>
                       )}
-                      <span className={`text-xs ${d ? "text-gray-500" : "text-gray-400"}`}>{item.date}</span>
+                      <span className="text-xs text-muted">{item.date}</span>
                     </div>
                   </div>
                 </button>
@@ -2782,16 +2782,16 @@ function MobileTopBar({ onMenu, dark: d }) {
   const { setDark } = useApp();
   const navigate = useNavigate();
   return (
-    <div className={`flex lg:hidden items-center justify-between px-4 py-3 border-b flex-shrink-0 ${d ? "bg-gray-950 border-gray-800" : "bg-white border-gray-200"}`}>
+    <div className="flex lg:hidden items-center justify-between px-4 py-3 border-b flex-shrink-0 border bg-surface">
       <button onClick={() => navigate("/")} className="flex items-center gap-2">
         <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: "#00B369" }}>
           <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path d="M11.9995 12.0001H12.0095M15.535 15.5357C10.8488 20.222 5.46685 22.438 3.51423 20.4854C1.56161 18.5328 3.77769 13.1509 8.46398 8.46461C13.1503 3.77832 18.5322 1.56224 20.4848 3.51486C22.4374 5.46748 20.2213 10.8494 15.535 15.5357ZM15.535 8.46443C20.2213 13.1507 22.4374 18.5326 20.4848 20.4852C18.5321 22.4379 13.1502 20.2218 8.46394 15.5355C3.77765 10.8492 1.56157 5.4673 3.51419 3.51468C5.46681 1.56206 10.8487 3.77814 15.535 8.46443ZM12.4995 12.0001C12.4995 12.2763 12.2757 12.5001 11.9995 12.5001C11.7234 12.5001 11.4995 12.2763 11.4995 12.0001C11.4995 11.724 11.7234 11.5001 11.9995 11.5001C12.2757 11.5001 12.4995 11.724 12.4995 12.0001Z" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
         </div>
-        <span className={`text-sm font-bold ${d ? "text-gray-100" : "text-gray-900"}`}>Strategic Research</span>
+        <span className="text-sm font-bold text-primary">Strategic Research</span>
       </button>
-      <button onClick={onMenu} className={`w-9 h-9 flex items-center justify-center rounded-lg ${d ? "text-gray-400 hover:bg-gray-800" : "text-gray-600 hover:bg-gray-100"}`}>
+      <button onClick={onMenu} className="w-9 h-9 flex items-center justify-center rounded-lg text-tertiary hover:bg-hover">
         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
       </button>
     </div>
@@ -2965,7 +2965,7 @@ function EditPage() {
   const item = deliverables.find(x => toSlug(x.title) === slug) || location.state?.item;
   const fromLabel = location.state?.fromLabel || null;
 
-  if (!item) return <div className={`flex-1 flex items-center justify-center ${d ? "bg-gray-950 text-gray-400" : "bg-gray-50 text-gray-500"}`}>Research no encontrado.</div>;
+  if (!item) return <div className="flex-1 flex items-center justify-center bg-page text-gray-400 text-gray-500">Research no encontrado.</div>;
 
   const today = new Date().toLocaleDateString("es-PE", { day: "2-digit", month: "short", year: "numeric" }).replace(".", "");
   const [form, setForm] = useState({ ...item });
@@ -3024,11 +3024,11 @@ function EditPage() {
     navigate(`/research/${toSlug(form.title)}`);
   };
 
-  const inp = `w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 ${d ? "bg-gray-800 border-gray-700 text-gray-200 placeholder-gray-500" : "bg-white border-gray-300 text-gray-900 placeholder-gray-400"}`;
-  const lbl = `block text-xs font-semibold mb-1 ${d ? "text-gray-400" : "text-gray-600"}`;
+  const inp = `w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 bg-surface border-gray-700 text-gray-200 placeholder-gray-500 border-gray-300 text-gray-900 placeholder-gray-400`;
+  const lbl = `block text-xs font-semibold mb-1 text-tertiary`;
 
   const SectionTitle = ({ children }) => (
-    <p className={`text-xs font-bold uppercase tracking-widest mb-3 ${d ? "text-gray-500" : "text-gray-400"}`}>{children}</p>
+    <p className="text-xs font-bold uppercase tracking-widest mb-3 text-muted">{children}</p>
   );
 
   const DateInput = ({ value, onChange }) => {
@@ -3067,26 +3067,26 @@ function EditPage() {
     const display = value ? new Date(value + "T12:00:00").toLocaleDateString("es-PE", { day: "2-digit", month: "short", year: "numeric" }).replace(".", "") : "Seleccionar fecha";
     return (
       <div className="relative" ref={ref}>
-        <button type="button" onClick={() => setOpen(o => !o)} className={`w-full flex items-center gap-2 px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 ${d ? "bg-gray-800 border-gray-700 text-gray-200 hover:bg-gray-750" : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"}`}>
-          <svg className={`w-4 h-4 flex-shrink-0 ${d ? "text-gray-500" : "text-gray-400"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+        <button type="button" onClick={() => setOpen(o => !o)} className="w-full flex items-center gap-2 px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 bg-surface border-gray-700 text-gray-200 hover:bg-gray-750 border-gray-300 text-gray-700 hover:bg-gray-50">
+          <svg className="w-4 h-4 flex-shrink-0 text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
           <span className={value ? "" : (d ? "text-gray-500" : "text-gray-400")}>{display}</span>
         </button>
         {open && (
-          <div className={`absolute z-50 mt-1 w-72 rounded-2xl border shadow-xl p-4 ${d ? "bg-gray-900 border-gray-700" : "bg-white border-gray-200"}`}>
+          <div className="absolute z-50 mt-1 w-72 rounded-2xl border shadow-xl p-4 bg-surface border-gray-700 border-gray-200">
             <div className="flex items-center justify-between mb-3">
-              <button type="button" onClick={prev} className={`w-8 h-8 flex items-center justify-center rounded-lg ${d ? "text-gray-400 hover:bg-gray-800" : "text-gray-500 hover:bg-gray-100"}`}><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7"/></svg></button>
-              <span className={`text-sm font-semibold ${d ? "text-gray-100" : "text-gray-900"}`}>{MONTHS[cursor.m]} {cursor.y}</span>
-              <button type="button" onClick={next} className={`w-8 h-8 flex items-center justify-center rounded-lg ${d ? "text-gray-400 hover:bg-gray-800" : "text-gray-500 hover:bg-gray-100"}`}><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7"/></svg></button>
+              <button type="button" onClick={prev} className="w-8 h-8 flex items-center justify-center rounded-lg text-tertiary hover:bg-hover"><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7"/></svg></button>
+              <span className="text-sm font-semibold text-primary">{MONTHS[cursor.m]} {cursor.y}</span>
+              <button type="button" onClick={next} className="w-8 h-8 flex items-center justify-center rounded-lg text-tertiary hover:bg-hover"><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7"/></svg></button>
             </div>
-            <div className="grid grid-cols-7 mb-1">{DAYS.map(day => <div key={day} className={`text-center text-xs font-medium py-1 ${d ? "text-gray-500" : "text-gray-400"}`}>{day}</div>)}</div>
+            <div className="grid grid-cols-7 mb-1">{DAYS.map(day => <div key={day} className="text-center text-xs font-medium py-1 text-muted">{day}</div>)}</div>
             <div className="grid grid-cols-7 gap-y-0.5">
               {cells().map((cell, i) => { const sel = isSelected(cell.day, cell.cur); const tod = isToday(cell.day, cell.cur); return (
                 <button key={i} type="button" onClick={() => select(cell.day, cell.cur)} className={`h-9 w-full flex items-center justify-center rounded-lg text-sm transition-colors ${sel ? "text-white font-semibold" : ""} ${!sel && cell.cur ? (d ? "text-gray-200 hover:bg-gray-800" : "text-gray-700 hover:bg-gray-100") : ""} ${!cell.cur ? (d ? "text-gray-600 hover:bg-gray-800" : "text-gray-300 hover:bg-gray-50") : ""} ${tod && !sel ? (d ? "font-semibold text-green-400" : "font-semibold text-green-600") : ""}`} style={sel ? { backgroundColor: "#00B369" } : {}}>{cell.day}</button>
               ); })}
             </div>
-            <div className={`mt-3 pt-3 border-t flex justify-between ${d ? "border-gray-700" : "border-gray-100"}`}>
-              <button type="button" onClick={() => { const n = new Date(); onChange(`${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,"0")}-${String(n.getDate()).padStart(2,"0")}`); setCursor({ y: n.getFullYear(), m: n.getMonth() }); setOpen(false); }} className={`text-xs font-medium ${d ? "text-gray-400 hover:text-gray-200" : "text-gray-500 hover:text-gray-700"}`}>Hoy</button>
-              <button type="button" onClick={() => setOpen(false)} className={`text-xs font-medium ${d ? "text-gray-400 hover:text-gray-200" : "text-gray-500 hover:text-gray-700"}`}>Cancelar</button>
+            <div className="mt-3 pt-3 border-t flex justify-between border">
+              <button type="button" onClick={() => { const n = new Date(); onChange(`${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,"0")}-${String(n.getDate()).padStart(2,"0")}`); setCursor({ y: n.getFullYear(), m: n.getMonth() }); setOpen(false); }} className="text-xs font-medium text-tertiary hover:text-secondary">Hoy</button>
+              <button type="button" onClick={() => setOpen(false)} className="text-xs font-medium text-tertiary hover:text-secondary">Cancelar</button>
             </div>
           </div>
         )}
@@ -3102,11 +3102,11 @@ function EditPage() {
   };
 
   return (
-    <div className={`flex-1 overflow-y-auto ${d ? "bg-gray-950" : "bg-gray-50"}`}>
+    <div className="flex-1 overflow-y-auto bg-page">
 
       {showPersonaPhotoPicker && (
         <PersonaPhotoPickerModal
-          dark={d}
+         
           onClose={() => setShowPersonaPhotoPicker(false)}
           onSelect={(url) => { setPersonaField(personaTab, "foto", url); setShowPersonaPhotoPicker(false); }}
           onUpload={() => { personaPhotoInputRef.current?.click(); setShowPersonaPhotoPicker(false); }}
@@ -3120,8 +3120,8 @@ function EditPage() {
       }} />
 
       {/* Top bar */}
-      <div className={`border-b px-4 py-3 md:px-8 md:py-4 sticky top-0 z-10 ${d ? "bg-gray-950 border-gray-800" : "bg-gray-50 border-gray-200"}`}>
-        <button onClick={() => window.history.length > 1 ? navigate(-1) : navigate("/research")} className={`flex items-center gap-2 text-sm font-semibold ${d ? "text-gray-400 hover:text-gray-200" : "text-gray-500 hover:text-gray-900"}`}>
+      <div className="border-b px-4 py-3 md:px-8 md:py-4 sticky top-0 z-10 bg-page border-gray-800 border-gray-200">
+        <button onClick={() => window.history.length > 1 ? navigate(-1) : navigate("/research")} className="flex items-center gap-2 text-sm font-semibold text-tertiary hover:text-primary">
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7"/></svg>
           <span className="hidden sm:inline">{fromLabel ? `Volver a ${fromLabel}` : "Volver"}</span>
           <span className="sm:hidden">Volver</span>
@@ -3132,10 +3132,10 @@ function EditPage() {
 
         {/* Header */}
         <div className="mb-6">
-          <h1 className={`text-2xl font-bold mb-1 ${d ? "text-gray-100" : "text-gray-900"}`}>Editar research</h1>
+          <h1 className="text-2xl font-bold mb-1 text-primary">Editar research</h1>
           <div className="flex items-center gap-1.5">
-            <p className={`text-base font-medium pr-2 ${d ? "text-gray-400" : "text-gray-500"}`}>{window.location.origin}/research/{toSlug(item.title)}</p>
-            <button type="button" title="Copiar enlace" onClick={() => navigator.clipboard.writeText(`${window.location.origin}/research/${toSlug(item.title)}`)} style={{ width: 38, height: 38 }} className={`flex items-center justify-center rounded-lg border flex-shrink-0 ${d ? "bg-gray-800 border-gray-700 text-gray-400 hover:bg-gray-700 hover:text-gray-200" : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50 hover:text-gray-700"}`}>
+            <p className="text-base font-medium pr-2 text-tertiary">{window.location.origin}/research/{toSlug(item.title)}</p>
+            <button type="button" title="Copiar enlace" onClick={() => navigator.clipboard.writeText(`${window.location.origin}/research/${toSlug(item.title)}`)} style={{ width: 38, height: 38 }} className="flex items-center justify-center rounded-lg border flex-shrink-0 bg-surface border-gray-700 text-gray-400 hover:bg-gray-700 hover:text-gray-200 border-gray-300 text-gray-500 hover:bg-gray-50 hover:text-gray-700">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
             </button>
           </div>
@@ -3149,7 +3149,7 @@ function EditPage() {
             <div className="space-y-3">
               <div>
                 <label className={lbl}>Título <span className="text-green-500">*</span></label>
-                <input className={`w-full px-3 py-2 text-xl font-semibold border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 ${d ? "bg-gray-800 border-gray-700 text-gray-100 placeholder-gray-500" : "bg-white border-gray-300 text-gray-900 placeholder-gray-400"}`} value={form.title} onChange={e => set("title", e.target.value)} placeholder="Título del research..." />
+                <input className="w-full px-3 py-2 text-xl font-semibold border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 bg-surface border-gray-700 text-gray-100 placeholder-gray-500 border-gray-300 text-gray-900 placeholder-gray-400" value={form.title} onChange={e => set("title", e.target.value)} placeholder="Título del research..." />
               </div>
               <div>
                 <label className={lbl}>Descripción corta</label>
@@ -3158,15 +3158,15 @@ function EditPage() {
             </div>
 
             {/* Contenido */}
-            <div className={`rounded-2xl border p-5 space-y-4 ${d ? "bg-gray-900 border-gray-700" : "bg-white border-gray-200"}`}>
+            <div className="rounded-2xl border p-5 space-y-4 bg-surface border-gray-700 border-gray-200">
               <SectionTitle>Contenido</SectionTitle>
-              <div><label className={lbl}>Objetivo del research</label><RichEditor dark={d} value={form.objetivo} onChange={v => set("objetivo", v)} placeholder="¿Qué se busca lograr con este entregable?" /></div>
-              <div><label className={lbl}>Usuario</label><RichEditor dark={d} value={form.usuario} onChange={v => set("usuario", v)} placeholder="Perfil de los usuarios involucrados" /></div>
-              <div><label className={lbl}>Hallazgos y conclusiones</label><RichEditor dark={d} value={form.hallazgos} onChange={v => set("hallazgos", v)} placeholder="Principales hallazgos o estado actual" /></div>
+              <div><label className={lbl}>Objetivo del research</label><RichEditor value={form.objetivo} onChange={v => set("objetivo", v)} placeholder="¿Qué se busca lograr con este entregable?" /></div>
+              <div><label className={lbl}>Usuario</label><RichEditor value={form.usuario} onChange={v => set("usuario", v)} placeholder="Perfil de los usuarios involucrados" /></div>
+              <div><label className={lbl}>Hallazgos y conclusiones</label><RichEditor value={form.hallazgos} onChange={v => set("hallazgos", v)} placeholder="Principales hallazgos o estado actual" /></div>
             </div>
 
             {/* Referencias */}
-            <div className={`rounded-2xl border p-5 space-y-4 ${d ? "bg-gray-900 border-gray-700" : "bg-white border-gray-200"}`}>
+            <div className="rounded-2xl border p-5 space-y-4 bg-surface border-gray-700 border-gray-200">
               <SectionTitle>Referencias</SectionTitle>
               <div>
                 <label className={lbl}>Link de Google Drive</label>
@@ -3184,10 +3184,10 @@ function EditPage() {
                 </div>
                 {jiraError && <p className="mt-1 text-xs text-amber-500">{jiraError}</p>}
                 {form.jira && !jiraLoading && (
-                  <div className={`mt-2 rounded-lg border p-3 ${d ? "bg-gray-800 border-gray-600" : "bg-gray-50 border-gray-200"}`}>
-                    <p className={`text-xs font-semibold leading-snug ${d ? "text-gray-100" : "text-gray-800"}`}>{form.jira}</p>
+                  <div className="mt-2 rounded-lg border p-3 bg-muted border-gray-600 border-gray-200">
+                    <p className="text-xs font-semibold leading-snug text-primary">{form.jira}</p>
                     {form.jiraStatus && <span className={`inline-block mt-1 text-xs font-bold px-2 py-0.5 rounded border ${/done|closed|resolved|finaliz|complet/i.test(form.jiraStatus) ? (d ? "text-green-400 border-green-700 bg-green-900/40" : "text-green-700 border-green-200 bg-green-50") : (d ? "text-blue-400 border-blue-700 bg-blue-900/40" : "text-blue-700 border-blue-200 bg-blue-50")}`}>{form.jiraStatus}</span>}
-                    <button type="button" onClick={() => { set("jira", ""); set("jiraStatus", ""); set("jiraUrl", ""); }} className={`block mt-1.5 text-xs ${d ? "text-gray-500 hover:text-gray-300" : "text-gray-400 hover:text-gray-600"}`}>Cambiar ticket</button>
+                    <button type="button" onClick={() => { set("jira", ""); set("jiraStatus", ""); set("jiraUrl", ""); }} className="block mt-1.5 text-xs text-muted hover:text-secondary">Cambiar ticket</button>
                   </div>
                 )}
               </div>
@@ -3195,7 +3195,7 @@ function EditPage() {
 
             {/* Imágenes adjuntas */}
             {!PERSONA_TYPES.includes(form.type) && (
-              <div className={`rounded-2xl border p-5 space-y-4 ${d ? "bg-gray-900 border-gray-700" : "bg-white border-gray-200"}`}>
+              <div className="rounded-2xl border p-5 space-y-4 bg-surface border-gray-700 border-gray-200">
                 <SectionTitle>Imágenes adjuntas</SectionTitle>
                 {(form.imagenes || []).length > 0 && (
                   <div className="grid grid-cols-4 gap-2">
@@ -3210,7 +3210,7 @@ function EditPage() {
                     ))}
                   </div>
                 )}
-                <Button type="button" color="secondary" dark={d} disabled={imageUploading} className="flex items-center gap-2" onClick={() => setShowImagePicker(true)}>
+                <Button type="button" color="secondary" disabled={imageUploading} className="flex items-center gap-2" onClick={() => setShowImagePicker(true)}>
                   {imageUploading
                     ? <div className="w-4 h-4 rounded-full border-2 border-gray-300 border-t-green-500 animate-spin" />
                     : <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
@@ -3218,7 +3218,7 @@ function EditPage() {
                   Añadir imágenes
                 </Button>
                 {showImagePicker && (
-                  <ImagePickerModal dark={d} deliverables={deliverables}
+                  <ImagePickerModal deliverables={deliverables}
                     onSelect={(url) => { if (!(form.imagenes || []).includes(url)) set("imagenes", [...(form.imagenes || []), url]); setShowImagePicker(false); }}
                     onUpload={() => { setShowImagePicker(false); setTimeout(() => imageInputRef.current?.click(), 100); }}
                     onDelete={async (url) => {
@@ -3247,18 +3247,18 @@ function EditPage() {
 
             {/* Personas */}
             {PERSONA_TYPES.includes(form.type) && form.personas && form.personas.length > 0 && (
-              <div className={`rounded-2xl border p-5 ${d ? "bg-gray-900 border-gray-700" : "bg-white border-gray-200"}`}>
+              <div className="rounded-2xl border p-5 bg-surface border-gray-700 border-gray-200">
                 <div className="flex items-center justify-between mb-4">
                   <SectionTitle>Personas</SectionTitle>
-                  {form.personas.length < 3 && <Button type="button" size="xs" color="secondary" dark={d} onClick={addPersona} className="flex items-center gap-1"><svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/></svg>Añadir</Button>}
+                  {form.personas.length < 3 && <Button type="button" size="xs" color="secondary" onClick={addPersona} className="flex items-center gap-1"><svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/></svg>Añadir</Button>}
                 </div>
-                <div className={`flex border-b mb-4 ${d ? "border-gray-700" : "border-gray-200"}`}>
-                  {form.personas.map((p, i) => <div key={i} className="flex items-center"><button type="button" onClick={() => setPersonaTab(i)} className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${personaTab === i ? "border-green-500 text-green-600" : d ? "border-transparent text-gray-400 hover:text-gray-200" : "border-transparent text-gray-500 hover:text-gray-800"}`}>{p.nombre || `Persona ${i+1}`}</button>{form.personas.length > 1 && <button type="button" onClick={() => removePersona(i)} className={`-ml-1 mb-px w-4 h-4 flex items-center justify-center text-xs ${d ? "text-gray-600 hover:text-gray-300" : "text-gray-300 hover:text-gray-600"}`}>✕</button>}</div>)}
+                <div className="flex border-b mb-4 border">
+                  {form.personas.map((p, i) => <div key={i} className="flex items-center"><button type="button" onClick={() => setPersonaTab(i)} className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${personaTab === i ? "border-green-500 text-green-600" : d ? "border-transparent text-gray-400 hover:text-gray-200" : "border-transparent text-gray-500 hover:text-gray-800"}`}>{p.nombre || `Persona ${i+1}`}</button>{form.personas.length > 1 && <button type="button" onClick={() => removePersona(i)} className="-ml-1 mb-px w-4 h-4 flex items-center justify-center text-xs text-muted hover:text-secondary">✕</button>}</div>)}
                 </div>
                 {(() => {
                   const p = form.personas[personaTab];
                   const fi = (field, placeholder) => <input className={inp} placeholder={placeholder} value={p[field] || ""} onChange={e => setPersonaField(personaTab, field, e.target.value)} />;
-                  const group = (title, children) => <div><p className={`text-xs font-bold uppercase tracking-wider mb-3 ${d ? "text-gray-500" : "text-gray-400"}`}>{title}</p><div className="space-y-3">{children}</div></div>;
+                  const group = (title, children) => <div><p className="text-xs font-bold uppercase tracking-wider mb-3 text-muted">{title}</p><div className="space-y-3">{children}</div></div>;
                   return (
                     <div className="space-y-4">
                       <div className="flex items-center gap-4">
@@ -3266,18 +3266,18 @@ function EditPage() {
                           {p.foto ? <img src={p.foto} alt="Foto" className="w-full h-full object-cover" /> : <svg className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>}
                         </div>
                         <div className="space-y-1">
-                          <p className={`text-xs font-semibold ${d ? "text-gray-400" : "text-gray-600"}`}>Imagen de perfil</p>
-                          <p className={`text-xs ${d ? "text-gray-500" : "text-gray-400"}`}>500×500 px · JPG</p>
-                          <Button type="button" size="xs" color="secondary" dark={d} onClick={() => setShowPersonaPhotoPicker(true)} isDisabled={personaPhotoUploading} className="flex items-center gap-2">
+                          <p className="text-xs font-semibold text-tertiary">Imagen de perfil</p>
+                          <p className="text-xs text-muted">500×500 px · JPG</p>
+                          <Button type="button" size="xs" color="secondary" onClick={() => setShowPersonaPhotoPicker(true)} isDisabled={personaPhotoUploading} className="flex items-center gap-2">
                             {personaPhotoUploading ? "Subiendo..." : (p.foto ? "Cambiar foto" : "Subir foto")}
                           </Button>
                         </div>
                       </div>
                       <div><label className={lbl}>Nombre</label>{fi("nombre","Nombre de la persona")}</div>
                       {group("Información personal", <><div className="grid grid-cols-2 gap-3"><div><label className={lbl}>Cargo</label>{fi("cargo","Cargo o rol")}</div><div><label className={lbl}>Edad</label>{fi("edad","Ej: 35 años")}</div></div><div><label className={lbl}>Ubicación</label>{fi("ubicacion","Ciudad / País")}</div><div><label className={lbl}>Nivel tecnológico</label>{fi("nivelTec","Básico / Medio / Avanzado")}</div><div><label className={lbl}>Herramientas usadas</label>{fi("herramientas","Excel, Slack, etc.")}</div></>)}
-                      {group("Sobre el negocio", form.type === "Buyer Persona" ? <><div><label className={lbl}>Rubro</label>{fi("rubro","Sector o industria")}</div><div className="grid grid-cols-2 gap-3"><div><label className={lbl}>Personal</label>{fi("personal","Ej: 10-50 empleados")}</div><div><label className={lbl}>Tiempo de apertura</label>{fi("tiempoApertura","Ej: 5 años")}</div></div><div><label className={lbl}>Metas a futuro</label><RichEditor dark={d} value={p.metas||""} onChange={v => setPersonaField(personaTab,"metas",v)} placeholder="Metas y objetivos a futuro..." /></div></> : <><div><label className={lbl}>Rubro</label>{fi("rubro","Sector o industria")}</div><div><label className={lbl}>Tiempo en el negocio</label>{fi("tiempoNegocio","Ej: 3 años")}</div></>)}
-                      {form.type === "Buyer Persona" && <>{group("Adquisición del producto", <RichEditor dark={d} value={p.adquisicion||""} onChange={v => setPersonaField(personaTab,"adquisicion",v)} placeholder="Razones de adquisición..." />)}{group("Comunicaciones", <RichEditor dark={d} value={p.comunicaciones||""} onChange={v => setPersonaField(personaTab,"comunicaciones",v)} placeholder="Canales de comunicación..." />)}</>}
-                      {form.type === "User Persona" && <>{group("Objetivos y metas", <RichEditor dark={d} value={p.objetivos||""} onChange={v => setPersonaField(personaTab,"objetivos",v)} placeholder="Objetivos y metas del usuario..." />)}{group("Frustraciones y dolores", <RichEditor dark={d} value={p.dolores||""} onChange={v => setPersonaField(personaTab,"dolores",v)} placeholder="Frustraciones y dolores..." />)}</>}
+                      {group("Sobre el negocio", form.type === "Buyer Persona" ? <><div><label className={lbl}>Rubro</label>{fi("rubro","Sector o industria")}</div><div className="grid grid-cols-2 gap-3"><div><label className={lbl}>Personal</label>{fi("personal","Ej: 10-50 empleados")}</div><div><label className={lbl}>Tiempo de apertura</label>{fi("tiempoApertura","Ej: 5 años")}</div></div><div><label className={lbl}>Metas a futuro</label><RichEditor value={p.metas||""} onChange={v => setPersonaField(personaTab,"metas",v)} placeholder="Metas y objetivos a futuro..." /></div></> : <><div><label className={lbl}>Rubro</label>{fi("rubro","Sector o industria")}</div><div><label className={lbl}>Tiempo en el negocio</label>{fi("tiempoNegocio","Ej: 3 años")}</div></>)}
+                      {form.type === "Buyer Persona" && <>{group("Adquisición del producto", <RichEditor value={p.adquisicion||""} onChange={v => setPersonaField(personaTab,"adquisicion",v)} placeholder="Razones de adquisición..." />)}{group("Comunicaciones", <RichEditor value={p.comunicaciones||""} onChange={v => setPersonaField(personaTab,"comunicaciones",v)} placeholder="Canales de comunicación..." />)}</>}
+                      {form.type === "User Persona" && <>{group("Objetivos y metas", <RichEditor value={p.objetivos||""} onChange={v => setPersonaField(personaTab,"objetivos",v)} placeholder="Objetivos y metas del usuario..." />)}{group("Frustraciones y dolores", <RichEditor value={p.dolores||""} onChange={v => setPersonaField(personaTab,"dolores",v)} placeholder="Frustraciones y dolores..." />)}</>}
                     </div>
                   );
                 })()}
@@ -3289,7 +3289,7 @@ function EditPage() {
           <div className="space-y-4">
 
             {/* Publicación */}
-            <div className={`rounded-2xl border p-5 space-y-4 ${d ? "bg-gray-900 border-gray-700" : "bg-white border-gray-200"}`}>
+            <div className="rounded-2xl border p-5 space-y-4 bg-surface border-gray-700 border-gray-200">
               <div className="flex items-center justify-between">
                 <SectionTitle>Publicación</SectionTitle>
                 <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${form.status === "Publicado" ? (d ? "bg-green-900/40 text-green-400 border-green-700" : "bg-green-50 text-green-700 border-green-200") : (d ? "bg-gray-800 text-gray-400 border-gray-600" : "bg-gray-100 text-gray-500 border-gray-300")}`}>
@@ -3303,7 +3303,7 @@ function EditPage() {
               </div>
               <div className="flex gap-2 pt-1">
                 {form.status !== "Publicado" && (
-                  <Button color="secondary" dark={d} onClick={() => handleSave(form.status)} disabled={!form.title.trim() || saving} className="flex-1 disabled:opacity-40">Guardar</Button>
+                  <Button color="secondary" onClick={() => handleSave(form.status)} disabled={!form.title.trim() || saving} className="flex-1 disabled:opacity-40">Guardar</Button>
                 )}
                 <Button
                   color="primary"
@@ -3317,7 +3317,7 @@ function EditPage() {
             </div>
 
             {/* Clasificación */}
-            <div className={`rounded-2xl border p-5 space-y-4 ${d ? "bg-gray-900 border-gray-700" : "bg-white border-gray-200"}`}>
+            <div className="rounded-2xl border p-5 space-y-4 bg-surface border-gray-700 border-gray-200">
               <SectionTitle>Clasificación</SectionTitle>
               <div>
                 <label className={lbl}>Tipo de entregable <span className="text-green-500">*</span></label>
@@ -3407,19 +3407,19 @@ function LoginPage({ dark: d }) {
   };
 
   return (
-    <div className={`min-h-screen flex items-center justify-center ${d ? "bg-gray-950" : "bg-gray-50"}`}>
-      <div className={`w-full max-w-sm rounded-2xl border p-10 flex flex-col items-center gap-6 ${d ? "bg-gray-900 border-gray-800" : "bg-white border-gray-200 shadow-sm"}`}>
+    <div className="min-h-screen flex items-center justify-center bg-page">
+      <div className="w-full max-w-sm rounded-2xl border p-10 flex flex-col items-center gap-6 bg-surface border-gray-800 border-gray-200 shadow-sm">
         <div className="flex flex-col items-center gap-2">
           <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ backgroundColor: "#00B369" }}>
             <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path d="M11.9995 12.0001H12.0095M15.535 15.5357C10.8488 20.222 5.46685 22.438 3.51423 20.4854C1.56161 18.5328 3.77769 13.1509 8.46398 8.46461C13.1503 3.77832 18.5322 1.56224 20.4848 3.51486C22.4374 5.46748 20.2213 10.8494 15.535 15.5357ZM15.535 8.46443C20.2213 13.1507 22.4374 18.5326 20.4848 20.4852C18.5321 22.4379 13.1502 20.2218 8.46394 15.5355C3.77765 10.8492 1.56157 5.4673 3.51419 3.51468C5.46681 1.56206 10.8487 3.77814 15.535 8.46443ZM12.4995 12.0001C12.4995 12.2763 12.2757 12.5001 11.9995 12.5001C11.7234 12.5001 11.4995 12.2763 11.4995 12.0001C11.4995 11.724 11.7234 11.5001 11.9995 11.5001C12.2757 11.5001 12.4995 11.724 12.4995 12.0001Z" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
           </div>
-          <h1 className={`text-xl font-bold text-center ${d ? "text-gray-100" : "text-gray-900"}`}>Repositorio de Strategic Research</h1>
-          <p className={`text-sm ${d ? "text-gray-500" : "text-gray-400"}`}>Inicia sesión para continuar</p>
+          <h1 className="text-xl font-bold text-center text-primary">Repositorio de Strategic Research</h1>
+          <p className="text-sm text-muted">Inicia sesión para continuar</p>
         </div>
         <button onClick={handleGoogle} disabled={loading}
-          className={`w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl border font-medium text-sm transition-all ${d ? "bg-gray-800 border-gray-700 text-gray-100 hover:bg-gray-700" : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50 shadow-sm"} disabled:opacity-50`}>
+          className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl border font-medium text-sm transition-all bg-surface border-gray-700 text-gray-100 hover:bg-gray-700 border-gray-300 text-gray-700 hover:bg-gray-50 shadow-sm disabled:opacity-50">
           <svg className="w-5 h-5" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
           {loading ? "Redirigiendo..." : "Continuar con Google"}
         </button>
