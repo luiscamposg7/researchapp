@@ -121,7 +121,7 @@ const getDriveId = (url = "") => {
 const getPresentationInfo = (url = "") => {
   if (!url) return null;
   if (url.includes("figma.com")) {
-    const m = url.match(/figma\.com\/(?:file|proto|design|slides)\/([^/?#]+)/);
+    const m = url.match(/figma\.com\/(?:file|proto|design|slides|deck)\/([^/?#]+)/);
     const embedUrl = `https://www.figma.com/embed?embed_host=share&url=${encodeURIComponent(url)}`;
     return { type: "figma", key: m?.[1] || null, embedUrl };
   }
