@@ -76,7 +76,7 @@ const sanitizeNode = (node) => {
   Array.from(node.attributes).forEach(a => node.removeAttribute(a.name));
   // Replace disallowed block tags with their text content wrapped in <p>
   if (!ALLOWED.has(node.tagName)) {
-    const isBlock = ["DIV","SECTION","ARTICLE","HEADER","FOOTER","SPAN","FONT","TABLE","TR","TD","TH","TBODY"].includes(node.tagName);
+    const isBlock = ["DIV","SECTION","ARTICLE","HEADER","FOOTER","TABLE","TR","TD","TH","TBODY"].includes(node.tagName);
     const frag = document.createDocumentFragment();
     Array.from(node.childNodes).forEach(c => frag.appendChild(c.cloneNode(true)));
     if (isBlock) {
@@ -1475,9 +1475,10 @@ function PersonaDetailTabs({ personas, type, dark: d }) {
       <div className="rounded-xl overflow-hidden mb-5" style={{ backgroundColor: bannerColor }}>
         <div className="px-6 py-5 flex items-center gap-5">
           <div className="w-16 h-16 rounded-full flex-shrink-0 flex items-end justify-center overflow-hidden" style={{ backgroundColor: "rgba(255,255,255,0.25)" }}>
-            <svg className="w-12 h-12 text-white" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
-            </svg>
+            {p.foto
+              ? <img src={p.foto} alt={p.nombre} className="w-full h-full object-cover rounded-full" />
+              : <svg className="w-12 h-12 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+            }
           </div>
           <div>
             <p className="text-white/80 text-sm font-semibold mb-0.5">{type}</p>
