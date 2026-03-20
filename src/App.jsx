@@ -1707,21 +1707,14 @@ function ViewsModal({ researchId, dark: d, onClose }) {
 }
 
 // ── PRESENTATION CARD ──
-function PresentationCard({ item, dark: d, editors }) {
+function PresentationCard({ item, dark: d }) {
   const pres = getPresentationInfo(item.archivoUrl || "");
-  const [thumbUrl, setThumbUrl] = useState(pres?.thumbUrl || null);
   const isFigma = pres?.type === "figma";
   const isSlides = pres?.type === "slides";
   const label = isFigma ? "Figma" : isSlides ? "Google Slides" : "Google Drive";
-
-  useEffect(() => {
-    if (isFigma && item.archivoUrl) {
-      fetch(`/api/figma-thumb?url=${encodeURIComponent(item.archivoUrl)}`)
-        .then(r => r.json())
-        .then(data => { if (data.thumbnail_url) setThumbUrl(data.thumbnail_url); })
-        .catch(() => {});
-    }
-  }, [item.archivoUrl, isFigma]);
+  const thumbUrl = isFigma
+    ? `/api/figma-thumb?url=${encodeURIComponent(item.archivoUrl)}`
+    : (pres?.thumbUrl || null);
 
   if (!pres) return null;
 
@@ -1764,19 +1757,14 @@ function PresentationCard({ item, dark: d, editors }) {
         </div>
       ) : null}
 
-      <div className="p-3 flex items-start gap-2">
-        {isFigma ? <FigmaIcon /> : <DriveIcon />}
-        <div className="min-w-0">
-          <p className="text-xs font-semibold leading-snug text-primary truncate">{item.archivo || label}</p>
-          <p className="text-xs mt-0.5 text-muted">Creado por {(item.team || []).find(n => editors.includes(n)) || "Sin asignar"}</p>
+      <div className="flex items-center justify-between px-3 py-2.5">
+        <div className="flex items-center gap-2 min-w-0">
+          {isFigma ? <FigmaIcon /> : <DriveIcon />}
+          <p className="text-xs font-semibold text-primary truncate">{item.archivo || label}</p>
         </div>
-      </div>
-
-      <div className="flex items-center justify-between px-3 py-2 border-t">
-        <span className="text-xs font-medium text-muted">{label}</span>
         <a href={item.archivoUrl} target="_blank" rel="noreferrer"
-          className={`text-xs font-semibold px-3 py-1 rounded-lg border border-strong hover:bg-hover ${d ? "text-green-400" : "text-green-600"}`}>
-          Abrir presentación
+          className={`ml-2 flex-shrink-0 text-xs font-semibold px-3 py-1 rounded-lg border border-strong hover:bg-hover ${d ? "text-green-400" : "text-green-600"}`}>
+          Abrir
         </a>
       </div>
     </div>
@@ -1884,7 +1872,7 @@ function DetailPage() {
         <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
           {/* LEFT — file + metadata */}
           <div className="w-full lg:w-80 lg:flex-shrink-0 space-y-5">
-            {item.archivoUrl && <PresentationCard item={item} dark={d} editors={editors} />}
+            {item.archivoUrl && <PresentationCard item={item} dark={d} />}
             <div className="space-y-3">
               <div>
                 <p className="text-xs font-semibold mb-0.5 text-muted">Fecha</p>
