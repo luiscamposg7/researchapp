@@ -1239,7 +1239,7 @@ function ProductCard({ product: p, deliverables, coverUrl, dark: d, onClick }) {
   const usabilidad = all.filter(i => i.type === "Pruebas de usabilidad").length;
   return (
     <button onClick={onClick}
-      className="text-left rounded-xl border overflow-hidden transition-all group bg-surface border-gray-800 hover:border-green-600 border-gray-200 hover:border-green-400 hover:shadow-md"
+      className="text-left rounded-xl border overflow-hidden transition-all group bg-surface hover:border-green-500 hover:shadow-md"
       style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }}>
       <div className="h-20 w-full flex-shrink-0" style={{ backgroundColor: pc, backgroundImage: coverUrl ? `url(${coverUrl})` : undefined, backgroundSize: "cover", backgroundPosition: "center" }} />
       <div className="p-5">
@@ -1378,7 +1378,7 @@ function Card({ item, dark, fromLabel }) {
   const pc = productTag ? (PRODUCT_COLORS[productTag] || "#00B369") : null;
 
   return (
-    <div onClick={() => navigate(`/research/${toSlug(item.title)}`, { state: { fromLabel } })} className="rounded-2xl border p-6 cursor-pointer group flex flex-col bg-surface border-gray-700 hover:border-green-400 hover:shadow-lg hover:shadow-black/30 border-gray-200 hover:shadow-md hover:border-green-400/40">
+    <div onClick={() => navigate(`/research/${toSlug(item.title)}`, { state: { fromLabel } })} className="rounded-2xl border p-6 cursor-pointer group flex flex-col bg-surface hover:border-green-500 hover:shadow-md">
       <div className="flex items-start justify-between mb-4">
         <UIBadge color={getBadgeColor(item.typeColor)}>{item.type}</UIBadge>
         <span className="text-sm text-muted">{item.date}</span>
@@ -1638,7 +1638,7 @@ function ViewsModal({ researchId, dark: d, onClose }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
-      <div className="w-full max-w-md rounded-2xl shadow-2xl bg-surface border border-gray-700 border border-gray-200">
+      <div className="w-full max-w-md rounded-2xl shadow-2xl bg-surface border">
         <div className="flex items-center justify-between px-6 py-4 border-b border">
           <div className="flex items-center gap-2">
             <svg className="w-5 h-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
