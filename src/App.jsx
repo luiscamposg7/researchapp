@@ -1059,7 +1059,7 @@ function AddPage() {
                 <div className="flex border-b mb-4">
                   {form.personas.map((p, i) => (
                     <div key={i} className="flex items-center">
-                      <button type="button" onClick={() => setPersonaTab(i)} className={`px-4 py-2 text-sm font-medium -b-2 -mb-px transition-colors ${personaTab === i ?"-green-500 text-green-600" : d ?"-transparent text-gray-400 hover:text-gray-200" :"border-transparent text-gray-500 hover:text-gray-800"}`}>
+                      <button type="button" onClick={() => setPersonaTab(i)} className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${personaTab === i ? "border-green-500 text-green-600" : "border-transparent text-tertiary hover:text-primary"}`}>
                         {p.nombre || `Persona ${i + 1}`}
                       </button>
                       {form.personas.length > 1 && (
@@ -1080,7 +1080,7 @@ function AddPage() {
                   return (
                     <div className="space-y-4">
                       <div className="flex items-center gap-4">
-                        <div className={`w-20 h-20 rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center -2 ${p.foto ?"-green-500" : (d ?"-gray-600" :"border-gray-200")}`}>
+                        <div className={`w-20 h-20 rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center border-2 ${p.foto ? "border-green-500" : "border"}`}>
                           {p.foto ? <img src={p.foto} alt="Foto" className="w-full h-full object-cover" /> : <svg className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>}
                         </div>
                         <div className="space-y-1">
@@ -1464,7 +1464,7 @@ function PersonaDetailTabs({ personas, type, dark: d }) {
         <div className="flex border-b mb-4">
           {personas.map((persona, i) => (
             <button key={i} onClick={() => setTab(i)}
-              className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${ tab === i ?"-green-500 text-green-600" : d ?"-transparent text-gray-400 hover:text-gray-200" :"border-transparent text-gray-500 hover:text-gray-800" }`}>
+              className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${tab === i ? "border-green-500 text-green-600" : "border-transparent text-tertiary hover:text-primary"}`}>
               {persona.nombre || `Persona ${i + 1}`}
             </button>
           ))}
@@ -3237,7 +3237,7 @@ function EditPage() {
                   {form.personas.length < 3 && <Button type="button" size="xs" color="secondary" onClick={addPersona} className="flex items-center gap-1"><svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/></svg>Añadir</Button>}
                 </div>
                 <div className="flex border-b mb-4">
-                  {form.personas.map((p, i) => <div key={i} className="flex items-center"><button type="button" onClick={() => setPersonaTab(i)} className={`px-4 py-2 text-sm font-medium -b-2 -mb-px transition-colors ${personaTab === i ?"-green-500 text-green-600" : d ?"-transparent text-gray-400 hover:text-gray-200" :"border-transparent text-gray-500 hover:text-gray-800"}`}>{p.nombre || `Persona ${i+1}`}</button>{form.personas.length > 1 && <button type="button" onClick={() => removePersona(i)} className="-ml-1 mb-px w-4 h-4 flex items-center justify-center text-xs text-muted hover:text-secondary">✕</button>}</div>)}
+                  {form.personas.map((p, i) => <div key={i} className="flex items-center"><button type="button" onClick={() => setPersonaTab(i)} className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${personaTab === i ? "border-green-500 text-green-600" : "border-transparent text-tertiary hover:text-primary"}`}>{p.nombre || `Persona ${i+1}`}</button>{form.personas.length > 1 && <button type="button" onClick={() => removePersona(i)} className="-ml-1 mb-px w-4 h-4 flex items-center justify-center text-xs text-muted hover:text-secondary">✕</button>}</div>)}
                 </div>
                 {(() => {
                   const p = form.personas[personaTab];
@@ -3246,7 +3246,7 @@ function EditPage() {
                   return (
                     <div className="space-y-4">
                       <div className="flex items-center gap-4">
-                        <div className={`w-20 h-20 rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center -2 ${p.foto ?"-green-500" : (d ?"-gray-600" :"border-gray-200")}`}>
+                        <div className={`w-20 h-20 rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center border-2 ${p.foto ? "border-green-500" : "border"}`}>
                           {p.foto ? <img src={p.foto} alt="Foto" className="w-full h-full object-cover" /> : <svg className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>}
                         </div>
                         <div className="space-y-1">
