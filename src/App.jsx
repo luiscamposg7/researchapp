@@ -118,6 +118,22 @@ const getDriveId = (url = "") => {
   return m2 ? m2[1] : null;
 };
 
+const getPresentationInfo = (url = "") => {
+  if (!url) return null;
+  if (url.includes("figma.com")) {
+    const m = url.match(/figma\.com\/(?:file|proto|design|slides)\/([^/?#]+)/);
+    const embedUrl = `https://www.figma.com/embed?embed_host=share&url=${encodeURIComponent(url)}`;
+    return { type: "figma", key: m?.[1] || null, embedUrl };
+  }
+  if (url.includes("google.com")) {
+    const id = getDriveId(url);
+    const isSlides = url.includes("/presentation/");
+    const thumbUrl = id ? `https://drive.google.com/thumbnail?id=${id}&sz=w400` : null;
+    return { type: isSlides ? "slides" : "drive", id, thumbUrl };
+  }
+  return { type: "other" };
+};
+
 const TYPE_COLORS = { "Research": "warning", "Otros entregables": "indigo", "Pruebas de usabilidad": "blue", "Buyer Persona": "success", "User Persona": "indigo" };
 const OLD_TO_NEW_COLOR = { amber: "warning", violet: "indigo", green: "success" };
 const getBadgeColor = (c) => OLD_TO_NEW_COLOR[c] || c;
@@ -981,8 +997,8 @@ function AddPage() {
             <div className="rounded-2xl border p-5 space-y-4 bg-surface">
               <SectionTitle>Referencias</SectionTitle>
               <div>
-                <label className={lbl}>Link de Google Drive</label>
-                <input className={inp} type="url" placeholder="https://drive.google.com/..."
+                <label className={lbl}>Link de la presentación</label>
+                <input className={inp} type="url" placeholder="https://docs.google.com/presentation/... o figma.com/file/..."
                   value={form.archivoUrl} onChange={e => {
                     const url = e.target.value;
                     set("archivoUrl", url);
@@ -1792,46 +1808,63 @@ function DetailPage() {
           {/* LEFT — file + metadata */}
           <div className="w-full lg:w-80 lg:flex-shrink-0 space-y-5">
             {(() => {
-              const driveId = getDriveId(item.archivoUrl || "");
-              const thumbUrl = driveId ? `https://drive.google.com/thumbnail?id=${driveId}&sz=w400` : null;
-              const openUrl = item.archivoUrl || null;
+              const pres = getPresentationInfo(item.archivoUrl || "");
+              if (!pres) return null;
+              const isFigma = pres.type === "figma";
+              const isSlides = pres.type === "slides";
+              const label = isFigma ? "Figma" : isSlides ? "Google Slides" : "Google Drive";
+              const openLabel = "Abrir presentación";
+
+              // Brand icon
+              const DriveIcon = () => (
+                <svg className="w-5 h-5 flex-shrink-0 mt-0.5" viewBox="0 0 87.3 78" xmlns="http://www.w3.org/2000/svg">
+                  <path d="m6.6 66.85 3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3l13.75-23.8h-27.5c0 1.55.4 3.1 1.2 4.5z" fill="#0066da"/>
+                  <path d="m43.65 25-13.75-23.8c-1.35.8-2.5 1.9-3.3 3.3l-25.4 44a9.06 9.06 0 0 0 -1.2 4.5h27.5z" fill="#00ac47"/>
+                  <path d="m73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75 7.65-13.25c.8-1.4 1.2-2.95 1.2-4.5h-27.502l5.852 11.5z" fill="#ea4335"/>
+                  <path d="m43.65 25 13.75-23.8c-1.35-.8-2.9-1.2-4.5-1.2h-18.5c-1.6 0-3.15.45-4.5 1.2z" fill="#00832d"/>
+                  <path d="m59.8 53h-32.3l-13.75 23.8c1.35.8 2.9 1.2 4.5 1.2h50.8c1.6 0 3.15-.45 4.5-1.2z" fill="#2684fc"/>
+                  <path d="m73.4 26.5-12.7-22c-.8-1.4-1.95-2.5-3.3-3.3l-13.75 23.8 16.15 27h27.45c0-1.55-.4-3.1-1.2-4.5z" fill="#ffba00"/>
+                </svg>
+              );
+              const FigmaIcon = () => (
+                <svg className="w-5 h-5 flex-shrink-0 mt-0.5" viewBox="0 0 38 57" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M19 28.5A9.5 9.5 0 1 1 28.5 19 9.5 9.5 0 0 1 19 28.5z" fill="#1ABCFE"/>
+                  <path d="M0 47.5A9.5 9.5 0 0 1 9.5 38H19v9.5a9.5 9.5 0 1 1-19 0z" fill="#0ACF83"/>
+                  <path d="M19 0v19h9.5a9.5 9.5 0 1 0 0-19z" fill="#FF7262"/>
+                  <path d="M0 9.5A9.5 9.5 0 0 0 9.5 19H19V0H9.5A9.5 9.5 0 0 0 0 9.5z" fill="#F24E1E"/>
+                  <path d="M0 28.5A9.5 9.5 0 0 0 9.5 38H19V19H9.5A9.5 9.5 0 0 0 0 28.5z" fill="#A259FF"/>
+                </svg>
+              );
+
               return (
                 <div className="rounded-xl overflow-hidden bg-surface border" style={{boxShadow:"0 1px 4px rgba(0,0,0,0.08)"}}>
-                  {/* Thumbnail row */}
-                  <div className="flex" style={{minHeight:90}}>
-                    <div className="flex-1 p-3 flex flex-col justify-between min-w-0">
-                      {/* Drive icon + name */}
-                      <div className="flex items-start gap-2">
-                        {/* Google Drive color icon */}
-                        <svg className="w-5 h-5 flex-shrink-0 mt-0.5" viewBox="0 0 87.3 78" xmlns="http://www.w3.org/2000/svg">
-                          <path d="m6.6 66.85 3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3l13.75-23.8h-27.5c0 1.55.4 3.1 1.2 4.5z" fill="#0066da"/>
-                          <path d="m43.65 25-13.75-23.8c-1.35.8-2.5 1.9-3.3 3.3l-25.4 44a9.06 9.06 0 0 0 -1.2 4.5h27.5z" fill="#00ac47"/>
-                          <path d="m73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75 7.65-13.25c.8-1.4 1.2-2.95 1.2-4.5h-27.502l5.852 11.5z" fill="#ea4335"/>
-                          <path d="m43.65 25 13.75-23.8c-1.35-.8-2.9-1.2-4.5-1.2h-18.5c-1.6 0-3.15.45-4.5 1.2z" fill="#00832d"/>
-                          <path d="m59.8 53h-32.3l-13.75 23.8c1.35.8 2.9 1.2 4.5 1.2h50.8c1.6 0 3.15-.45 4.5-1.2z" fill="#2684fc"/>
-                          <path d="m73.4 26.5-12.7-22c-.8-1.4-1.95-2.5-3.3-3.3l-13.75 23.8 16.15 27h27.45c0-1.55-.4-3.1-1.2-4.5z" fill="#ffba00"/>
-                        </svg>
-                        <p className="text-xs font-semibold leading-snug text-primary">{item.archivo || "Archivo"}</p>
-                      </div>
-                      {/* Creado por */}
-                      <p className="text-xs mt-1 text-muted">· Creado por {(item.team || []).find(n => editors.includes(n)) || "Sin asignar"}</p>
+                  {/* Thumbnail */}
+                  {isFigma ? (
+                    <div className="w-full overflow-hidden rounded-t-xl" style={{height:160, background:"#1e1e1e"}}>
+                      <iframe src={pres.embedUrl} className="w-full h-full border-0" allowFullScreen title="Figma preview" />
                     </div>
-                    {/* Thumbnail */}
-                    {thumbUrl && (
-                      <div className="flex-shrink-0 overflow-hidden" style={{background:"#4285f4", width:"45%"}}>
-                        <img src={thumbUrl} alt="" className="w-full h-full object-cover" style={{minHeight:140}}
-                          onError={e => { e.target.parentElement.style.display = "none"; }} />
-                      </div>
-                    )}
+                  ) : pres.thumbUrl ? (
+                    <div className="w-full overflow-hidden rounded-t-xl bg-blue-50" style={{height:160}}>
+                      <img src={pres.thumbUrl} alt="" className="w-full h-full object-cover"
+                        onError={e => { e.target.parentElement.style.display = "none"; }} />
+                    </div>
+                  ) : null}
+
+                  {/* Info row */}
+                  <div className="p-3 flex items-start gap-2">
+                    {isFigma ? <FigmaIcon /> : <DriveIcon />}
+                    <div className="min-w-0">
+                      <p className="text-xs font-semibold leading-snug text-primary truncate">{item.archivo || label}</p>
+                      <p className="text-xs mt-0.5 text-muted">Creado por {(item.team || []).find(n => editors.includes(n)) || "Sin asignar"}</p>
+                    </div>
                   </div>
+
                   {/* Footer */}
                   <div className="flex items-center justify-between px-3 py-2 border-t">
-                    <svg className="w-14" viewBox="0 0 87.3 24" xmlns="http://www.w3.org/2000/svg">
-                      <text y="18" fontSize="18" fontFamily="sans-serif" fill={d ? "#9ca3af" : "#5f6368"} fontWeight="500">Drive</text>
-                    </svg>
-                    <a href={openUrl || "#"} target={openUrl ? "_blank" : undefined} rel="noreferrer"
-                      className={`text-xs font-semibold px-3 py-1 rounded-lg border-strong hover:bg-hover ${d ?"text-green-400" :"text-green-600"}`}>
-                      Abrir archivo
+                    <span className="text-xs font-medium text-muted">{label}</span>
+                    <a href={item.archivoUrl} target="_blank" rel="noreferrer"
+                      className={`text-xs font-semibold px-3 py-1 rounded-lg border border-strong hover:bg-hover ${d ? "text-green-400" : "text-green-600"}`}>
+                      {openLabel}
                     </a>
                   </div>
                 </div>
@@ -3177,8 +3210,8 @@ function EditPage() {
             <div className="rounded-2xl p-5 space-y-4 bg-surface border">
               <SectionTitle>Referencias</SectionTitle>
               <div>
-                <label className={lbl}>Link de Google Drive</label>
-                <input className={inp} type="url" placeholder="https://drive.google.com/..." value={form.archivoUrl || ""} onChange={e => { const url = e.target.value; set("archivoUrl", url); const id2 = getDriveId(url); if (id2) fetch(`/api/gdrive/${id2}`).then(r => r.json()).then(data => { if (data.title) set("archivo", data.title); }).catch(() => {}); }} />
+                <label className={lbl}>Link de la presentación</label>
+                <input className={inp} type="url" placeholder="https://docs.google.com/presentation/... o figma.com/file/..." value={form.archivoUrl || ""} onChange={e => { const url = e.target.value; set("archivoUrl", url); const id2 = getDriveId(url); if (id2) fetch(`/api/gdrive/${id2}`).then(r => r.json()).then(data => { if (data.title) set("archivo", data.title); }).catch(() => {}); }} />
               </div>
               <div>
                 <label className={lbl}>Link de la reunión</label>
