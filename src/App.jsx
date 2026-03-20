@@ -390,7 +390,17 @@ function RichEditor({ onChange, placeholder, dark, value }) {
     });
   };
 
-  const handleInput = () => {
+  const handleInput = (e) => {
+    // Auto-convert "- " at start of a line to a bullet list
+    const sel = window.getSelection();
+    if (sel && sel.rangeCount) {
+      const range = sel.getRangeAt(0);
+      const node = range.startContainer;
+      if (node.nodeType === Node.TEXT_NODE && node.textContent === '- ') {
+        node.textContent = '';
+        document.execCommand('insertUnorderedList');
+      }
+    }
     onChange(ref.current.innerHTML);
     updateActive();
   };
@@ -1097,7 +1107,7 @@ function AddPage() {
                           <div><label className={lbl}>Cargo</label>{fi("cargo","Cargo o rol")}</div>
                           <div><label className={lbl}>Edad</label>{fi("edad","Ej: 35 años")}</div>
                         </div>
-                        <div><label className={lbl}>Ubicación</label>{fi("ubicacion","Ciudad / País")}</div>
+                        <div><label className={lbl}>Ubicación</label>{fi("ubicacion","Distrito, departamento")}</div>
                         <div><label className={lbl}>Nivel tecnológico</label>{fi("nivelTec","Básico / Medio / Avanzado")}</div>
                         <div><label className={lbl}>Herramientas usadas</label>{fi("herramientas","Excel, Slack, etc.")}</div>
                       </>)}
@@ -3259,7 +3269,7 @@ function EditPage() {
                         </div>
                       </div>
                       <div><label className={lbl}>Nombre</label>{fi("nombre","Nombre de la persona")}</div>
-                      {group("Información personal", <><div className="grid grid-cols-2 gap-3"><div><label className={lbl}>Cargo</label>{fi("cargo","Cargo o rol")}</div><div><label className={lbl}>Edad</label>{fi("edad","Ej: 35 años")}</div></div><div><label className={lbl}>Ubicación</label>{fi("ubicacion","Ciudad / País")}</div><div><label className={lbl}>Nivel tecnológico</label>{fi("nivelTec","Básico / Medio / Avanzado")}</div><div><label className={lbl}>Herramientas usadas</label>{fi("herramientas","Excel, Slack, etc.")}</div></>)}
+                      {group("Información personal", <><div className="grid grid-cols-2 gap-3"><div><label className={lbl}>Cargo</label>{fi("cargo","Cargo o rol")}</div><div><label className={lbl}>Edad</label>{fi("edad","Ej: 35 años")}</div></div><div><label className={lbl}>Ubicación</label>{fi("ubicacion","Distrito, departamento")}</div><div><label className={lbl}>Nivel tecnológico</label>{fi("nivelTec","Básico / Medio / Avanzado")}</div><div><label className={lbl}>Herramientas usadas</label>{fi("herramientas","Excel, Slack, etc.")}</div></>)}
                       {group("Sobre el negocio", form.type === "Buyer Persona" ? <><div><label className={lbl}>Rubro</label>{fi("rubro","Sector o industria")}</div><div className="grid grid-cols-2 gap-3"><div><label className={lbl}>Personal</label>{fi("personal","Ej: 10-50 empleados")}</div><div><label className={lbl}>Tiempo de apertura</label>{fi("tiempoApertura","Ej: 5 años")}</div></div><div><label className={lbl}>Metas a futuro</label><RichEditor value={p.metas||""} onChange={v => setPersonaField(personaTab,"metas",v)} placeholder="Metas y objetivos a futuro..." /></div></> : <><div><label className={lbl}>Rubro</label>{fi("rubro","Sector o industria")}</div><div><label className={lbl}>Tiempo en el negocio</label>{fi("tiempoNegocio","Ej: 3 años")}</div></>)}
                       {form.type === "Buyer Persona" && <>{group("Adquisición del producto", <RichEditor value={p.adquisicion||""} onChange={v => setPersonaField(personaTab,"adquisicion",v)} placeholder="Razones de adquisición..." />)}{group("Comunicaciones", <RichEditor value={p.comunicaciones||""} onChange={v => setPersonaField(personaTab,"comunicaciones",v)} placeholder="Canales de comunicación..." />)}</>}
                       {form.type === "User Persona" && <>{group("Objetivos y metas", <RichEditor value={p.objetivos||""} onChange={v => setPersonaField(personaTab,"objetivos",v)} placeholder="Objetivos y metas del usuario..." />)}{group("Frustraciones y dolores", <RichEditor value={p.dolores||""} onChange={v => setPersonaField(personaTab,"dolores",v)} placeholder="Frustraciones y dolores..." />)}</>}
