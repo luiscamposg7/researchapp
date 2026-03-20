@@ -365,10 +365,14 @@ const INITIAL_DELIVERABLES = [
 ];
 
 // ── RICH EDITOR ──
-function RichEditor({ onChange, placeholder, dark }) {
+function RichEditor({ onChange, placeholder, dark, value }) {
   const ref = useRef(null);
   const [active, setActive] = useState({});
   const [headingOpen, setHeadingOpen] = useState(false);
+
+  useEffect(() => {
+    if (ref.current && value) ref.current.innerHTML = value;
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const exec = useCallback((cmd, val) => {
     ref.current.focus();
