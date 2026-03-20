@@ -539,7 +539,7 @@ function SettingsModal({ onClose, dark }) {
               <div className="w-10 h-10 rounded-full -4 -gray-300 border-t-green-500 animate-spin" />
             </div>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-2 max-h-[340px] overflow-y-auto pr-1">
               {users.map(u => {
                 const isSelf = u.role === "super_admin";
                 const currentRole = pendingRoles[u.user_id] ?? u.role;
