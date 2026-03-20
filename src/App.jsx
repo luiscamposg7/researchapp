@@ -1712,9 +1712,18 @@ function PresentationCard({ item, dark: d }) {
   const isFigma = pres?.type === "figma";
   const isSlides = pres?.type === "slides";
   const label = isFigma ? "Figma" : isSlides ? "Google Slides" : "Google Drive";
-  const thumbUrl = isFigma
-    ? `/api/figma-thumb?url=${encodeURIComponent(item.archivoUrl)}`
-    : (pres?.thumbUrl || null);
+  const [figmaMeta, setFigmaMeta] = useState(null);
+
+  useEffect(() => {
+    if (!isFigma || !item.archivoUrl) return;
+    fetch(`/api/figma-thumb?url=${encodeURIComponent(item.archivoUrl)}`)
+      .then(r => r.json())
+      .then(data => setFigmaMeta(data))
+      .catch(() => {});
+  }, [item.archivoUrl, isFigma]);
+
+  const thumbUrl = isFigma ? (figmaMeta?.thumbnail_url || null) : (pres?.thumbUrl || null);
+  const displayName = isFigma ? (figmaMeta?.title || item.archivo || label) : (item.archivo || label);
 
   if (!pres) return null;
 
@@ -1760,7 +1769,7 @@ function PresentationCard({ item, dark: d }) {
       <div className="flex items-center justify-between px-3 py-2.5">
         <div className="flex items-center gap-2 min-w-0">
           {isFigma ? <FigmaIcon /> : <DriveIcon />}
-          <p className="text-xs font-semibold text-primary truncate">{item.archivo || label}</p>
+          <p className="text-xs font-semibold text-primary truncate">{displayName}</p>
         </div>
         <a href={item.archivoUrl} target="_blank" rel="noreferrer"
           className={`ml-2 flex-shrink-0 text-xs font-semibold px-3 py-1 rounded-lg border border-strong hover:bg-hover ${d ? "text-green-400" : "text-green-600"}`}>

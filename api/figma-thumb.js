@@ -9,19 +9,10 @@ module.exports = async function handler(req, res) {
     });
     if (!r.ok) return res.status(r.status).json({ error: "Figma oEmbed failed" });
     const data = await r.json();
-
-    if (!data.thumbnail_url) return res.json({ thumbnail_url: null, title: data.title || null });
-
-    // Proxy the image so browser doesn't hit Figma CDN auth restrictions
-    const img = await fetch(data.thumbnail_url, { headers: { 'User-Agent': 'Mozilla/5.0' } });
-    if (!img.ok) return res.json({ thumbnail_url: null, title: data.title || null });
-
-    const contentType = img.headers.get('content-type') || 'image/png';
-    const buffer = await img.arrayBuffer();
-
-    res.setHeader('Content-Type', contentType);
-    res.setHeader('Cache-Control', 'public, max-age=3600');
-    return res.send(Buffer.from(buffer));
+    return res.json({
+      title: data.title || null,
+      thumbnail_url: data.thumbnail_url || null,
+    });
   } catch (e) {
     return res.status(500).json({ error: e.message });
   }
