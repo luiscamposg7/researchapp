@@ -1141,7 +1141,7 @@ function AddPage() {
           <div className="space-y-4">
 
             {/* Estado + Acciones */}
-            <div className="rounded-2xl border p-5 space-y-4 bg-surface border-gray-700 border-gray-200">
+            <div className="rounded-2xl border p-5 space-y-4 bg-surface border">
               <div className="flex items-center justify-between">
                 <SectionTitle>Estado</SectionTitle>
                 <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${form.status === "Publicado" ? (d ? "bg-green-900/40 text-green-400 border-green-700" : "bg-green-50 text-green-700 border-green-200") : (d ? "bg-gray-800 text-gray-400 border-gray-600" : "bg-gray-100 text-gray-500 border-gray-300")}`}>
@@ -1164,7 +1164,7 @@ function AddPage() {
             </div>
 
             {/* Clasificación */}
-            <div className="rounded-2xl border p-5 space-y-4 bg-surface border-gray-700 border-gray-200">
+            <div className="rounded-2xl border p-5 space-y-4 bg-surface border">
               <SectionTitle>Clasificación</SectionTitle>
               <div>
                 <label className={lbl}>Tipo de entregable <span className="text-green-500">*</span></label>
@@ -1206,9 +1206,9 @@ function AddPage() {
 
 
 function CardSkeleton({ dark: d }) {
-  const b = d ? "bg-gray-800" : "bg-gray-200";
+  const b = "bg-active";
   return (
-    <div className="rounded-xl border p-5 animate-pulse bg-surface border-gray-800 border-gray-200">
+    <div className="rounded-xl border p-5 animate-pulse bg-surface border">
       <div className="flex gap-3 mb-4">
         <div className={`h-6 w-24 rounded-full ${b}`} />
         <div className={`h-6 w-16 rounded-full ${b}`} />
@@ -1356,9 +1356,9 @@ function HeroGrid({ dark: d }) {
 }
 
 function ProductCardSkeleton({ dark: d }) {
-  const b = d ? "bg-gray-800" : "bg-gray-200";
+  const b = "bg-active";
   return (
-    <div className="rounded-xl border overflow-hidden animate-pulse bg-surface border-gray-800 border-gray-200">
+    <div className="rounded-xl border overflow-hidden animate-pulse bg-surface border">
       <div className={`h-20 ${b}`} />
       <div className="p-5 space-y-3">
         <div className={`h-4 w-1/2 rounded-lg ${b}`} />
@@ -1452,7 +1452,7 @@ function PersonaDetailTabs({ personas, type, dark: d }) {
 
   const ContentCard = ({ title, description }) =>
     title ? (
-      <div className="rounded-lg p-4 border bg-surface border-gray-700 border-gray-200">
+      <div className="rounded-lg p-4 border bg-surface border">
         <p className="text-sm font-bold leading-snug text-primary">{title}</p>
         {description && <p className="text-sm mt-1.5 leading-snug text-tertiary">{description}</p>}
       </div>
@@ -1576,10 +1576,8 @@ function Toast({ toast }) {
   return (
     <div className="fixed top-5 right-5 z-[100]">
       <div className={`flex items-start gap-3 px-4 py-3.5 rounded-xl shadow-xl border max-w-sm ${
-        d
-          ? toast.type === "success" ? "bg-gray-900 border-gray-700 text-gray-100" : "bg-gray-900 border-gray-700 text-gray-100"
-          : toast.type === "success" ? "bg-white border-gray-200 text-gray-800" : "bg-white border-gray-200 text-gray-800"
-      }`} style={{ boxShadow: d ? "0 8px 32px rgba(0,0,0,0.5)" : "0 8px 32px rgba(0,0,0,0.12)" }}>
+        "bg-surface border text-primary"
+      }`} style={{ boxShadow: "0 8px 32px rgba(0,0,0,0.18)" }}>
         {toast.type === "success" ? (
           <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${d ? "bg-green-900/60" : "bg-green-100"}`}>
             <svg className="w-4 h-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
@@ -1603,7 +1601,7 @@ function ConfirmModal({ title, message, confirmLabel = "Confirmar", danger = fal
   const { dark: d } = useApp();
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backgroundColor: "rgba(0,0,0,0.6)" }}>
-      <div className="rounded-2xl shadow-2xl border w-full max-w-sm bg-surface border-gray-700 border-gray-200">
+      <div className="rounded-2xl shadow-2xl border w-full max-w-sm bg-surface border">
         <div className="px-6 pt-6 pb-4">
           <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-4 ${danger ? (d ? "bg-red-900/50" : "bg-red-100") : (d ? "bg-amber-900/50" : "bg-amber-100")}`}>
             <svg className={`w-5 h-5 ${danger ? "text-red-500" : "text-amber-500"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -1730,7 +1728,7 @@ function DetailPage() {
         />
       )}
       {/* Top bar */}
-      <div className="border-b px-4 py-3 md:px-8 md:py-4 sticky top-0 z-10 flex items-center justify-between bg-page border-gray-800 border-gray-200">
+      <div className="border-b px-4 py-3 md:px-8 md:py-4 sticky top-0 z-10 flex items-center justify-between bg-page border">
         <button onClick={() => window.history.length > 1 ? navigate(-1) : navigate("/research")} className="flex items-center gap-2 text-sm font-semibold text-tertiary hover:text-primary">
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -1764,7 +1762,7 @@ function DetailPage() {
         <div className="flex items-center gap-2 text-sm mb-2 text-muted">
           <button onClick={() => navigate("/")} className="hover:underline hover:text-secondary">Inicio</button><span>/</span>
           <button onClick={() => navigate(`/producto/${toSlug(item.tags[0])}`)} className="hover:underline hover:text-secondary">{item.tags[0]}</button><span>/</span>
-          <span className={d ? "text-gray-300" : "text-gray-700"}>{item.title}</span>
+          <span className="text-secondary">{item.title}</span>
         </div>
 
         {/* Page title */}
@@ -1788,7 +1786,7 @@ function DetailPage() {
               const thumbUrl = driveId ? `https://drive.google.com/thumbnail?id=${driveId}&sz=w400` : null;
               const openUrl = item.archivoUrl || null;
               return (
-                <div className="rounded-xl border overflow-hidden bg-surface border-gray-700 border-gray-200" style={{boxShadow:"0 1px 4px rgba(0,0,0,0.08)"}}>
+                <div className="rounded-xl border overflow-hidden bg-surface border" style={{boxShadow:"0 1px 4px rgba(0,0,0,0.08)"}}>
                   {/* Thumbnail row */}
                   <div className="flex" style={{minHeight:90}}>
                     <div className="flex-1 p-3 flex flex-col justify-between min-w-0">
@@ -1982,7 +1980,7 @@ function CoverPickerModal({ dark: d, onSelect, onUpload, onClose }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={onClose}>
       <div
         onClick={e => e.stopPropagation()}
-        className="w-[560px] max-h-[80vh] rounded-2xl flex flex-col shadow-2xl bg-surface border border-gray-800 border border-gray-200"
+        className="w-[560px] max-h-[80vh] rounded-2xl flex flex-col shadow-2xl bg-surface border"
       >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border">
@@ -2068,7 +2066,7 @@ function PersonaPhotoPickerModal({ dark: d, onSelect, onUpload, onClose }) {
   return (
     <>
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={onClose}>
-      <div onClick={e => e.stopPropagation()} className="w-[480px] max-h-[80vh] rounded-2xl flex flex-col shadow-2xl bg-surface border border-gray-800 border border-gray-200">
+      <div onClick={e => e.stopPropagation()} className="w-[480px] max-h-[80vh] rounded-2xl flex flex-col shadow-2xl bg-surface border">
         <div className="flex items-center justify-between px-6 py-4 border-b border">
           <h2 className="font-semibold text-base text-primary">Elegir foto de perfil</h2>
           <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-hover text-tertiary">
@@ -2154,7 +2152,7 @@ function ImagePickerModal({ dark: d, deliverables, onSelect, onUpload, onDelete,
   return (
     <>
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={onClose}>
-      <div onClick={e => e.stopPropagation()} className="w-[560px] max-h-[80vh] rounded-2xl flex flex-col shadow-2xl bg-surface border border-gray-800 border border-gray-200">
+      <div onClick={e => e.stopPropagation()} className="w-[560px] max-h-[80vh] rounded-2xl flex flex-col shadow-2xl bg-surface border">
         <div className="flex items-center justify-between px-6 py-4 border-b border">
           <h2 className="font-semibold text-base text-primary">Imágenes adjuntas</h2>
           <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-hover text-tertiary">
@@ -2446,7 +2444,7 @@ function ProductPage() {
               const all = deliverables.filter(i => i.tags.includes(p));
               return (
                 <button key={p} onClick={() => navigate(`/producto/${toSlug(p)}`)}
-                  className="text-left rounded-xl border p-4 transition-all group bg-surface border-gray-800 hover:border-gray-600 border-gray-200 hover:border-gray-300 hover:shadow-sm">
+                  className="text-left rounded-xl border p-4 transition-all group bg-surface border hover:border-strong hover:shadow-sm">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
                       <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: pc }} />
@@ -2527,12 +2525,12 @@ function HomePage() {
               onChange={e => setSearch(e.target.value)}
               onKeyDown={handleSearch}
               placeholder="Busca un research o producto..."
-              className="w-full pl-12 pr-4 sm:pr-28 py-4 text-sm rounded-2xl border focus:outline-none focus:ring-2 focus:ring-green-400 bg-surface/80 border-gray-700 text-gray-200 placeholder-gray-500 border-gray-200 text-gray-900 placeholder-gray-400"
+              className="w-full pl-12 pr-4 sm:pr-28 py-4 text-sm rounded-2xl border focus:outline-none focus:ring-2 focus:ring-green-400 bg-surface/80 text-primary placeholder-gray-500 border-gray-200 text-gray-900 placeholder-gray-400"
               style={{ boxShadow: d ? "0 4px 24px rgba(0,0,0,0.3)" : "0 4px 24px rgba(0,0,0,0.08)" }}
             />
             <button
               onClick={doSearch}
-              className={`hidden sm:flex absolute right-3 top-1/2 -translate-y-1/2 items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-lg border transition-colors ${search.trim() ? (d ? "bg-gray-700 border-gray-600 text-gray-200 hover:bg-gray-600" : "bg-gray-100 border-gray-300 text-gray-700 hover:bg-gray-200") : (d ? "bg-gray-800 border-gray-700 text-gray-600 cursor-default" : "bg-gray-50 border-gray-200 text-gray-400 cursor-default")}`}
+              className={`hidden sm:flex absolute right-3 top-1/2 -translate-y-1/2 items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-lg border transition-colors ${search.trim() ? "bg-muted border text-secondary hover:bg-active" : "bg-muted border text-muted cursor-default"}`}
             >
               Enter ↵
             </button>
@@ -2543,7 +2541,7 @@ function HomePage() {
       <div className="w-full mx-auto px-4 md:px-8 py-8 md:py-10 pb-16" style={{ maxWidth: 1200 }}>
 
         {/* Crear solicitud banner */}
-        <div className="rounded-2xl p-4 md:p-6 mb-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 md:gap-6 bg-surface border border-gray-800 border border-gray-200"
+        <div className="rounded-2xl p-4 md:p-6 mb-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 md:gap-6 bg-surface border"
           style={{ boxShadow: d ? "0 2px 12px rgba(0,0,0,0.3)" : "0 2px 12px rgba(0,0,0,0.06)" }}>
           <div className="flex items-center gap-4">
             <div>
@@ -2581,7 +2579,7 @@ function HomePage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {loadingDeliverables
               ? Array.from({ length: 4 }).map((_, i) => (
-                  <div key={i} className="rounded-xl border p-4 animate-pulse bg-surface border-gray-800 border-gray-200">
+                  <div key={i} className="rounded-xl border p-4 animate-pulse bg-surface border">
                     <div className="h-4 w-3/4 rounded mb-2 bg-active" />
                     <div className="flex gap-2">
                       <div className="h-3 w-16 rounded-full bg-active" />
@@ -2673,10 +2671,10 @@ function ListPage() {
   }, [hasMore]);
 
   const s = {
-    panel:    dk ? "bg-gray-900 border-gray-800" : "bg-white border-gray-200",
-    p1:       dk ? "text-gray-100" : "text-gray-900",
-    p2:       dk ? "text-gray-400" : "text-gray-500",
-    emptyBox: dk ? "bg-gray-800" : "bg-gray-100",
+    panel:    "bg-surface border",
+    p1:       "text-primary",
+    p2:       "text-tertiary",
+    emptyBox: "bg-muted",
   };
 
   return (
@@ -2706,7 +2704,7 @@ function ListPage() {
               </svg>
               <input type="text" placeholder="Buscar research..." value={search}
                 onChange={e => setSearch(e.target.value)}
-                className={`w-full pl-10 pr-4 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent ${dk ? "bg-gray-800 border-gray-700 text-gray-200 placeholder-gray-500" : "bg-white border-gray-200 text-gray-900 placeholder-gray-400"}`}
+                className={`w-full pl-10 pr-4 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent bg-surface text-primary placeholder:text-muted`}
                 style={{height:"40px"}} />
             </div>
             <div className="flex items-center gap-3 flex-1">
@@ -2725,12 +2723,12 @@ function ListPage() {
                 </svg>
                 <input type="text" placeholder="Buscar research..." value={search}
                   onChange={e => setSearch(e.target.value)}
-                  className={`w-full pl-10 pr-4 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent ${dk ? "bg-gray-800 border-gray-700 text-gray-200 placeholder-gray-500" : "bg-white border-gray-200 text-gray-900 placeholder-gray-400"}`}
+                  className={`w-full pl-10 pr-4 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent bg-surface text-primary placeholder:text-muted`}
                   style={{height:"40px"}} />
               </div>
               <button
                 onClick={() => setFiltersOpen(o => !o)}
-                className={`flex items-center gap-1.5 px-3 text-sm font-semibold border rounded-lg flex-shrink-0 ${filtersOpen ? (dk ? "bg-green-900/30 border-green-700 text-green-400" : "bg-green-50 border-green-400 text-green-700") : (dk ? "bg-gray-800 border-gray-700 text-gray-300" : "bg-white border-gray-200 text-gray-600")}`}
+                className={`flex items-center gap-1.5 px-3 text-sm font-semibold border rounded-lg flex-shrink-0 ${filtersOpen ? (dk ? "bg-green-900/30 border-green-700 text-green-400" : "bg-green-50 border-green-400 text-green-700") : "bg-surface border text-secondary"}`}
                 style={{height:"40px"}}
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z"/></svg>
@@ -2809,16 +2807,16 @@ function Sidebar({ onSettings, user, mobileOpen = false, onMobileClose }) {
   useEffect(() => { if (onMobileClose) onMobileClose(); }, [location.pathname]);
 
   const s = {
-    panel:   dk ? "bg-gray-900 border-gray-800" : "bg-white border-gray-200",
-    div:     dk ? "border-gray-800" : "border-gray-100",
-    p1:      dk ? "text-gray-100" : "text-gray-900",
-    p2:      dk ? "text-gray-400" : "text-gray-500",
-    muted:   dk ? "text-gray-600" : "text-gray-400",
+    panel:   "bg-surface border",
+    div:     "border-subtle",
+    p1:      "text-primary",
+    p2:      "text-tertiary",
+    muted:   "text-muted",
     navOn:   dk ? "text-green-500" : "text-green-700",
-    navOff:  dk ? "text-gray-400 hover:bg-gray-800 hover:text-gray-200" : "text-gray-500 hover:bg-gray-50 hover:text-gray-800",
-    tHover:  dk ? "hover:bg-gray-800" : "hover:bg-gray-50",
-    pinBtn:  dk ? "text-gray-500 hover:text-gray-300 hover:bg-gray-800" : "text-gray-400 hover:text-gray-700 hover:bg-gray-100",
-    helpBox: dk ? "bg-gray-800 border-gray-700" : "bg-gray-50 border-gray-200",
+    navOff:  "text-tertiary hover:bg-hover hover:text-primary",
+    tHover:  "hover:bg-hover",
+    pinBtn:  "text-muted hover:text-secondary hover:bg-hover",
+    helpBox: "bg-muted border",
   };
 
   const width = mobileOpen ? "100%" : (expanded ? 272 : 64);
@@ -2933,7 +2931,7 @@ function Sidebar({ onSettings, user, mobileOpen = false, onMobileClose }) {
               ? <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M12 3v1m0 16v1m8.66-9H21M3 12H2m15.36-6.36l-.71.71M7.05 16.95l-.71.71M18.36 18.36l-.71-.71M6.34 6.34l-.71-.71M17 12a5 5 0 11-10 0 5 5 0 0110 0z" /></svg>
               : <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" /></svg>
             }
-            {expanded && <span className="whitespace-nowrap">{dk ? "Modo claro" : "Modo oscuro"}</span>}
+            {expanded && <span className="whitespace-nowrap">{dk ? "Modo oscuro" : "Modo claro"}</span>}
           </div>
           {expanded && (
             <div className={`w-8 h-4 rounded-full flex items-center px-0.5 flex-shrink-0 ${dk ? "justify-end" : "justify-start"}`} style={{backgroundColor: dk ? "#00B369" : "#e5e7eb"}}>
@@ -3024,7 +3022,7 @@ function EditPage() {
     navigate(`/research/${toSlug(form.title)}`);
   };
 
-  const inp = `w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 bg-surface border-gray-700 text-gray-200 placeholder-gray-500 border-gray-300 text-gray-900 placeholder-gray-400`;
+  const inp = `w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 bg-surface text-primary placeholder-gray-500 text-primary placeholder-gray-400`;
   const lbl = `block text-xs font-semibold mb-1 text-tertiary`;
 
   const SectionTitle = ({ children }) => (
@@ -3067,12 +3065,12 @@ function EditPage() {
     const display = value ? new Date(value + "T12:00:00").toLocaleDateString("es-PE", { day: "2-digit", month: "short", year: "numeric" }).replace(".", "") : "Seleccionar fecha";
     return (
       <div className="relative" ref={ref}>
-        <button type="button" onClick={() => setOpen(o => !o)} className="w-full flex items-center gap-2 px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 bg-surface border-gray-700 text-gray-200 hover:bg-gray-750 border-gray-300 text-gray-700 hover:bg-gray-50">
+        <button type="button" onClick={() => setOpen(o => !o)} className="w-full flex items-center gap-2 px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 bg-surface text-primary hover:bg-hover">
           <svg className="w-4 h-4 flex-shrink-0 text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-          <span className={value ? "" : (d ? "text-gray-500" : "text-gray-400")}>{display}</span>
+          <span className={value ? "" : "text-muted"}>{display}</span>
         </button>
         {open && (
-          <div className="absolute z-50 mt-1 w-72 rounded-2xl border shadow-xl p-4 bg-surface border-gray-700 border-gray-200">
+          <div className="absolute z-50 mt-1 w-72 rounded-2xl border shadow-xl p-4 bg-surface border">
             <div className="flex items-center justify-between mb-3">
               <button type="button" onClick={prev} className="w-8 h-8 flex items-center justify-center rounded-lg text-tertiary hover:bg-hover"><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7"/></svg></button>
               <span className="text-sm font-semibold text-primary">{MONTHS[cursor.m]} {cursor.y}</span>
@@ -3081,7 +3079,7 @@ function EditPage() {
             <div className="grid grid-cols-7 mb-1">{DAYS.map(day => <div key={day} className="text-center text-xs font-medium py-1 text-muted">{day}</div>)}</div>
             <div className="grid grid-cols-7 gap-y-0.5">
               {cells().map((cell, i) => { const sel = isSelected(cell.day, cell.cur); const tod = isToday(cell.day, cell.cur); return (
-                <button key={i} type="button" onClick={() => select(cell.day, cell.cur)} className={`h-9 w-full flex items-center justify-center rounded-lg text-sm transition-colors ${sel ? "text-white font-semibold" : ""} ${!sel && cell.cur ? (d ? "text-gray-200 hover:bg-gray-800" : "text-gray-700 hover:bg-gray-100") : ""} ${!cell.cur ? (d ? "text-gray-600 hover:bg-gray-800" : "text-gray-300 hover:bg-gray-50") : ""} ${tod && !sel ? (d ? "font-semibold text-green-400" : "font-semibold text-green-600") : ""}`} style={sel ? { backgroundColor: "#00B369" } : {}}>{cell.day}</button>
+                <button key={i} type="button" onClick={() => select(cell.day, cell.cur)} className={`h-9 w-full flex items-center justify-center rounded-lg text-sm transition-colors ${sel ? "text-white font-semibold" : ""} ${!sel && cell.cur ? "text-primary hover:bg-hover" : ""} ${!cell.cur ? "text-muted hover:bg-hover" : ""} ${tod && !sel ? "font-semibold text-brand" : ""}`} style={sel ? { backgroundColor: "#00B369" } : {}}>{cell.day}</button>
               ); })}
             </div>
             <div className="mt-3 pt-3 border-t flex justify-between border">
@@ -3120,7 +3118,7 @@ function EditPage() {
       }} />
 
       {/* Top bar */}
-      <div className="border-b px-4 py-3 md:px-8 md:py-4 sticky top-0 z-10 bg-page border-gray-800 border-gray-200">
+      <div className="border-b px-4 py-3 md:px-8 md:py-4 sticky top-0 z-10 bg-page border">
         <button onClick={() => window.history.length > 1 ? navigate(-1) : navigate("/research")} className="flex items-center gap-2 text-sm font-semibold text-tertiary hover:text-primary">
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7"/></svg>
           <span className="hidden sm:inline">{fromLabel ? `Volver a ${fromLabel}` : "Volver"}</span>
@@ -3135,7 +3133,7 @@ function EditPage() {
           <h1 className="text-2xl font-bold mb-1 text-primary">Editar research</h1>
           <div className="flex items-center gap-1.5">
             <p className="text-base font-medium pr-2 text-tertiary">{window.location.origin}/research/{toSlug(item.title)}</p>
-            <button type="button" title="Copiar enlace" onClick={() => navigator.clipboard.writeText(`${window.location.origin}/research/${toSlug(item.title)}`)} style={{ width: 38, height: 38 }} className="flex items-center justify-center rounded-lg border flex-shrink-0 bg-surface border-gray-700 text-gray-400 hover:bg-gray-700 hover:text-gray-200 border-gray-300 text-gray-500 hover:bg-gray-50 hover:text-gray-700">
+            <button type="button" title="Copiar enlace" onClick={() => navigator.clipboard.writeText(`${window.location.origin}/research/${toSlug(item.title)}`)} style={{ width: 38, height: 38 }} className="flex items-center justify-center rounded-lg border flex-shrink-0 bg-surface text-tertiary hover:bg-hover hover:text-secondary">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
             </button>
           </div>
@@ -3149,7 +3147,7 @@ function EditPage() {
             <div className="space-y-3">
               <div>
                 <label className={lbl}>Título <span className="text-green-500">*</span></label>
-                <input className="w-full px-3 py-2 text-xl font-semibold border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 bg-surface border-gray-700 text-gray-100 placeholder-gray-500 border-gray-300 text-gray-900 placeholder-gray-400" value={form.title} onChange={e => set("title", e.target.value)} placeholder="Título del research..." />
+                <input className="w-full px-3 py-2 text-xl font-semibold border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 bg-surface border-gray-700 text-gray-100 placeholder-gray-500 text-primary placeholder-gray-400" value={form.title} onChange={e => set("title", e.target.value)} placeholder="Título del research..." />
               </div>
               <div>
                 <label className={lbl}>Descripción corta</label>
@@ -3158,7 +3156,7 @@ function EditPage() {
             </div>
 
             {/* Contenido */}
-            <div className="rounded-2xl border p-5 space-y-4 bg-surface border-gray-700 border-gray-200">
+            <div className="rounded-2xl border p-5 space-y-4 bg-surface border">
               <SectionTitle>Contenido</SectionTitle>
               <div><label className={lbl}>Objetivo del research</label><RichEditor value={form.objetivo} onChange={v => set("objetivo", v)} placeholder="¿Qué se busca lograr con este entregable?" /></div>
               <div><label className={lbl}>Usuario</label><RichEditor value={form.usuario} onChange={v => set("usuario", v)} placeholder="Perfil de los usuarios involucrados" /></div>
@@ -3166,7 +3164,7 @@ function EditPage() {
             </div>
 
             {/* Referencias */}
-            <div className="rounded-2xl border p-5 space-y-4 bg-surface border-gray-700 border-gray-200">
+            <div className="rounded-2xl border p-5 space-y-4 bg-surface border">
               <SectionTitle>Referencias</SectionTitle>
               <div>
                 <label className={lbl}>Link de Google Drive</label>
@@ -3184,7 +3182,7 @@ function EditPage() {
                 </div>
                 {jiraError && <p className="mt-1 text-xs text-amber-500">{jiraError}</p>}
                 {form.jira && !jiraLoading && (
-                  <div className="mt-2 rounded-lg border p-3 bg-muted border-gray-600 border-gray-200">
+                  <div className="mt-2 rounded-lg border p-3 bg-muted border">
                     <p className="text-xs font-semibold leading-snug text-primary">{form.jira}</p>
                     {form.jiraStatus && <span className={`inline-block mt-1 text-xs font-bold px-2 py-0.5 rounded border ${/done|closed|resolved|finaliz|complet/i.test(form.jiraStatus) ? (d ? "text-green-400 border-green-700 bg-green-900/40" : "text-green-700 border-green-200 bg-green-50") : (d ? "text-blue-400 border-blue-700 bg-blue-900/40" : "text-blue-700 border-blue-200 bg-blue-50")}`}>{form.jiraStatus}</span>}
                     <button type="button" onClick={() => { set("jira", ""); set("jiraStatus", ""); set("jiraUrl", ""); }} className="block mt-1.5 text-xs text-muted hover:text-secondary">Cambiar ticket</button>
@@ -3195,7 +3193,7 @@ function EditPage() {
 
             {/* Imágenes adjuntas */}
             {!PERSONA_TYPES.includes(form.type) && (
-              <div className="rounded-2xl border p-5 space-y-4 bg-surface border-gray-700 border-gray-200">
+              <div className="rounded-2xl border p-5 space-y-4 bg-surface border">
                 <SectionTitle>Imágenes adjuntas</SectionTitle>
                 {(form.imagenes || []).length > 0 && (
                   <div className="grid grid-cols-4 gap-2">
@@ -3247,7 +3245,7 @@ function EditPage() {
 
             {/* Personas */}
             {PERSONA_TYPES.includes(form.type) && form.personas && form.personas.length > 0 && (
-              <div className="rounded-2xl border p-5 bg-surface border-gray-700 border-gray-200">
+              <div className="rounded-2xl border p-5 bg-surface border">
                 <div className="flex items-center justify-between mb-4">
                   <SectionTitle>Personas</SectionTitle>
                   {form.personas.length < 3 && <Button type="button" size="xs" color="secondary" onClick={addPersona} className="flex items-center gap-1"><svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/></svg>Añadir</Button>}
@@ -3289,7 +3287,7 @@ function EditPage() {
           <div className="space-y-4">
 
             {/* Publicación */}
-            <div className="rounded-2xl border p-5 space-y-4 bg-surface border-gray-700 border-gray-200">
+            <div className="rounded-2xl border p-5 space-y-4 bg-surface border">
               <div className="flex items-center justify-between">
                 <SectionTitle>Publicación</SectionTitle>
                 <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${form.status === "Publicado" ? (d ? "bg-green-900/40 text-green-400 border-green-700" : "bg-green-50 text-green-700 border-green-200") : (d ? "bg-gray-800 text-gray-400 border-gray-600" : "bg-gray-100 text-gray-500 border-gray-300")}`}>
@@ -3317,7 +3315,7 @@ function EditPage() {
             </div>
 
             {/* Clasificación */}
-            <div className="rounded-2xl border p-5 space-y-4 bg-surface border-gray-700 border-gray-200">
+            <div className="rounded-2xl border p-5 space-y-4 bg-surface border">
               <SectionTitle>Clasificación</SectionTitle>
               <div>
                 <label className={lbl}>Tipo de entregable <span className="text-green-500">*</span></label>
@@ -3369,7 +3367,7 @@ function Layout({ toast, user }) {
   const [showSettings, setShowSettings] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   return (
-    <div className={`min-h-screen ${dark ? "bg-gray-950" : "bg-gray-50"}`} style={{ fontFamily: "'Inter', sans-serif" }}>
+    <div className="min-h-screen bg-page" style={{ fontFamily: "'Inter', sans-serif" }}>
       <Toast toast={toast} />
       <div className="flex h-screen overflow-hidden">
         {showSettings && <SettingsModal dark={dark} onClose={() => setShowSettings(false)} />}
@@ -3408,7 +3406,7 @@ function LoginPage({ dark: d }) {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-page">
-      <div className="w-full max-w-sm rounded-2xl border p-10 flex flex-col items-center gap-6 bg-surface border-gray-800 border-gray-200 shadow-sm">
+      <div className="w-full max-w-sm rounded-2xl border p-10 flex flex-col items-center gap-6 bg-surface border shadow-sm">
         <div className="flex flex-col items-center gap-2">
           <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ backgroundColor: "#00B369" }}>
             <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -3419,7 +3417,7 @@ function LoginPage({ dark: d }) {
           <p className="text-sm text-muted">Inicia sesión para continuar</p>
         </div>
         <button onClick={handleGoogle} disabled={loading}
-          className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl border font-medium text-sm transition-all bg-surface border-gray-700 text-gray-100 hover:bg-gray-700 border-gray-300 text-gray-700 hover:bg-gray-50 shadow-sm disabled:opacity-50">
+          className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl border font-medium text-sm transition-all bg-surface text-primary hover:bg-hover shadow-sm disabled:opacity-50">
           <svg className="w-5 h-5" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
           {loading ? "Redirigiendo..." : "Continuar con Google"}
         </button>
@@ -3511,25 +3509,25 @@ export default function App() {
   if (session === undefined) return null;
   if (!session) return <LoginPage dark={dark} />;
   if (!session.user.email?.endsWith("@prestamype.com")) return (
-    <div className={`min-h-screen flex items-center justify-center ${dark ? "bg-gray-950" : "bg-gray-50"}`}>
-      <div className={`w-full max-w-sm rounded-2xl border p-10 flex flex-col items-center gap-4 text-center ${dark ? "bg-gray-900 border-gray-800" : "bg-white border-gray-200 shadow-sm"}`}>
+    <div className="min-h-screen flex items-center justify-center bg-page">
+      <div className="w-full max-w-sm rounded-2xl border p-10 flex flex-col items-center gap-4 text-center bg-surface shadow-sm">
         <div className="w-12 h-12 rounded-full flex items-center justify-center bg-red-100">
           <svg className="w-6 h-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
         </div>
-        <h2 className={`text-lg font-bold ${dark ? "text-gray-100" : "text-gray-900"}`}>Acceso restringido</h2>
-        <p className={`text-sm ${dark ? "text-gray-400" : "text-gray-500"}`}>Solo cuentas <span className="font-semibold">@prestamype.com</span> pueden acceder a este portal.</p>
+        <h2 className="text-lg font-bold text-primary">Acceso restringido</h2>
+        <p className="text-sm text-secondary">Solo cuentas <span className="font-semibold">@prestamype.com</span> pueden acceder a este portal.</p>
         <button onClick={() => supabase.auth.signOut()} className="mt-2 text-sm font-semibold text-red-500 hover:text-red-700">Cerrar sesión</button>
       </div>
     </div>
   );
   if (roleLoaded && !role) return (
-    <div className={`min-h-screen flex items-center justify-center ${dark ? "bg-gray-950" : "bg-gray-50"}`}>
-      <div className={`w-full max-w-sm rounded-2xl border p-10 flex flex-col items-center gap-4 text-center ${dark ? "bg-gray-900 border-gray-800" : "bg-white border-gray-200 shadow-sm"}`}>
+    <div className="min-h-screen flex items-center justify-center bg-page">
+      <div className="w-full max-w-sm rounded-2xl border p-10 flex flex-col items-center gap-4 text-center bg-surface shadow-sm">
         <div className="w-12 h-12 rounded-full flex items-center justify-center bg-red-100">
           <svg className="w-6 h-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
         </div>
-        <h2 className={`text-lg font-bold ${dark ? "text-gray-100" : "text-gray-900"}`}>Sin acceso</h2>
-        <p className={`text-sm ${dark ? "text-gray-400" : "text-gray-500"}`}>Tu cuenta no tiene permisos para acceder a este portal. Contacta al administrador.</p>
+        <h2 className="text-lg font-bold text-primary">Sin acceso</h2>
+        <p className="text-sm text-secondary">Tu cuenta no tiene permisos para acceder a este portal. Contacta al administrador.</p>
         <button onClick={() => supabase.auth.signOut()} className="mt-2 text-sm font-semibold text-red-500 hover:text-red-700">Cerrar sesión</button>
       </div>
     </div>
