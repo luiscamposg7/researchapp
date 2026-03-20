@@ -525,7 +525,7 @@ function SettingsModal({ onClose, dark }) {
             <h2 className="text-lg font-bold text-primary">Roles de usuario</h2>
           </div>
           <div className="flex items-center gap-3">
-            <span className="text-xs font-medium text-muted">v1.0.3</span>
+            <span className="text-xs font-medium text-muted">v1.0.4</span>
             <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-lg text-tertiary hover:bg-hover">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
