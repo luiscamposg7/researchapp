@@ -3427,7 +3427,14 @@ function LoginPage({ dark: d }) {
 }
 
 export default function App() {
-  const [dark, setDark] = useState(() => window.matchMedia("(prefers-color-scheme: dark)").matches);
+  const [dark, setDark] = useState(() => {
+    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    document.documentElement.classList.toggle("dark-mode", prefersDark);
+    return prefersDark;
+  });
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark-mode", dark);
+  }, [dark]);
   const [session, setSession] = useState(undefined);
   const [role, setRole] = useState(null);
   const [roleLoaded, setRoleLoaded] = useState(false);
