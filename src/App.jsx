@@ -11,6 +11,19 @@ const useApp = () => useContext(AppCtx);
 
 const toSlug = (title) => title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 
+const ES_MONTHS = { ene:0,feb:1,mar:2,abr:3,may:4,jun:5,jul:6,ago:7,sep:8,oct:9,nov:10,dic:11 };
+const formatDate = (str) => {
+  if (!str) return "";
+  let d = new Date(str);
+  if (isNaN(d)) {
+    // Try Spanish short month: "03 dic 2024" or "3 dic. 2024"
+    const m = str.toLowerCase().replace(/\./g, "").match(/(\d{1,2})\s+([a-z]+)\s+(\d{4})/);
+    if (m && ES_MONTHS[m[2]] !== undefined) d = new Date(+m[3], ES_MONTHS[m[2]], +m[1]);
+  }
+  if (isNaN(d)) return str;
+  return d.toLocaleDateString("es-PE", { day: "numeric", month: "short", year: "numeric" }).replace(/\./g, "");
+};
+
 const PRODUCTS = ["Cambio Seguro", "Factoring", "Gestora", "PGH", "Recadia", "Tandia"];
 const TYPES = ["Tipo de entregable", "Research", "Pruebas de usabilidad", "Buyer Persona", "User Persona"];
 const PERSONA_TYPES = ["Buyer Persona", "User Persona"];
@@ -1381,7 +1394,7 @@ function Card({ item, dark, fromLabel }) {
     <div onClick={() => navigate(`/research/${toSlug(item.title)}`, { state: { fromLabel } })} className="rounded-2xl p-6 cursor-pointer group flex flex-col bg-surface hover:border-green-500 hover:shadow-md">
       <div className="flex items-start justify-between mb-4">
         <UIBadge color={getBadgeColor(item.typeColor)}>{item.type}</UIBadge>
-        <span className="text-sm text-muted">{item.date}</span>
+        <span className="text-sm text-muted">{formatDate(item.date)}</span>
       </div>
       <h3 className="font-semibold text-lg leading-snug mb-3 text-primary group-hover:text-green-600">{item.title}</h3>
       <p className="text-base leading-relaxed mb-4 line-clamp-2 flex-1 text-tertiary">{item.descripcion || stripHtml(item.objetivo)}</p>
@@ -1767,7 +1780,7 @@ function DetailPage() {
           {(() => { const assigned = (item.team || []).find(n => editors.includes(n)) || null; return (<>
             <UIAvatar name={assigned} index={0} />
             <span className="text-sm text-tertiary">
-              {assigned || "Sin asignar"} · {item.date}
+              {assigned || "Sin asignar"} · {formatDate(item.date)}
             </span>
           </>); })()}
         </div>
@@ -1827,7 +1840,7 @@ function DetailPage() {
             <div className="space-y-3">
               <div>
                 <p className="text-xs font-semibold mb-0.5 text-muted">Fecha</p>
-                <p className="text-sm text-secondary">{item.date}</p>
+                <p className="text-sm text-secondary">{formatDate(item.date)}</p>
               </div>
               <div>
                 <p className="text-xs font-semibold mb-0.5 text-muted">Metodología</p>
@@ -2335,7 +2348,7 @@ function ProductPage() {
                       <div className={`px-5 py-3 border-b flex items-center justify-between border ${d ?"bg-gray-800/50" :"bg-gray-50"}`}>
                         <div className="min-w-0">
                           <p className="text-sm font-semibold truncate text-primary">{inv.title}</p>
-                          <p className="text-xs mt-0.5 text-muted">{inv.date} · {inv.personas?.length || 0} persona{(inv.personas?.length || 0) !== 1 ? "s" : ""}</p>
+                          <p className="text-xs mt-0.5 text-muted">{formatDate(inv.date)} · {inv.personas?.length || 0} persona{(inv.personas?.length || 0) !== 1 ? "s" : ""}</p>
                         </div>
                         <button
                           onClick={() => navigate(`/research/${toSlug(inv.title)}`)}
@@ -2602,7 +2615,7 @@ function HomePage() {
                           {productTag}
                         </span>
                       )}
-                      <span className="text-xs text-muted">{item.date}</span>
+                      <span className="text-xs text-muted">{formatDate(item.date)}</span>
                     </div>
                   </div>
                 </button>
