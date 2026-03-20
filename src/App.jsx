@@ -1840,8 +1840,19 @@ function DetailPage() {
                 <div className="rounded-xl overflow-hidden bg-surface border" style={{boxShadow:"0 1px 4px rgba(0,0,0,0.08)"}}>
                   {/* Thumbnail */}
                   {isFigma ? (
-                    <div className="w-full overflow-hidden rounded-t-xl" style={{height:160, background:"#1e1e1e"}}>
-                      <iframe src={pres.embedUrl} className="w-full h-full border-0" allowFullScreen title="Figma preview" />
+                    <div className="w-full overflow-hidden rounded-t-xl" style={{height:160, background:"#1e1e1e", position:"relative"}}>
+                      <iframe
+                        src={pres.embedUrl}
+                        title="Figma preview"
+                        allowFullScreen
+                        style={{
+                          position:"absolute", top:0, left:0,
+                          width:"200%", height:"200%",
+                          border:"none",
+                          transform:"scale(0.5)", transformOrigin:"top left",
+                          pointerEvents:"none",
+                        }}
+                      />
                     </div>
                   ) : pres.thumbUrl ? (
                     <div className="w-full overflow-hidden rounded-t-xl bg-blue-50" style={{height:160}}>
