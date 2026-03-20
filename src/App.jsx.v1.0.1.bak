@@ -1,0 +1,2381 @@
+import { useState, useEffect, useRef, useCallback, createContext, useContext } from "react";
+import { Routes, Route, useNavigate, useParams, useLocation } from "react-router-dom";
+
+const AppCtx = createContext(null);
+const useApp = () => useContext(AppCtx);
+
+const toSlug = (title) => title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+
+const PRODUCTS = ["PGH", "Factoring", "Gestora", "Tandia", "Recadia", "Cambio Seguro"];
+const TYPES = ["Tipo de entregable", "Research", "Pruebas de usabilidad", "Buyer Persona", "User Persona"];
+const PERSONA_TYPES = ["Buyer Persona", "User Persona"];
+
+const EMPTY_BUYER = () => ({ nombre: "", cargo: "", edad: "", ubicacion: "", nivelTec: "", herramientas: "", rubro: "", personal: "", tiempoApertura: "", metas: "", adquisicion: "", comunicaciones: "" });
+const EMPTY_USER  = () => ({ nombre: "", cargo: "", edad: "", ubicacion: "", nivelTec: "", herramientas: "", rubro: "", tiempoNegocio: "", objetivos: "", dolores: "" });
+
+const ESTADOS = ["Persona asignada", "Ana R.", "Sofia K.", "Luis M.", "Carlos T."];
+
+function CustomSelect({ value, onChange, options, dark }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const selected = options.find(o => o.value === value) || options[0];
+
+  return (
+    <div ref={ref} className="relative flex-shrink-0" style={{ width: 180 }}>
+      <button
+        onClick={() => setOpen(!open)}
+        className={`w-full flex items-center justify-between pl-3.5 pr-3 text-sm font-medium rounded-lg cursor-pointer focus:outline-none focus:ring-2 focus:ring-green-400 ${dark ? "bg-gray-800 border border-gray-700 text-gray-200" : "text-gray-700"}`}
+        style={!dark ? { height:"40px", borderRadius:"8px", border:"1px solid #D5D7DA", background:"#FFF", boxShadow:"0 1px 2px 0 rgba(10,13,18,0.05)" } : { height:"40px", borderRadius:"8px", boxShadow:"0 1px 2px 0 rgba(10,13,18,0.05)" }}
+      >
+        <span className="truncate">{selected.label}</span>
+        <svg className={`w-4 h-4 flex-shrink-0 ml-2 transition-transform ${open ? "rotate-180" : ""} ${dark ? "text-gray-400" : "text-gray-500"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+      {open && (
+        <ul
+          className={`absolute z-50 w-full mt-1 py-1 text-sm ${dark ? "bg-gray-800 border-gray-700 text-gray-200" : "text-gray-700 bg-white"}`}
+          style={{ borderRadius:"8px", border:"1px solid #D5D7DA", boxShadow:"0 1px 2px 0 rgba(10,13,18,0.05)", top:"100%", left:0 }}
+        >
+          {options.map(o => (
+            <li
+              key={o.value}
+              onClick={() => { onChange(o.value); setOpen(false); }}
+              className={`px-3.5 py-2 cursor-pointer ${value === o.value
+                ? (dark ? "bg-green-900/30 text-green-400" : "bg-green-50 text-green-700 font-medium")
+                : (dark ? "hover:bg-gray-700" : "hover:bg-gray-50")
+              }`}
+            >
+              {o.label}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+const NAV = [
+  { label: "Investigaciones", icon: "M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4", active: true },
+];
+
+const stripHtml = (html) => html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+
+const ALLOWED = new Set(["B","STRONG","I","EM","U","UL","OL","LI","H3","P","BR","BLOCKQUOTE"]);
+const sanitizeNode = (node) => {
+  if (node.nodeType !== 1) return; // text nodes: leave as-is
+  // Strip all attributes (style, color, class, font, etc.)
+  Array.from(node.attributes).forEach(a => node.removeAttribute(a.name));
+  // Replace disallowed block tags with their text content wrapped in <p>
+  if (!ALLOWED.has(node.tagName)) {
+    const isBlock = ["DIV","SECTION","ARTICLE","HEADER","FOOTER","SPAN","FONT","TABLE","TR","TD","TH","TBODY"].includes(node.tagName);
+    const frag = document.createDocumentFragment();
+    Array.from(node.childNodes).forEach(c => frag.appendChild(c.cloneNode(true)));
+    if (isBlock) {
+      const p = document.createElement("p");
+      p.appendChild(frag);
+      node.replaceWith(p);
+      Array.from(p.childNodes).forEach(sanitizeNode);
+      return;
+    }
+    node.replaceWith(frag);
+    return;
+  }
+  Array.from(node.childNodes).forEach(sanitizeNode);
+};
+const sanitizeHtml = (html) => {
+  const div = document.createElement("div");
+  div.innerHTML = html;
+  Array.from(div.childNodes).forEach(sanitizeNode);
+  return div.innerHTML;
+};
+
+const getDriveId = (url = "") => {
+  const m = url.match(/\/file\/d\/([^/?#]+)/);
+  return m ? m[1] : null;
+};
+
+const TYPE_COLORS = { "Research": "amber", "Otros entregables": "violet", "Pruebas de usabilidad": "blue", "Buyer Persona": "green", "User Persona": "violet" };
+const METODOLOGIAS = ["Cualitativa", "Cuantitativa", "Mixta", "Desk Research"];
+const JIRA_STATUSES = ["EN CURSO", "FINALIZADO"];
+
+const PRODUCT_COLORS = {
+  "PGH": "#1E40AF",
+  "Factoring": "#7C3AED",
+  "Gestora": "#065F46",
+  "Tandia": "#1D4ED8",
+  "Recadia": "#DC2626",
+  "Cambio Seguro": "#D97706",
+};
+
+function loadSolicitudUrl() {
+  return localStorage.getItem("solicitudUrl") || "";
+}
+function saveSolicitudUrl(url) {
+  localStorage.setItem("solicitudUrl", url);
+}
+
+function loadProductContent(product) {
+  try { return JSON.parse(localStorage.getItem(`product_${product}`) || "{}"); } catch { return {}; }
+}
+function saveProductContent(product, data) {
+  localStorage.setItem(`product_${product}`, JSON.stringify(data));
+}
+const STATUSES = ["Borrador", "Publicado"];
+const TEAM_MEMBERS = ["Ana R.", "Sofia K.", "Luis M.", "Carlos T."];
+
+const INITIAL_DELIVERABLES = [
+  {
+    id: 1,
+    title: "Buyer, User y Arquetipos",
+    type: "Research",
+    typeColor: "amber",
+    date: "Nov 06, 2025",
+    metodologia: "Cualitativa",
+    jira: "UX-2095: TANDIA: PC10 Roadmap del Us. en Buyer y Arquetipos de un producto",
+    jiraStatus: "FINALIZADO",
+    team: ["Cristian G."],
+    tags: ["Tandia"],
+    objetivo: "Definir el Buyer Persona, User Persona y Arquetipos de Tandia.",
+    usuario: "Clientes activos de Tandia de los meses de Julio a Setiembre pertenecientes a los tres planes: facturador, pyme y full. Se realizó una separación en dos grupos: Dueños de negocio (enfocados al Buyer y User en ciertos casos) y Personal del negocio (enfocado en el User).",
+    hallazgos: "Para los dueños de negocio, se identificaron 3 Buyer Persona y 3 arquetipos. El riesgo es transversal a todos los negocios, sin embargo, los dueños buscan formas de mitigar ese riesgo. Una de esas formas es teniendo orden e información sobre su emprendimiento. Sin negocio, los clientes son organismos vivos, donde su necesidad de orden e información va evolucionando.",
+    status: "Publicado",
+    archivo: "Buyer, User y Arquetipos — Presentación.pdf",
+  },
+  {
+    id: 2,
+    title: "Motivos de abandono y valor percibido",
+    type: "Research",
+    typeColor: "amber",
+    date: "Jul 11, 2025",
+    metodologia: "Mixta",
+    jira: "UX-1710: TANDIA: Valor percibido por clientes activos",
+    jiraStatus: "FINALIZADO",
+    team: ["Cristian G."],
+    tags: ["Tandia"],
+    objetivo: "Conocer los aspectos más valorados de los clientes sobre la plataforma de Tandia, los motivos por los cuales los clientes han decidido dejar de usar el producto, y tomar decisiones en torno a la continuidad y desarrollo del producto.",
+    usuario: "Clientes de Tandia activos en el último año y clientes que cesaron su contrato en el último año.",
+    hallazgos: "Si bien el 89% de comentarios rescatados perciben valor en la rapidez y facilidad de uso de la plataforma, la mayoría de los usuarios solo le dan uso a los módulos de Clientes, Productos y Ventas. El 45% de los motivos de abandono están relacionados con la insatisfacción con la plataforma y que los aspectos de mejora están relacionados a aspectos que van más allá de esa funcionalidad.",
+    status: "Publicado",
+    archivo: "Presentación — Motivos de abandono y Valor percibido.pdf",
+  },
+  {
+    id: 3,
+    title: "Gestión de roles",
+    type: "Research",
+    typeColor: "amber",
+    date: "May 07, 2025",
+    metodologia: "Cuantitativa",
+    jira: "UX-1523: Gestión de roles y funcionalidad de Tandia",
+    jiraStatus: "FINALIZADO",
+    team: ["Cristian G."],
+    tags: ["Tandia"],
+    objetivo: "Validar el interés de clientes de Tandia en poder gestionar los permisos y accesos de los roles por su cuenta.",
+    usuario: "Clientes de Tandia en planes PYME.",
+    hallazgos: "La funcionalidad de cambiar los roles de manera autónoma es un nice-to-have: puede ser algo deseable, pero no es esencial según sus necesidades. Hay posibilidad de enfocarse en los puntos de mejora mencionados por los clientes, los cuales impactan en el uso diario de la plataforma.",
+    status: "Publicado",
+    archivo: "Research — Gestión de roles.pdf",
+  },
+  {
+    id: 4,
+    title: "Flujo de solicitud — Crédito hipotecario",
+    type: "Pruebas de usabilidad",
+    typeColor: "blue",
+    date: "Feb 14, 2025",
+    metodologia: "Cualitativa",
+    jira: "UX-1840: Flujo solicitud crédito hipotecario",
+    jiraStatus: "FINALIZADO",
+    team: ["Ana R.", "Luis M."],
+    tags: ["Créditos Hipotecarios"],
+    objetivo: "Evaluar el flujo de solicitud de crédito hipotecario e identificar fricciones en el proceso de validación de identidad.",
+    usuario: "Personas naturales entre 28 y 55 años con intención de adquirir un crédito hipotecario en los próximos 6 meses.",
+    hallazgos: "Se detectaron fricciones en el paso de validación de identidad. 3 de 8 participantes no completaron el flujo sin asistencia. La pantalla de confirmación genera confusión respecto al siguiente paso.",
+    status: "Publicado",
+    archivo: "Prueba de usabilidad — Crédito hipotecario.pdf",
+  },
+  {
+    id: 5,
+    title: "Research — Experiencia de onboarding deudores",
+    type: "Research",
+    typeColor: "amber",
+    date: "Dic 03, 2024",
+    metodologia: "Cualitativa",
+    jira: "UX-1692: Onboarding deudores Recadia",
+    jiraStatus: "FINALIZADO",
+    team: ["Luis M.", "Carlos T."],
+    tags: ["Recadia"],
+    objetivo: "Comprender la experiencia de primer contacto y proceso de registro de deudores en la plataforma Recadia.",
+    usuario: "Deudores que recibieron una notificación de cobranza en los últimos 3 meses y accedieron por primera vez a la plataforma.",
+    hallazgos: "El 70% de los participantes no entendió el propósito de la plataforma en el primer acceso. El lenguaje legal genera ansiedad. La falta de información sobre el proceso completo es el principal punto de abandono.",
+    status: "Publicado",
+    archivo: "Research — Onboarding deudores.pdf",
+  },
+  {
+    id: 6,
+    title: "Buyer Persona — Segmento PYME",
+    type: "Buyer Persona",
+    typeColor: "green",
+    date: "Nov 21, 2024",
+    metodologia: "Mixta",
+    jira: "UX-1600: Buyer Persona PYME — Préstamos Hipotecarios",
+    jiraStatus: "FINALIZADO",
+    team: ["Sofia K.", "Carlos T.", "Ana R."],
+    tags: ["Préstamos con Garantía Hipotecaria"],
+    objetivo: "Definir el perfil del cliente PYME que solicita financiamiento con garantía hipotecaria.",
+    usuario: "Dueños de PYME que han solicitado o evaluado un préstamo con garantía hipotecaria en el último año.",
+    hallazgos: "Se identificaron 2 perfiles principales: el empresario consolidado que busca expansión y el empresario en crisis que busca liquidez. Ambos perfiles valoran la rapidez y la claridad en las condiciones del préstamo por encima de la tasa de interés.",
+    status: "Publicado",
+    archivo: "Buyer Persona — Segmento PYME.pdf",
+  },
+  {
+    id: 7,
+    title: "Benchmark — Plataformas tipo de cambio digital",
+    type: "Otros entregables",
+    typeColor: "violet",
+    date: "Ago 05, 2024",
+    metodologia: "Desk Research",
+    jira: "UX-1450: Benchmark Cambio Seguro",
+    jiraStatus: "FINALIZADO",
+    team: ["Carlos T."],
+    tags: ["Cambio Seguro"],
+    objetivo: "Analizar las principales plataformas de tipo de cambio digital para identificar oportunidades de diferenciación.",
+    usuario: "No aplica — investigación de escritorio.",
+    hallazgos: "Se analizaron 6 plataformas competidoras. Las principales oportunidades de diferenciación están en la transparencia de comisiones, la velocidad de transferencia y las notificaciones en tiempo real. Ningún competidor ofrece historial de operaciones exportable.",
+    status: "Publicado",
+    archivo: "Benchmark — Tipo de cambio digital.pdf",
+  },
+  {
+    id: 8,
+    title: "Research — Perfil del arrendatario digital",
+    type: "Research",
+    typeColor: "amber",
+    date: "Jun 14, 2024",
+    metodologia: "Cualitativa",
+    jira: "UX-1380: Perfil arrendatario Tandia API",
+    jiraStatus: "EN CURSO",
+    team: ["Sofia K."],
+    tags: ["Tandia API"],
+    objetivo: "Explorar los modelos mentales y expectativas de arrendatarios que utilizan plataformas digitales por primera vez.",
+    usuario: "Arrendatarios de locales comerciales entre 25 y 45 años que han comenzado a usar herramientas digitales de gestión en el último año.",
+    hallazgos: "Los arrendatarios priorizan la simplicidad sobre la funcionalidad avanzada. El principal temor es perder el control de la información de sus clientes. La integración con herramientas conocidas (WhatsApp, email) es clave para la adopción.",
+    status: "En revisión",
+    archivo: "Research — Perfil arrendatario digital.pdf",
+  },
+  {
+    id: 9,
+    title: "Journey Map — Inversionista primera inversión",
+    type: "Otros entregables",
+    typeColor: "violet",
+    date: "Ene 10, 2025",
+    metodologia: "Cualitativa",
+    jira: "UX-1750: Journey Map Gestora de Fondos",
+    jiraStatus: "FINALIZADO",
+    team: ["Sofia K.", "Ana R."],
+    tags: ["Gestora de Fondos"],
+    objetivo: "Mapear el proceso completo del inversionista desde el primer contacto hasta la confirmación de su primera inversión.",
+    usuario: "Personas naturales con capital disponible para invertir que nunca han usado una gestora de fondos digital.",
+    hallazgos: "El proceso de KYC (Know Your Customer) es el principal punto de abandono. Los inversionistas necesitan confirmación constante de que su dinero está seguro. La falta de un resumen claro del producto antes de invertir genera desconfianza.",
+    status: "Publicado",
+    archivo: "Journey Map — Primera inversión.pdf",
+  },
+  { id: 10, title: "Research — Nuevas funcionalidades Factoring", type: "Research", typeColor: "amber", date: "Mar 01, 2026", metodologia: "Cualitativa", jira: "UX-2210: Factoring nuevas funcionalidades", jiraStatus: "EN CURSO", team: ["Ana R."], tags: ["Factoring"], objetivo: "Explorar las necesidades de los clientes actuales respecto a nuevas funcionalidades del módulo de factoring.", usuario: "Clientes activos del módulo Factoring con más de 6 meses de uso.", hallazgos: "Investigación en curso.", status: "Borrador", archivo: "Research — Factoring funcionalidades.pdf" },
+  { id: 11, title: "Buyer Persona — Segmento millennials Cambio Seguro", type: "Buyer Persona", typeColor: "green", date: "Feb 20, 2026", metodologia: "Mixta", jira: "UX-2198: Buyer Persona Cambio Seguro millennials", jiraStatus: "EN CURSO", team: ["Sofia K.", "Carlos T."], tags: ["Cambio Seguro"], objetivo: "Definir el perfil del cliente millennial que utiliza plataformas de tipo de cambio digital.", usuario: "Personas entre 25 y 35 años que realizan operaciones de cambio de divisas al menos una vez al mes.", hallazgos: "En proceso de análisis.", status: "Borrador", archivo: "Buyer Persona — Cambio Seguro millennials.pdf" },
+];
+
+// ── RICH EDITOR ──
+function RichEditor({ onChange, placeholder, dark }) {
+  const ref = useRef(null);
+  const [active, setActive] = useState({});
+  const [headingOpen, setHeadingOpen] = useState(false);
+
+  const exec = useCallback((cmd, val) => {
+    ref.current.focus();
+    document.execCommand(cmd, false, val ?? null);
+    ref.current.focus();
+    updateActive();
+  }, []);
+
+  const updateActive = () => {
+    setActive({
+      bold: document.queryCommandState("bold"),
+      italic: document.queryCommandState("italic"),
+      ul: document.queryCommandState("insertUnorderedList"),
+      ol: document.queryCommandState("insertOrderedList"),
+    });
+  };
+
+  const handleInput = () => {
+    onChange(ref.current.innerHTML);
+    updateActive();
+  };
+
+  const handlePaste = (e) => {
+    e.preventDefault();
+    const html = e.clipboardData.getData("text/html");
+    const text = e.clipboardData.getData("text/plain");
+    const clean = html ? sanitizeHtml(html) : text.replace(/\n/g, "<br>");
+    document.execCommand("insertHTML", false, clean);
+    onChange(ref.current.innerHTML);
+  };
+
+  const btn = (cmd, label, title) => (
+    <button type="button" title={title}
+      onMouseDown={e => { e.preventDefault(); exec(cmd); }}
+      className={`w-7 h-7 flex items-center justify-center rounded text-sm font-medium transition-colors ${
+        active[cmd === "insertUnorderedList" ? "ul" : cmd === "insertOrderedList" ? "ol" : cmd]
+          ? "bg-green-100 text-green-700"
+          : dark ? "text-gray-400 hover:bg-gray-700" : "text-gray-500 hover:bg-gray-100"
+      }`}>
+      {label}
+    </button>
+  );
+
+  const divider = <div className={`w-px h-4 mx-1 ${dark ? "bg-gray-600" : "bg-gray-300"}`} />;
+
+  return (
+    <div className={`rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-green-400 ${dark ? "border border-gray-700 bg-gray-800" : "border border-gray-300 bg-white"}`}>
+      <div className={`flex items-center gap-0.5 px-2 py-1 border-b ${dark ? "border-gray-700 bg-gray-850" : "border-gray-200 bg-gray-50"}`}>
+        {btn("bold",   <strong>B</strong>, "Negrita")}
+        {btn("italic", <em>I</em>,         "Cursiva")}
+        {divider}
+        {btn("insertUnorderedList",
+          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>,
+          "Lista con viñetas")}
+        {btn("insertOrderedList",
+          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h10M7 16h10M3 8h.01M3 12h.01M3 16h.01"/></svg>,
+          "Lista numerada")}
+        {divider}
+        <div className="relative">
+          <button type="button"
+            onMouseDown={e => { e.preventDefault(); setHeadingOpen(o => !o); }}
+            className={`h-7 px-2 flex items-center gap-1 rounded text-xs font-bold transition-colors ${dark ? "text-gray-400 hover:bg-gray-700" : "text-gray-500 hover:bg-gray-100"}`}>
+            H
+            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7"/></svg>
+          </button>
+          {headingOpen && (
+            <>
+              <div className="fixed inset-0 z-10" onMouseDown={() => setHeadingOpen(false)} />
+              <div className={`absolute left-0 top-full mt-1 z-20 rounded-lg shadow-lg border overflow-hidden min-w-[110px] ${dark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}`}>
+                <button type="button"
+                  onMouseDown={e => { e.preventDefault(); exec("formatBlock", "<h3>"); setHeadingOpen(false); }}
+                  className={`w-full text-left px-3 py-2 text-sm font-bold transition-colors ${dark ? "text-gray-100 hover:bg-gray-700" : "text-gray-800 hover:bg-gray-50"}`}>
+                  Título
+                </button>
+                <button type="button"
+                  onMouseDown={e => { e.preventDefault(); exec("formatBlock", "<h4>"); setHeadingOpen(false); }}
+                  className={`w-full text-left px-3 py-2 text-sm font-semibold transition-colors ${dark ? "text-gray-300 hover:bg-gray-700" : "text-gray-600 hover:bg-gray-50"}`}>
+                  Subtítulo
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+      <div
+        ref={ref}
+        contentEditable
+        suppressContentEditableWarning
+        onInput={handleInput}
+        onPaste={handlePaste}
+        onKeyUp={updateActive}
+        onMouseUp={updateActive}
+        data-placeholder={placeholder}
+        className={`min-h-[88px] px-3 py-2 text-sm focus:outline-none empty:before:content-[attr(data-placeholder)] empty:before:pointer-events-none ${dark ? "text-gray-200 empty:before:text-gray-500" : "text-gray-900 empty:before:text-gray-400"}`}
+      />
+    </div>
+  );
+}
+
+// ── JIRA CONFIG (persisted) ──
+function loadJiraConfig() {
+  try { return JSON.parse(localStorage.getItem("jiraConfig") || "{}"); } catch { return {}; }
+}
+function saveJiraConfig(cfg) {
+  localStorage.setItem("jiraConfig", JSON.stringify(cfg));
+}
+
+// ── SETTINGS MODAL ──
+function SettingsModal({ onClose, dark }) {
+  const d = dark;
+  const [cfg, setCfg] = useState(loadJiraConfig);
+  const [saved, setSaved] = useState(false);
+  const [testStatus, setTestStatus] = useState(null); // null | 'loading' | 'ok' | 'error'
+  const [testMsg, setTestMsg] = useState("");
+
+  const handleSave = () => {
+    saveJiraConfig({
+      baseUrl: (cfg.baseUrl || "").trim().replace(/\/$/, ""),
+      email:   (cfg.email   || "").trim(),
+      token:   (cfg.token   || "").trim(),
+    });
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+  };
+
+  const handleTest = async () => {
+    if (!cfg.baseUrl || !cfg.email || !cfg.token) {
+      setTestStatus("error"); setTestMsg("Completa todos los campos primero."); return;
+    }
+    setTestStatus("loading"); setTestMsg("");
+    try {
+      const base = cfg.baseUrl.replace(/\/$/, "");
+      const auth = btoa(`${cfg.email.trim()}:${cfg.token.trim()}`);
+      const res = await fetch("/api/jira/_test", {
+        headers: { "x-jira-base": base, "x-jira-auth": auth },
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.errorMessages?.[0] || data.message || data.error || data.detail || `HTTP ${res.status}`);
+      setTestStatus("ok");
+      setTestMsg(`Conectado como ${data.displayName} (${data.emailAddress})`);
+    } catch (e) {
+      setTestStatus("error"); setTestMsg(e.message);
+    }
+  };
+
+  const inp = `w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 ${d ? "bg-gray-800 border-gray-700 text-gray-200 placeholder-gray-500" : "bg-white border-gray-300 text-gray-900 placeholder-gray-400"}`;
+  const lbl = `block text-xs font-semibold mb-1 ${d ? "text-gray-400" : "text-gray-600"}`;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
+      <div className={`w-full max-w-md rounded-2xl shadow-2xl ${d ? "bg-gray-900 border border-gray-700" : "bg-white border border-gray-200"}`}>
+        {/* Header */}
+        <div className={`flex items-center justify-between px-6 py-4 border-b ${d ? "border-gray-800" : "border-gray-200"}`}>
+          <div className="flex items-center gap-2">
+            <svg className="w-5 h-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3" strokeWidth={2}/></svg>
+            <h2 className={`text-lg font-bold ${d ? "text-gray-100" : "text-gray-900"}`}>Configuración</h2>
+          </div>
+          <button onClick={onClose} className={`w-8 h-8 flex items-center justify-center rounded-lg ${d ? "text-gray-400 hover:bg-gray-800" : "text-gray-500 hover:bg-gray-100"}`}>
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+
+        {/* Body */}
+        <div className="px-6 py-5 space-y-4">
+          <div>
+            <p className={`text-sm font-semibold mb-3 flex items-center gap-2 ${d ? "text-gray-200" : "text-gray-800"}`}>
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M11.571 11.513H0a5.218 5.218 0 005.232 5.215h2.13v2.057A5.215 5.215 0 0012.575 24V12.518a1.005 1.005 0 00-1.004-1.005zm5.723-5.756H5.736a5.215 5.215 0 005.215 5.214h2.129v2.058a5.218 5.218 0 005.215 5.214V6.758a1.001 1.001 0 00-1.001-1.001zM23.013 0H11.459a5.215 5.215 0 005.215 5.215h2.129v2.057A5.215 5.215 0 0024 12.483V1.005A1.001 1.001 0 0023.013 0z"/></svg>
+              Conexión Jira
+            </p>
+            <div className="space-y-3">
+              <div>
+                <label className={lbl}>URL base de Jira</label>
+                <input className={inp} placeholder="https://empresa.atlassian.net" value={cfg.baseUrl || ""} onChange={e => setCfg(c => ({ ...c, baseUrl: e.target.value }))} />
+              </div>
+              <div>
+                <label className={lbl}>Email</label>
+                <input className={inp} type="email" placeholder="tu@empresa.com" value={cfg.email || ""} onChange={e => setCfg(c => ({ ...c, email: e.target.value }))} />
+              </div>
+              <div>
+                <label className={lbl}>API Token</label>
+                <input className={inp} type="password" placeholder="••••••••••••••••" value={cfg.token || ""} onChange={e => setCfg(c => ({ ...c, token: e.target.value }))} />
+                <p className={`mt-1 text-xs ${d ? "text-gray-500" : "text-gray-400"}`}>
+                  Genera tu token en{" "}
+                  <a href="https://id.atlassian.com/manage-profile/security/api-tokens" target="_blank" rel="noreferrer" className={`font-semibold underline ${d ? "text-green-400" : "text-green-600"}`}>
+                    id.atlassian.com
+                  </a>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Test result */}
+        {testStatus && (
+          <div className={`mx-6 mb-4 px-3 py-2 rounded-lg text-sm flex items-center gap-2 ${
+            testStatus === 'loading' ? (d ? "bg-gray-800 text-gray-400" : "bg-gray-100 text-gray-500") :
+            testStatus === 'ok'      ? (d ? "bg-green-900/40 text-green-400" : "bg-green-50 text-green-700") :
+                                       (d ? "bg-red-900/40 text-red-400"   : "bg-red-50 text-red-700")
+          }`}>
+            {testStatus === 'loading' && <svg className="w-4 h-4 animate-spin flex-shrink-0" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>}
+            {testStatus === 'ok'      && <span>✓</span>}
+            {testStatus === 'error'   && <span>✗</span>}
+            <span>{testStatus === 'loading' ? 'Probando conexión...' : testMsg}</span>
+          </div>
+        )}
+
+        {/* Footer */}
+        <div className={`flex justify-end gap-3 px-6 py-4 border-t ${d ? "border-gray-800" : "border-gray-200"}`}>
+          <button onClick={handleTest} className={`px-4 py-2 text-sm font-medium rounded-lg border ${d ? "border-gray-700 text-gray-300 hover:bg-gray-800" : "border-gray-300 text-gray-700 hover:bg-gray-50"}`}>
+            Probar conexión
+          </button>
+          <button onClick={onClose} className={`px-4 py-2 text-sm font-medium rounded-lg border ${d ? "border-gray-700 text-gray-300 hover:bg-gray-800" : "border-gray-300 text-gray-700 hover:bg-gray-50"}`}>
+            Cancelar
+          </button>
+          <button onClick={handleSave} className="px-4 py-2 text-sm font-semibold text-white rounded-lg min-w-[120px]" style={{ backgroundColor: "#00B369" }}>
+            {saved ? "✓ Guardado" : "Guardar"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── ADD PAGE ──
+function AddPage() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { dark: d, handleAdd, showToast } = useApp();
+  const prefill = location.state || {};
+  const onClose = () => navigate(-1);
+  const onSave = (item) => {
+    handleAdd(item);
+    showToast({ title: "Investigación publicada exitosamente", subtitle: "Aparecerá en el listado de investigaciones y en la página del producto." });
+    navigate("/investigaciones");
+  };
+  const today = new Date().toLocaleDateString("es-PE", { day: "2-digit", month: "short", year: "numeric" }).replace(".", "");
+  const [form, setForm] = useState(() => {
+    const type = prefill.type || "";
+    const tags = prefill.product ? [prefill.product] : [];
+    const personas = PERSONA_TYPES.includes(type)
+      ? [type === "Buyer Persona" ? EMPTY_BUYER() : EMPTY_USER()]
+      : [];
+    return {
+      title: "", type, metodologia: "",
+      jira: "", jiraUrl: "", jiraStatus: "EN CURSO",
+      team: [], tags,
+      descripcion: "",
+      objetivo: "", usuario: "", hallazgos: "",
+      status: "Borrador", archivo: "", archivoUrl: "", pdfData: "", pdfName: "",
+      personas,
+    };
+  });
+  const [personaTab, setPersonaTab] = useState(0);
+  const [jiraLoading, setJiraLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
+  const pdfInputRef = useRef(null);
+  const [jiraError, setJiraError] = useState("");
+  const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
+  const setType = (t) => {
+    if (PERSONA_TYPES.includes(t)) {
+      setForm(f => ({ ...f, type: t, personas: [t === "Buyer Persona" ? EMPTY_BUYER() : EMPTY_USER()] }));
+      setPersonaTab(0);
+    } else {
+      setForm(f => ({ ...f, type: t, personas: [] }));
+    }
+  };
+  const setPersonaField = (idx, field, val) => setForm(f => {
+    const personas = f.personas.map((p, i) => i === idx ? { ...p, [field]: val } : p);
+    return { ...f, personas };
+  });
+  const addPersona = () => {
+    const empty = form.type === "Buyer Persona" ? EMPTY_BUYER() : EMPTY_USER();
+    setForm(f => ({ ...f, personas: [...f.personas, empty] }));
+    setPersonaTab(form.personas.length);
+  };
+  const removePersona = (idx) => {
+    setForm(f => ({ ...f, personas: f.personas.filter((_, i) => i !== idx) }));
+    setPersonaTab(t => Math.max(0, t - (idx <= t ? 1 : 0)));
+  };
+
+  const handleJiraUrl = async (url) => {
+    set("jiraUrl", url);
+    setJiraError("");
+    const match = url.match(/\/browse\/([A-Z]+-\d+)/i);
+    if (!match) return;
+    const key = match[1].toUpperCase();
+    set("jira", key);
+    const cfg = loadJiraConfig();
+    if (!cfg.email || !cfg.token) {
+      setJiraError("Configura tus credenciales en Configuración (⚙️) del menú.");
+      return;
+    }
+    const base = (cfg.baseUrl || url.split("/browse/")[0]).replace(/\/$/, "");
+    setJiraLoading(true);
+    try {
+      const auth = btoa(`${cfg.email.trim()}:${cfg.token.trim()}`);
+      const res = await fetch(`/api/jira/${key}`, {
+        headers: { "x-jira-base": base, "x-jira-auth": auth },
+      });
+      const data = await res.json();
+      if (!res.ok || data.error) throw new Error(data.errorMessages?.[0] || data.error || `HTTP ${res.status}`);
+      set("jira", `${key}: ${data.fields.summary}`);
+      setJiraError("");
+    } catch (e) {
+      setJiraError(`No se pudo obtener el ticket (${e.message}).`);
+    } finally {
+      setJiraLoading(false);
+    }
+  };
+  const toggleArr = (k, v) => setForm(f => ({
+    ...f, [k]: f[k].includes(v) ? f[k].filter(x => x !== v) : [...f[k], v],
+  }));
+
+  const handleSave = () => {
+    if (saving) return;
+    if (!form.title.trim() || !form.type || !form.metodologia || !form.tags.length || !form.team.length) return;
+    setSaving(true);
+    onSave({
+      ...form,
+      id: Date.now(),
+      isCustom: true,
+      typeColor: TYPE_COLORS[form.type] || "amber",
+      date: today,
+      tags: form.tags.length ? form.tags : ["Sin producto"],
+      team: form.team.length ? form.team : ["Sin asignar"],
+      archivo: form.archivo.trim() || `${form.title}.pdf`,
+    });
+    onClose();
+  };
+
+  const inp = `w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 ${d ? "bg-gray-800 border-gray-700 text-gray-200 placeholder-gray-500" : "bg-white border-gray-300 text-gray-900 placeholder-gray-400"}`;
+  const lbl = `block text-xs font-semibold mb-1 ${d ? "text-gray-400" : "text-gray-600"}`;
+  const sec = `rounded-xl border p-4 ${d ? "bg-gray-900 border-gray-700" : "bg-gray-50 border-gray-200"}`;
+
+  return (
+    <div className={`flex-1 overflow-y-auto ${d ? "bg-gray-950" : "bg-gray-50"}`}>
+      <div style={{ maxWidth: "1200px", margin: "0 auto", paddingLeft: "2rem", paddingRight: "2rem", paddingTop: "2rem", paddingBottom: "4rem" }}>
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <button onClick={onClose} className={`flex items-center gap-2 text-sm font-medium mb-2 ${d ? "text-gray-400 hover:text-gray-200" : "text-gray-500 hover:text-gray-900"}`}>
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+              Volver
+            </button>
+            <h1 className={`text-2xl font-bold ${d ? "text-gray-100" : "text-gray-900"}`}>Nueva investigación</h1>
+          </div>
+          <button onClick={handleSave} disabled={!form.title.trim()} className="flex items-center gap-2 px-4 py-2.5 text-white rounded-lg text-sm font-semibold disabled:opacity-40" style={{ backgroundColor: "#00B369" }}>
+            Publicar
+          </button>
+        </div>
+
+        {/* Body */}
+        <div className={`rounded-2xl border p-6 space-y-5 ${d ? "bg-gray-900 border-gray-700" : "bg-white border-gray-200"}`}>
+          {/* Título */}
+          <div>
+            <label className={lbl}>Título <span className="text-green-500">*</span></label>
+            <input className={inp} placeholder="Nombre del entregable" value={form.title} onChange={e => set("title", e.target.value)} />
+          </div>
+
+          {/* Tipo + Metodología */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className={lbl}>Tipo de entregable <span className="text-green-500">*</span></label>
+              <select style={!form.type ? { color: d ? "#6b7280" : "#9ca3af" } : {}} className={inp} value={form.type} onChange={e => setType(e.target.value)}>
+                <option value="" disabled>Seleccione</option>
+                {TYPES.slice(1).map(t => <option key={t}>{t}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className={lbl}>Metodología <span className="text-green-500">*</span></label>
+              <select style={!form.metodologia ? { color: d ? "#6b7280" : "#9ca3af" } : {}} className={inp} value={form.metodologia} onChange={e => set("metodologia", e.target.value)}>
+                <option value="" disabled>Seleccione</option>
+                {METODOLOGIAS.map(m => <option key={m}>{m}</option>)}
+              </select>
+            </div>
+          </div>
+
+          {/* Jira */}
+          <div className={sec}>
+            <label className={lbl}>Link de Jira</label>
+            <div className="relative mb-3">
+              <input className={inp} type="url"
+                placeholder="https://empresa.atlassian.net/browse/UX-0000"
+                value={form.jiraUrl} onChange={e => handleJiraUrl(e.target.value)} />
+              {jiraLoading && (
+                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                  <svg className="w-4 h-4 animate-spin text-green-500" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+                  </svg>
+                </div>
+              )}
+            </div>
+            {jiraError && <p className="mb-2 text-xs text-amber-500">{jiraError}</p>}
+            {form.jira && !jiraLoading && (
+              <div className={`rounded-lg border p-3 ${d ? "bg-gray-800 border-gray-600" : "bg-white border-gray-200"}`}>
+                <p className={`text-sm font-semibold leading-snug ${d ? "text-gray-100" : "text-gray-800"}`}>{form.jira}</p>
+                {form.jiraStatus && (
+                  <span className={`inline-block mt-1.5 text-xs font-bold px-2 py-0.5 rounded border ${
+                    /done|closed|resolved|finaliz|complet/i.test(form.jiraStatus)
+                      ? (d ? "text-green-400 border-green-700 bg-green-900/40" : "text-green-700 border-green-200 bg-green-50")
+                      : (d ? "text-blue-400 border-blue-700 bg-blue-900/40" : "text-blue-700 border-blue-200 bg-blue-50")
+                  }`}>{form.jiraStatus}</span>
+                )}
+                <button
+                  type="button"
+                  onClick={() => { set("jira", ""); set("jiraStatus", ""); set("jiraUrl", ""); }}
+                  className={`block mt-2 text-xs ${d ? "text-gray-500 hover:text-gray-300" : "text-gray-400 hover:text-gray-600"}`}>
+                  Cambiar ticket
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Producto */}
+          <div>
+            <label className={lbl}>Producto <span className="text-green-500">*</span></label>
+            <div className="flex flex-wrap gap-2 mt-1">
+              {PRODUCTS.map(p => (
+                <button key={p} type="button"
+                  onClick={() => set("tags", form.tags.includes(p) ? [] : [p])}
+                  className={`px-3 py-1 rounded-full text-sm border font-medium transition-colors ${form.tags.includes(p) ? "border-green-500 text-green-600 bg-green-50" : (d ? "border-gray-700 text-gray-400 hover:border-gray-500" : "border-gray-300 text-gray-500 hover:border-gray-400")}`}>
+                  {p}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Equipo */}
+          <div>
+            <label className={lbl}>Persona asignada <span className="text-green-500">*</span> <span className={`font-normal ${d ? "text-gray-600" : "text-gray-400"}`}>— máx. 2</span></label>
+            <div className="flex flex-wrap gap-2 mt-1">
+              {TEAM_MEMBERS.map((name, i) => {
+                const selected = form.team.includes(name);
+                const maxReached = form.team.length >= 2 && !selected;
+                return (
+                  <button key={name} type="button"
+                    onClick={() => !maxReached && toggleArr("team", name)}
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm border font-medium transition-colors ${selected ? "border-green-500 text-green-600 bg-green-50" : maxReached ? (d ? "border-gray-800 text-gray-600 cursor-not-allowed" : "border-gray-200 text-gray-300 cursor-not-allowed") : (d ? "border-gray-700 text-gray-400 hover:border-gray-500" : "border-gray-300 text-gray-500 hover:border-gray-400")}`}>
+                    <Avatar name={name} index={i} dark={d} />
+                    {name}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Textos */}
+          <div>
+            <label className={lbl}>Descripción corta</label>
+            <textarea className={`${inp} resize-none`} rows={2} placeholder="Descripción corta de lo que se vera en el card..." value={form.descripcion} onChange={e => set("descripcion", e.target.value)} />
+          </div>
+          <div>
+            <label className={lbl}>Objetivo del research</label>
+            <RichEditor dark={d} value={form.objetivo} onChange={v => set("objetivo", v)} placeholder="¿Qué se busca lograr con este entregable?" />
+          </div>
+          <div>
+            <label className={lbl}>Usuario</label>
+            <RichEditor dark={d} value={form.usuario} onChange={v => set("usuario", v)} placeholder="Perfil de los usuarios involucrados" />
+          </div>
+          <div>
+            <label className={lbl}>Hallazgos y conclusiones</label>
+            <RichEditor dark={d} value={form.hallazgos} onChange={v => set("hallazgos", v)} placeholder="Principales hallazgos o estado actual" />
+          </div>
+
+          {PERSONA_TYPES.includes(form.type) && form.personas.length > 0 && (
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <label className={lbl}>Personas</label>
+                {form.personas.length < 3 && (
+                  <button type="button" onClick={addPersona}
+                    className={`flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-lg border ${d ? "border-gray-700 text-gray-300 hover:bg-gray-800" : "border-gray-300 text-gray-600 hover:bg-gray-50"}`}>
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/></svg>
+                    Añadir persona
+                  </button>
+                )}
+              </div>
+              {/* Tabs */}
+              <div className={`flex border-b mb-4 ${d ? "border-gray-700" : "border-gray-200"}`}>
+                {form.personas.map((p, i) => (
+                  <div key={i} className="flex items-center">
+                    <button type="button" onClick={() => setPersonaTab(i)}
+                      className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
+                        personaTab === i
+                          ? "border-green-500 text-green-600"
+                          : d ? "border-transparent text-gray-400 hover:text-gray-200" : "border-transparent text-gray-500 hover:text-gray-800"
+                      }`}>
+                      {p.nombre || `Persona ${i + 1}`}
+                    </button>
+                    {form.personas.length > 1 && (
+                      <button type="button" onClick={() => removePersona(i)}
+                        className={`-ml-1 mb-px w-4 h-4 flex items-center justify-center text-xs ${d ? "text-gray-600 hover:text-gray-300" : "text-gray-300 hover:text-gray-600"}`}>✕</button>
+                    )}
+                  </div>
+                ))}
+              </div>
+              {/* Fields for active persona */}
+              {(() => {
+                const p = form.personas[personaTab];
+                const fi = (field, placeholder) => (
+                  <input className={inp} placeholder={placeholder} value={p[field] || ""} onChange={e => setPersonaField(personaTab, field, e.target.value)} />
+                );
+                const group = (title, children) => (
+                  <div className={`rounded-xl border p-4 ${d ? "bg-gray-900 border-gray-700" : "bg-gray-50 border-gray-200"}`}>
+                    <p className={`text-xs font-bold uppercase tracking-wider mb-3 ${d ? "text-gray-500" : "text-gray-400"}`}>{title}</p>
+                    <div className="space-y-3">{children}</div>
+                  </div>
+                );
+                return (
+                  <div className="space-y-4">
+                    <div>
+                      <label className={lbl}>Nombre</label>
+                      {fi("nombre", "Nombre de la persona")}
+                    </div>
+                    {group("Información personal", <>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div><label className={lbl}>Cargo</label>{fi("cargo","Cargo o rol")}</div>
+                        <div><label className={lbl}>Edad</label>{fi("edad","Ej: 35 años")}</div>
+                      </div>
+                      <div><label className={lbl}>Ubicación</label>{fi("ubicacion","Ciudad / País")}</div>
+                      <div><label className={lbl}>Nivel tecnológico</label>{fi("nivelTec","Básico / Medio / Avanzado")}</div>
+                      <div><label className={lbl}>Herramientas usadas</label>{fi("herramientas","Excel, Slack, etc.")}</div>
+                    </>)}
+                    {group("Sobre el negocio", form.type === "Buyer Persona" ? <>
+                      <div><label className={lbl}>Rubro</label>{fi("rubro","Sector o industria")}</div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div><label className={lbl}>Cantidad de personal</label>{fi("personal","Ej: 10-50 empleados")}</div>
+                        <div><label className={lbl}>Tiempo de apertura</label>{fi("tiempoApertura","Ej: 5 años")}</div>
+                      </div>
+                      <div>
+                        <label className={lbl}>Metas a futuro</label>
+                        <RichEditor dark={d} value={p.metas || ""} onChange={v => setPersonaField(personaTab, "metas", v)} placeholder="Metas y objetivos a futuro..." />
+                      </div>
+                    </> : <>
+                      <div><label className={lbl}>Rubro</label>{fi("rubro","Sector o industria")}</div>
+                      <div><label className={lbl}>Tiempo en el negocio</label>{fi("tiempoNegocio","Ej: 3 años")}</div>
+                    </>)}
+                    {form.type === "Buyer Persona" && <>
+                      {group("Adquisición del producto", <>
+                        <RichEditor dark={d} value={p.adquisicion || ""} onChange={v => setPersonaField(personaTab, "adquisicion", v)} placeholder="Razones de adquisición, problemas que busca resolver..." />
+                      </>)}
+                      {group("Comunicaciones", <>
+                        <RichEditor dark={d} value={p.comunicaciones || ""} onChange={v => setPersonaField(personaTab, "comunicaciones", v)} placeholder="Canal de descubrimiento, primer contacto, canales de comunicación..." />
+                      </>)}
+                    </>}
+                    {form.type === "User Persona" && <>
+                      {group("Objetivos y metas", <>
+                        <RichEditor dark={d} value={p.objetivos || ""} onChange={v => setPersonaField(personaTab, "objetivos", v)} placeholder="Objetivos y metas del usuario..." />
+                      </>)}
+                      {group("Frustraciones y dolores", <>
+                        <RichEditor dark={d} value={p.dolores || ""} onChange={v => setPersonaField(personaTab, "dolores", v)} placeholder="Frustraciones y dolores del usuario..." />
+                      </>)}
+                    </>}
+                  </div>
+                );
+              })()}
+            </div>
+          )}
+
+          {/* Estado */}
+          <div>
+            <label className={lbl}>Estado</label>
+            <select className={inp} value={form.status} onChange={e => set("status", e.target.value)}>
+              {STATUSES.map(s => <option key={s}>{s}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className={lbl}>Link de Google Drive</label>
+            <input className={inp} type="url" placeholder="https://drive.google.com/file/d/.../view"
+              value={form.archivoUrl} onChange={e => {
+                const url = e.target.value;
+                set("archivoUrl", url);
+                const id = getDriveId(url);
+                if (id) {
+                  fetch(`/api/gdrive/${id}`)
+                    .then(r => r.json())
+                    .then(data => { if (data.title) set("archivo", data.title); })
+                    .catch(() => {});
+                }
+              }} />
+          </div>
+          <div>
+            <label className={lbl}>Subir PDF</label>
+            {form.pdfName ? (
+              <div className={`rounded-xl border px-4 pt-3 pb-4 ${d ? "border-gray-700 bg-gray-800/60" : "border-gray-200 bg-white"}`}>
+                <div className="flex items-start justify-between gap-3 mb-3">
+                  <div className="flex items-start gap-3 min-w-0">
+                    <svg className={`w-5 h-5 flex-shrink-0 mt-0.5 ${d ? "text-gray-400" : "text-gray-400"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg>
+                    <div className="min-w-0">
+                      <p className={`text-sm font-medium truncate ${d ? "text-gray-100" : "text-gray-800"}`}>{form.pdfName}</p>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        {form.pdfData && (
+                          <span className={`text-xs ${d ? "text-gray-500" : "text-gray-400"}`}>
+                            {(() => { const kb = Math.round(atob(form.pdfData.split(",")[1] || "").length / 1024); return `${kb} KB de ${kb} KB`; })()}
+                          </span>
+                        )}
+                        <span className={`text-xs ${d ? "text-gray-600" : "text-gray-300"}`}>|</span>
+                        <span className="flex items-center gap-1 text-xs font-semibold text-green-600">
+                          <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                          Completado
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <button type="button" onClick={() => { set("pdfData", ""); set("pdfName", ""); }} className={`flex-shrink-0 p-1 rounded-lg ${d ? "text-gray-500 hover:text-gray-300 hover:bg-gray-700" : "text-gray-400 hover:text-gray-600 hover:bg-gray-100"}`}>
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg>
+                  </button>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className={`flex-1 h-2 rounded-full overflow-hidden ${d ? "bg-gray-700" : "bg-gray-100"}`}>
+                    <div className="h-full w-full rounded-full bg-green-500" />
+                  </div>
+                  <span className={`text-xs font-medium flex-shrink-0 ${d ? "text-gray-400" : "text-gray-500"}`}>100%</span>
+                </div>
+              </div>
+            ) : (
+              <div
+                onClick={() => pdfInputRef.current.click()}
+                onDragEnter={e => { e.preventDefault(); e.stopPropagation(); setDragOver(true); }}
+                onDragOver={e => { e.preventDefault(); e.stopPropagation(); setDragOver(true); }}
+                onDragLeave={e => { e.preventDefault(); e.stopPropagation(); setDragOver(false); }}
+                onDrop={e => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setDragOver(false);
+                  const file = e.dataTransfer.files[0];
+                  if (!file || file.type !== "application/pdf") return;
+                  set("pdfName", file.name);
+                  const reader = new FileReader();
+                  reader.onload = ev => set("pdfData", ev.target.result);
+                  reader.readAsDataURL(file);
+                }}
+                className={`flex flex-col items-center justify-center gap-3 py-8 rounded-xl border-2 border-dashed cursor-pointer transition-colors ${
+                  dragOver
+                    ? (d ? "border-green-500 bg-green-900/20" : "border-green-400 bg-green-50")
+                    : (d ? "border-gray-700 hover:border-gray-500 bg-gray-800/40" : "border-gray-200 hover:border-gray-300 bg-white")
+                }`}
+              >
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${d ? "bg-gray-700" : "bg-gray-100"}`}>
+                  <svg className={`w-6 h-6 ${d ? "text-gray-300" : "text-gray-500"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+                  </svg>
+                </div>
+                <div className="text-center">
+                  <p className={`text-sm ${d ? "text-gray-300" : "text-gray-700"}`}>
+                    <span className="font-semibold text-green-600">Click para subir</span> o arrastra y suelta
+                  </p>
+                  <p className={`text-xs mt-0.5 ${d ? "text-gray-500" : "text-gray-400"}`}>PDF (máx. 10MB)</p>
+                </div>
+              </div>
+            )}
+            <input ref={pdfInputRef} type="file" accept="application/pdf" className="hidden" onChange={e => {
+              const file = e.target.files[0];
+              if (!file) return;
+              set("pdfName", file.name);
+              const reader = new FileReader();
+              reader.onload = ev => set("pdfData", ev.target.result);
+              reader.readAsDataURL(file);
+              e.target.value = "";
+            }} />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const avatarPalette = [
+  { l: "bg-green-100 text-green-700", d: "bg-green-900 text-green-300" },
+  { l: "bg-blue-100 text-blue-700", d: "bg-blue-900 text-blue-300" },
+  { l: "bg-pink-100 text-pink-700", d: "bg-pink-900 text-pink-300" },
+  { l: "bg-teal-100 text-teal-700", d: "bg-teal-900 text-teal-300" },
+];
+
+function Avatar({ name, index = 0, dark }) {
+  const initials = name.split(" ").map(n => n[0]).join("").slice(0, 2);
+  const p = avatarPalette[index % avatarPalette.length];
+  return (
+    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold border-2 ${dark ? p.d + " border-gray-800" : p.l + " border-white"}`}>
+      {initials}
+    </div>
+  );
+}
+
+function Badge({ label, typeColor, dark }) {
+  const tm = {
+    blue:   dark ? "bg-blue-900/60 text-blue-300 border border-blue-700"       : "bg-blue-50 text-blue-700 border border-blue-200",
+    violet: dark ? "bg-teal-900/60 text-teal-300 border border-teal-700" : "bg-teal-50 text-teal-700 border border-teal-200",
+    amber:  dark ? "bg-amber-900/60 text-amber-300 border border-amber-700"    : "bg-amber-50 text-amber-700 border border-amber-200",
+    green:  dark ? "bg-teal-900/60 text-teal-300 border border-teal-700"       : "bg-teal-50 text-teal-700 border border-teal-200",
+  };
+  // Status badges: dot + label style with border, white/dark bg
+  const statusPill = {
+    "Publicado": dark ? "bg-green-900/40 text-green-400 border-green-700" : "bg-green-50 text-green-600 border-green-300",
+    "Borrador":  dark ? "bg-gray-800 text-gray-400 border-gray-600"       : "bg-gray-100 text-gray-500 border-gray-300",
+  };
+  if (!typeColor && statusPill[label]) {
+    return (
+      <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border ${statusPill[label]}`}>
+        {label}
+      </span>
+    );
+  }
+  return <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${typeColor ? tm[typeColor] : ""}`}>{label}</span>;
+}
+
+function Card({ item, dark }) {
+  const navigate = useNavigate();
+  const d = dark;
+  const productTag = item.tags && item.tags.find(t => PRODUCTS.includes(t));
+  const pc = productTag ? (PRODUCT_COLORS[productTag] || "#00B369") : null;
+
+  return (
+    <div onClick={() => navigate(`/investigacion/${toSlug(item.title)}`)} className={`rounded-2xl border p-6 cursor-pointer group flex flex-col ${d ? "bg-gray-900 border-gray-700 hover:border-green-400 hover:shadow-lg hover:shadow-black/30" : "bg-white border-gray-200 hover:shadow-md hover:border-green-400/40"}`}>
+      <div className="flex items-start justify-between mb-4">
+        <Badge label={item.type} typeColor={item.typeColor} dark={d} />
+        {productTag && pc && (
+          <span className={`text-sm rounded-lg px-2.5 py-1 border flex items-center gap-1.5 ${d ? "text-gray-300 bg-gray-800 border-gray-700" : "text-gray-600 bg-gray-50 border-gray-200"}`}>
+            <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: pc }} />
+            {productTag}
+          </span>
+        )}
+      </div>
+      <h3 className={`font-semibold text-lg leading-snug mb-3 ${d ? "text-gray-100 group-hover:text-green-600" : "text-gray-900 group-hover:text-green-700"}`}>{item.title}</h3>
+      <p className={`text-base leading-relaxed mb-4 line-clamp-2 flex-1 ${d ? "text-gray-400" : "text-gray-500"}`}>{item.descripcion || stripHtml(item.objetivo)}</p>
+      <div className="flex flex-wrap gap-2 mb-5">
+        {item.tags.filter(tag => !PRODUCTS.includes(tag)).map(tag => <span key={tag} className={`text-sm rounded-lg px-2.5 py-1 border ${d ? "text-gray-400 bg-gray-800 border-gray-700" : "text-gray-500 bg-gray-50 border-gray-200"}`}>{tag}</span>)}
+      </div>
+      <div className={`flex items-center justify-between pt-4 border-t ${d ? "border-gray-800" : "border-gray-100"}`}>
+        <div className="flex items-center gap-2">
+          <span className={`text-sm ${d ? "text-gray-500" : "text-gray-400"}`}>Asignado a:</span>
+          <div className="flex -space-x-2">{item.team.map((name, i) => <Avatar key={name} name={name} index={i} dark={d} />)}</div>
+        </div>
+        <span className={`text-sm ${d ? "text-gray-500" : "text-gray-400"}`}>{item.date}</span>
+      </div>
+    </div>
+  );
+}
+
+// ── PERSONA DETAIL TABS ──
+function PersonaDetailTabs({ personas, type, dark: d }) {
+  const [tab, setTab] = useState(0);
+  const p = personas[tab] || {};
+  const isBuyer = type === "Buyer Persona";
+
+  const nivelPct = { "básico": 33, "intermedio": 66, "avanzado": 100 }[( p.nivelTec || "").toLowerCase()] || null;
+
+  const bannerColor = isBuyer ? "#2563EB" : "#00B369";
+
+  const FieldCard = ({ label, value, description }) =>
+    value ? (
+      <div className={`py-2 border-b ${d ? "border-gray-700" : "border-gray-100"}`}>
+        <p className={`text-xs mb-0.5 ${d ? "text-gray-500" : "text-gray-400"}`}>{label}</p>
+        <p className={`text-sm font-semibold leading-snug ${d ? "text-gray-100" : "text-gray-900"}`}>{value}</p>
+        {description && <p className={`text-xs mt-1 leading-snug ${d ? "text-gray-400" : "text-gray-500"}`}>{description}</p>}
+      </div>
+    ) : null;
+
+  const NivelCard = () =>
+    p.nivelTec ? (
+      <div className={`py-2 border-b ${d ? "border-gray-700" : "border-gray-100"}`}>
+        <p className={`text-xs mb-0.5 ${d ? "text-gray-500" : "text-gray-400"}`}>Nivel tecnológico</p>
+        <p className={`text-sm font-semibold mb-1.5 ${d ? "text-gray-100" : "text-gray-900"}`}>{p.nivelTec}</p>
+        {nivelPct && (
+          <div className={`h-1.5 rounded-full overflow-hidden ${d ? "bg-gray-700" : "bg-gray-100"}`}>
+            <div className="h-full rounded-full bg-green-500 transition-all" style={{ width: `${nivelPct}%` }} />
+          </div>
+        )}
+        {p.herramientas && <p className={`text-xs mt-1.5 ${d ? "text-gray-400" : "text-gray-500"}`}>Utiliza <strong>{p.herramientas}</strong></p>}
+      </div>
+    ) : null;
+
+  const SectionHeader = ({ children }) => (
+    <div className={`rounded-lg px-4 py-2.5 mb-3 ${d ? "bg-gray-800" : "bg-gray-100"}`}>
+      <p className={`text-sm font-bold ${d ? "text-gray-100" : "text-gray-800"}`}>{children}</p>
+    </div>
+  );
+
+  const ContentCard = ({ title, description }) =>
+    title ? (
+      <div className={`rounded-lg p-4 border ${d ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}`}>
+        <p className={`text-sm font-bold leading-snug ${d ? "text-gray-100" : "text-gray-900"}`}>{title}</p>
+        {description && <p className={`text-sm mt-1.5 leading-snug ${d ? "text-gray-400" : "text-gray-600"}`}>{description}</p>}
+      </div>
+    ) : null;
+
+  const SideSection = ({ title, children }) => (
+    <div className={`rounded-xl border overflow-hidden ${d ? "border-gray-700" : "border-gray-200"}`}>
+      <div className="px-3 py-2" style={{ backgroundColor: bannerColor }}>
+        <p className="text-white font-bold text-sm">{title}</p>
+      </div>
+      <div className={`px-3 ${d ? "bg-gray-800" : "bg-white"}`}>{children}</div>
+    </div>
+  );
+
+  return (
+    <div className={`rounded-2xl border p-5 ${d ? "bg-gray-900 border-gray-700" : "bg-gray-50 border-gray-200"}`}>
+      {/* Persona tabs */}
+      {personas.length > 1 && (
+        <div className={`flex border-b mb-4 ${d ? "border-gray-700" : "border-gray-200"}`}>
+          {personas.map((persona, i) => (
+            <button key={i} onClick={() => setTab(i)}
+              className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
+                tab === i ? "border-green-500 text-green-600" : d ? "border-transparent text-gray-400 hover:text-gray-200" : "border-transparent text-gray-500 hover:text-gray-800"
+              }`}>
+              {persona.nombre || `Persona ${i + 1}`}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Header banner */}
+      <div className="rounded-xl overflow-hidden mb-5" style={{ backgroundColor: bannerColor }}>
+        <div className="px-6 py-5 flex items-center gap-5">
+          <div className="w-16 h-16 rounded-full flex-shrink-0 flex items-end justify-center overflow-hidden" style={{ backgroundColor: "rgba(255,255,255,0.25)" }}>
+            <svg className="w-12 h-12 text-white" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
+            </svg>
+          </div>
+          <div>
+            <p className="text-white/80 text-sm font-semibold mb-0.5">{type}</p>
+            <h2 className="text-white text-2xl font-bold leading-tight">{p.nombre || "Sin nombre"}</h2>
+            {p.cargo && <p className="text-white/70 text-sm mt-0.5">{p.cargo}</p>}
+          </div>
+        </div>
+      </div>
+
+      {/* Two-column layout */}
+      <div className="flex gap-5">
+        {/* LEFT sidebar */}
+        <div className="w-64 flex-shrink-0 space-y-5">
+          <SideSection title="Información personal">
+            <FieldCard label="Cargo" value={p.cargo} />
+            <FieldCard label="Edad" value={p.edad} />
+            <FieldCard label="Ubicación" value={p.ubicacion} />
+            <NivelCard />
+          </SideSection>
+          <SideSection title="Sobre el negocio">
+            <FieldCard label="Rubro" value={p.rubro} />
+            {isBuyer ? (
+              <>
+                <FieldCard label="Cantidad de personal" value={p.personal} />
+                <FieldCard label="Tiempo de apertura" value={p.tiempoApertura} />
+                {p.metas && (
+                  <div className={`py-2 border-b ${d ? "border-gray-700" : "border-gray-100"}`}>
+                    <p className={`text-xs mb-0.5 ${d ? "text-gray-500" : "text-gray-400"}`}>Metas a futuro</p>
+                    <div className={`rich-content text-sm leading-snug ${d ? "text-gray-100" : "text-gray-900"}`} dangerouslySetInnerHTML={{ __html: sanitizeHtml(p.metas) }} />
+                  </div>
+                )}
+              </>
+            ) : (
+              <FieldCard label="Tiempo en el negocio" value={p.tiempoNegocio} />
+            )}
+          </SideSection>
+        </div>
+
+        {/* RIGHT content */}
+        <div className="flex-1 min-w-0 space-y-5">
+          {isBuyer ? (
+            <>
+              {/* Adquisición del producto */}
+              {p.adquisicion && (
+                <div>
+                  <SectionHeader>Adquisición del producto</SectionHeader>
+                  <div className={`rich-content text-sm leading-relaxed ${d ? "text-gray-300" : "text-gray-600"}`} dangerouslySetInnerHTML={{ __html: sanitizeHtml(p.adquisicion) }} />
+                </div>
+              )}
+              {/* Comunicaciones */}
+              {p.comunicaciones && (
+                <div>
+                  <SectionHeader>Comunicaciones</SectionHeader>
+                  <div className={`rich-content text-sm leading-relaxed ${d ? "text-gray-300" : "text-gray-600"}`} dangerouslySetInnerHTML={{ __html: sanitizeHtml(p.comunicaciones) }} />
+                </div>
+              )}
+            </>
+          ) : (
+            <>
+              {p.objetivos && (
+                <div>
+                  <SectionHeader>Objetivos y metas</SectionHeader>
+                  <div className={`rich-content text-sm leading-relaxed ${d ? "text-gray-300" : "text-gray-600"}`} dangerouslySetInnerHTML={{ __html: sanitizeHtml(p.objetivos) }} />
+                </div>
+              )}
+              {p.dolores && (
+                <div>
+                  <SectionHeader>Frustraciones y dolores</SectionHeader>
+                  <div className={`rich-content text-sm leading-relaxed ${d ? "text-gray-300" : "text-gray-600"}`} dangerouslySetInnerHTML={{ __html: sanitizeHtml(p.dolores) }} />
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── TOAST ──
+function Toast({ toast }) {
+  const { dark: d } = useApp();
+  if (!toast) return null;
+  return (
+    <div className="fixed top-5 right-5 z-[100]">
+      <div className={`flex items-start gap-3 px-4 py-3.5 rounded-xl shadow-xl border max-w-sm ${
+        d
+          ? toast.type === "success" ? "bg-gray-900 border-gray-700 text-gray-100" : "bg-gray-900 border-gray-700 text-gray-100"
+          : toast.type === "success" ? "bg-white border-gray-200 text-gray-800" : "bg-white border-gray-200 text-gray-800"
+      }`} style={{ boxShadow: d ? "0 8px 32px rgba(0,0,0,0.5)" : "0 8px 32px rgba(0,0,0,0.12)" }}>
+        {toast.type === "success" ? (
+          <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${d ? "bg-green-900/60" : "bg-green-100"}`}>
+            <svg className="w-4 h-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+          </div>
+        ) : (
+          <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${d ? "bg-red-900/60" : "bg-red-100"}`}>
+            <svg className="w-4 h-4 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+          </div>
+        )}
+        <div>
+          <p className="text-sm font-semibold">{toast.msg.title}</p>
+          {toast.msg.subtitle && <p className={`text-xs mt-0.5 ${d ? "text-gray-400" : "text-gray-500"}`}>{toast.msg.subtitle}</p>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── CONFIRM MODAL ──
+function ConfirmModal({ title, message, confirmLabel = "Confirmar", danger = false, onConfirm, onCancel }) {
+  const { dark: d } = useApp();
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backgroundColor: "rgba(0,0,0,0.6)" }}>
+      <div className={`rounded-2xl shadow-2xl border w-full max-w-sm ${d ? "bg-gray-900 border-gray-700" : "bg-white border-gray-200"}`}>
+        <div className="px-6 pt-6 pb-4">
+          <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-4 ${danger ? (d ? "bg-red-900/50" : "bg-red-100") : (d ? "bg-amber-900/50" : "bg-amber-100")}`}>
+            <svg className={`w-5 h-5 ${danger ? "text-red-500" : "text-amber-500"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+            </svg>
+          </div>
+          <h3 className={`text-base font-bold mb-1 ${d ? "text-gray-100" : "text-gray-900"}`}>{title}</h3>
+          <p className={`text-sm ${d ? "text-gray-400" : "text-gray-500"}`}>{message}</p>
+        </div>
+        <div className="flex gap-3 px-6 pb-6">
+          <button onClick={onCancel} className={`flex-1 px-4 py-2 text-sm font-medium rounded-lg border ${d ? "border-gray-700 text-gray-300 hover:bg-gray-800" : "border-gray-300 text-gray-700 hover:bg-gray-50"}`}>
+            Cancelar
+          </button>
+          <button onClick={onConfirm} className={`flex-1 px-4 py-2 text-sm font-semibold rounded-lg text-white ${danger ? "bg-red-500 hover:bg-red-600" : "bg-amber-500 hover:bg-amber-600"}`}>
+            {confirmLabel}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── DETAIL PAGE ──
+function DetailPage() {
+  const navigate = useNavigate();
+  const { id: slug } = useParams();
+  const { dark: d, deliverables, handleDelete } = useApp();
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const item = deliverables.find(x => toSlug(x.title) === slug);
+  if (!item) return <div className={`flex-1 flex items-center justify-center ${d ? "bg-gray-950 text-gray-400" : "bg-gray-50 text-gray-500"}`}>Investigación no encontrada.</div>;
+  const related = deliverables.filter(r => r.id !== item.id && r.tags[0] === item.tags[0]).slice(0, 3);
+
+  const jiraDone = /done|closed|resolved|finaliz|complet/i.test(item.jiraStatus || "");
+  const entryJiraColor = (item.jiraStatus === "FINALIZADO" || jiraDone)
+    ? (d ? "text-green-400 border-green-700 bg-green-900/40" : "text-green-700 border-green-200 bg-green-50")
+    : (d ? "text-blue-400 border-blue-700 bg-blue-900/40" : "text-blue-700 border-blue-200 bg-blue-50");
+
+  return (
+    <div className={`flex-1 overflow-y-auto ${d ? "bg-gray-950" : "bg-gray-50"}`}>
+      {confirmDelete && (
+        <ConfirmModal
+          title="¿Eliminar investigación?"
+          message={`"${item.title}" se eliminará permanentemente y no podrá recuperarse.`}
+          confirmLabel="Sí, eliminar"
+          danger
+          onConfirm={() => { handleDelete(item.id); navigate("/investigaciones"); }}
+          onCancel={() => setConfirmDelete(false)}
+        />
+      )}
+      {/* Top bar */}
+      <div className={`border-b px-8 py-4 sticky top-0 z-10 flex items-center justify-between ${d ? "bg-gray-900 border-gray-800" : "bg-white border-gray-200"}`}>
+        <button onClick={() => navigate("/investigaciones")} className={`flex items-center gap-2 text-sm font-medium ${d ? "text-gray-400 hover:text-gray-200" : "text-gray-500 hover:text-gray-900"}`}>
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+          Volver a investigaciones
+        </button>
+        <div className="flex gap-2">
+          {item.isCustom && (
+            <button
+              onClick={() => navigate(`/editar-investigacion/${item.id}`)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg border ${d ? "border-gray-700 text-gray-300 hover:bg-gray-800" : "border-gray-300 text-gray-700 hover:bg-gray-50"}`}
+            >
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125" /></svg>
+              Editar
+            </button>
+          )}
+        </div>
+      </div>
+
+      <div style={{maxWidth:"1600px", margin:"0 auto", width:"100%", paddingLeft:"2rem", paddingRight:"2rem", paddingTop:"2rem", paddingBottom:"2rem"}}>
+        {/* Breadcrumb */}
+        <div className={`flex items-center gap-2 text-sm mb-2 ${d ? "text-gray-500" : "text-gray-400"}`}>
+          <button onClick={() => navigate("/")} className={`hover:underline ${d ? "hover:text-gray-300" : "hover:text-gray-700"}`}>Inicio</button><span>/</span>
+          <button onClick={() => navigate(`/producto/${encodeURIComponent(item.tags[0])}`)} className={`hover:underline ${d ? "hover:text-gray-300" : "hover:text-gray-700"}`}>{item.tags[0]}</button><span>/</span>
+          <span className={d ? "text-gray-300" : "text-gray-700"}>{item.type}</span>
+        </div>
+
+        {/* Page title */}
+        <div className="flex items-center gap-3 mb-2">
+          <Avatar name={item.team[0]} index={0} dark={d} />
+          <span className={`text-sm ${d ? "text-gray-400" : "text-gray-500"}`}>
+            {item.team[0]} · {item.date}
+          </span>
+        </div>
+        <h1 className={`text-3xl font-bold mb-3 ${d ? "text-gray-100" : "text-gray-900"}`}>{item.tags[0]}: {item.type}</h1>
+        <div className="mb-8"><Badge label={item.status} dark={d} /></div>
+
+        {/* All entregables stacked */}
+        <div className="flex gap-8">
+          {/* LEFT — file + metadata */}
+          <div className="w-72 flex-shrink-0 space-y-5">
+            {(() => {
+              const driveId = getDriveId(item.archivoUrl || "");
+              const thumbUrl = driveId ? `https://drive.google.com/thumbnail?id=${driveId}&sz=w400` : null;
+              const openUrl = item.archivoUrl || null;
+              return (
+                <div className={`rounded-xl border overflow-hidden ${d ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}`} style={{boxShadow:"0 1px 4px rgba(0,0,0,0.08)"}}>
+                  {/* Thumbnail row */}
+                  <div className="flex" style={{minHeight:90}}>
+                    <div className="flex-1 p-3 flex flex-col justify-between min-w-0">
+                      {/* Drive icon + name */}
+                      <div className="flex items-start gap-2">
+                        {/* Google Drive color icon */}
+                        <svg className="w-5 h-5 flex-shrink-0 mt-0.5" viewBox="0 0 87.3 78" xmlns="http://www.w3.org/2000/svg">
+                          <path d="m6.6 66.85 3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3l13.75-23.8h-27.5c0 1.55.4 3.1 1.2 4.5z" fill="#0066da"/>
+                          <path d="m43.65 25-13.75-23.8c-1.35.8-2.5 1.9-3.3 3.3l-25.4 44a9.06 9.06 0 0 0 -1.2 4.5h27.5z" fill="#00ac47"/>
+                          <path d="m73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75 7.65-13.25c.8-1.4 1.2-2.95 1.2-4.5h-27.502l5.852 11.5z" fill="#ea4335"/>
+                          <path d="m43.65 25 13.75-23.8c-1.35-.8-2.9-1.2-4.5-1.2h-18.5c-1.6 0-3.15.45-4.5 1.2z" fill="#00832d"/>
+                          <path d="m59.8 53h-32.3l-13.75 23.8c1.35.8 2.9 1.2 4.5 1.2h50.8c1.6 0 3.15-.45 4.5-1.2z" fill="#2684fc"/>
+                          <path d="m73.4 26.5-12.7-22c-.8-1.4-1.95-2.5-3.3-3.3l-13.75 23.8 16.15 27h27.45c0-1.55-.4-3.1-1.2-4.5z" fill="#ffba00"/>
+                        </svg>
+                        <p className={`text-xs font-semibold leading-snug line-clamp-2 ${d ? "text-gray-100" : "text-gray-800"}`}>{item.archivo || "Archivo"}</p>
+                      </div>
+                      {/* Creado por */}
+                      <p className={`text-xs mt-1 ${d ? "text-gray-500" : "text-gray-400"}`}>· Creado por {item.team?.[0] || "—"}</p>
+                    </div>
+                    {/* Thumbnail */}
+                    {thumbUrl && (
+                      <div className="w-20 flex-shrink-0 overflow-hidden" style={{background:"#4285f4"}}>
+                        <img src={thumbUrl} alt="" className="w-full h-full object-cover" style={{minHeight:90}}
+                          onError={e => { e.target.parentElement.style.display = "none"; }} />
+                      </div>
+                    )}
+                  </div>
+                  {/* Footer */}
+                  <div className={`flex items-center justify-between px-3 py-2 border-t ${d ? "border-gray-700" : "border-gray-100"}`}>
+                    <svg className="w-14" viewBox="0 0 87.3 24" xmlns="http://www.w3.org/2000/svg">
+                      <text y="18" fontSize="18" fontFamily="sans-serif" fill={d ? "#9ca3af" : "#5f6368"} fontWeight="500">Drive</text>
+                    </svg>
+                    <a href={openUrl || "#"} target={openUrl ? "_blank" : undefined} rel="noreferrer"
+                      className={`text-xs font-semibold px-3 py-1 rounded-lg border ${d ? "border-gray-600 text-green-400 hover:bg-gray-700" : "border-gray-200 text-green-600 hover:bg-gray-50"}`}>
+                      Abrir archivo
+                    </a>
+                  </div>
+                </div>
+              );
+            })()}
+            {item.pdfData && (
+              <div className={`rounded-xl border overflow-hidden ${d ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}`}>
+                <iframe src={item.pdfData} title={item.pdfName || "PDF"} className="w-full" style={{ height: 220 }} />
+                <div className={`flex items-center justify-between px-3 py-2 border-t ${d ? "border-gray-700" : "border-gray-100"}`}>
+                  <span className={`text-xs truncate max-w-[140px] ${d ? "text-gray-400" : "text-gray-500"}`}>{item.pdfName || "Archivo.pdf"}</span>
+                  <a href={item.pdfData} download={item.pdfName || "archivo.pdf"}
+                    className={`text-xs font-semibold px-3 py-1 rounded-lg border ${d ? "border-gray-600 text-green-400 hover:bg-gray-700" : "border-gray-200 text-green-600 hover:bg-gray-50"}`}>
+                    Descargar
+                  </a>
+                </div>
+              </div>
+            )}
+            <div className="space-y-3">
+              <div>
+                <p className={`text-xs font-semibold mb-0.5 ${d ? "text-gray-500" : "text-gray-400"}`}>Fecha</p>
+                <p className={`text-sm ${d ? "text-gray-300" : "text-gray-700"}`}>{item.date}</p>
+              </div>
+              <div>
+                <p className={`text-xs font-semibold mb-0.5 ${d ? "text-gray-500" : "text-gray-400"}`}>Metodología</p>
+                <p className={`text-sm ${d ? "text-gray-300" : "text-gray-700"}`}>{item.metodologia}</p>
+              </div>
+              <div>
+                <p className={`text-xs font-semibold mb-1 ${d ? "text-gray-500" : "text-gray-400"}`}>Link de Jira</p>
+                <a
+                  className={`text-sm font-semibold leading-snug block mb-1.5 break-words ${d ? "text-green-400 hover:text-green-300" : "text-green-600 hover:text-green-700"} ${item.jiraUrl ? "underline" : "pointer-events-none"}`}
+                  href={item.jiraUrl || "#"}
+                  target={item.jiraUrl ? "_blank" : undefined}
+                  rel="noreferrer"
+                >
+                  {item.jira || item.jiraUrl || "—"}
+                </a>
+                <span className={`text-xs font-bold px-2 py-0.5 rounded border ${entryJiraColor}`}>{item.jiraStatus}</span>
+              </div>
+              {item.isCustom && (
+                <div className={`mt-6 pt-4 border-t ${d ? "border-gray-700" : "border-gray-200"}`}>
+                  <button
+                    onClick={() => setConfirmDelete(true)}
+                    className="flex items-center gap-1.5 text-xs font-semibold text-red-500 hover:text-red-700 transition-colors"
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    Eliminar investigación
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* RIGHT — content */}
+          <div className="flex-1 min-w-0 space-y-6">
+            {item.descripcion && (
+              <div>
+                <h3 className={`text-base font-bold mb-2 ${d ? "text-gray-100" : "text-gray-900"}`}>Descripción corta</h3>
+                <p className={`text-base leading-relaxed ${d ? "text-gray-300" : "text-gray-600"}`}>{item.descripcion}</p>
+              </div>
+            )}
+            {item.objetivo && (
+              <div>
+                <h3 className={`text-base font-bold mb-2 ${d ? "text-gray-100" : "text-gray-900"}`}>Objetivo del research</h3>
+                <div className={`rich-content text-base leading-relaxed ${d ? "text-gray-300" : "text-gray-600"}`} dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.objetivo) }} />
+              </div>
+            )}
+            {item.usuario && (
+              <div>
+                <h3 className={`text-base font-bold mb-2 ${d ? "text-gray-100" : "text-gray-900"}`}>Usuario</h3>
+                <div className={`rich-content text-base leading-relaxed ${d ? "text-gray-300" : "text-gray-600"}`} dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.usuario) }} />
+              </div>
+            )}
+            {item.hallazgos && (
+              <div>
+                <h3 className={`text-base font-bold mb-2 ${d ? "text-gray-100" : "text-gray-900"}`}>Hallazgos y conclusiones</h3>
+                <div className={`rich-content text-base leading-relaxed ${d ? "text-gray-300" : "text-gray-600"}`} dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.hallazgos) }} />
+              </div>
+            )}
+            {PERSONA_TYPES.includes(item.type) && item.personas && item.personas.length > 0 && (
+              <PersonaDetailTabs personas={item.personas} type={item.type} dark={d} />
+            )}
+          </div>
+        </div>
+
+        {/* Related */}
+        {related.length > 0 && (
+          <div className="mt-16">
+            <h2 className={`text-xl font-bold mb-4 flex items-center gap-2 ${d ? "text-gray-300" : "text-gray-700"}`}>
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
+              Contenido relacionado
+            </h2>
+            <div className="grid grid-cols-3 gap-4">
+              {related.map(r => (
+                <Card key={r.id} item={r} dark={d} />
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── PRODUCT PAGE ──
+function ProductPage() {
+  const navigate = useNavigate();
+  const { slug } = useParams();
+  const product = decodeURIComponent(slug);
+  const { dark: d, deliverables } = useApp();
+  const [content, setContent] = useState(() => loadProductContent(product));
+  const coverInputRef = useRef(null);
+
+  const handleCoverChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      setContent(prev => {
+        const updated = { ...prev, coverImage: ev.target.result };
+        saveProductContent(product, updated);
+        return updated;
+      });
+    };
+    reader.readAsDataURL(file);
+    e.target.value = "";
+  };
+
+  const color = PRODUCT_COLORS[product] || "#00B369";
+  const productDeliverables = deliverables.filter(item => item.tags.includes(product));
+
+  const byType = {
+    "Research": productDeliverables.filter(i => i.type === "Research"),
+    "Pruebas de usabilidad": productDeliverables.filter(i => i.type === "Pruebas de usabilidad"),
+  };
+
+  const personaByType = {
+    "Buyer Persona": productDeliverables.filter(i => i.type === "Buyer Persona"),
+    "User Persona":  productDeliverables.filter(i => i.type === "User Persona"),
+  };
+
+  return (
+    <div className={`flex-1 overflow-y-auto ${d ? "bg-gray-950" : "bg-gray-50"}`}>
+      {/* Banner */}
+      <div
+        className="relative flex-shrink-0 group/cover"
+        style={{ height: 200, backgroundColor: color, backgroundImage: content.coverImage ? `url(${content.coverImage})` : undefined, backgroundSize: "cover", backgroundPosition: "center" }}
+      >
+        <button
+          onClick={() => coverInputRef.current.click()}
+          className="absolute top-3 right-3 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-black/40 text-white opacity-0 group-hover/cover:opacity-100 transition-opacity hover:bg-black/60"
+        >
+          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+          Cambiar portada
+        </button>
+        <input ref={coverInputRef} type="file" accept="image/*" className="hidden" onChange={handleCoverChange} />
+      </div>
+
+      <div style={{ maxWidth: "1200px", margin: "0 auto", paddingLeft: "2rem", paddingRight: "2rem", paddingTop: "2rem", paddingBottom: "4rem" }}>
+        {/* Back + title */}
+        <button onClick={() => navigate("/")} className={`flex items-center gap-2 text-sm font-medium mb-4 ${d ? "text-gray-400 hover:text-gray-200" : "text-gray-500 hover:text-gray-900"}`}>
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+          Volver
+        </button>
+        <h1 className={`text-3xl font-bold mb-1 ${d ? "text-gray-100" : "text-gray-900"}`}>{product}</h1>
+        <p className={`text-sm mb-10 ${d ? "text-gray-500" : "text-gray-400"}`}>{productDeliverables.length} entregable{productDeliverables.length !== 1 ? "s" : ""}</p>
+
+        {/* Persona sections */}
+        {PERSONA_TYPES.map(type => {
+          const items = personaByType[type];
+          return (
+            <div key={type} className={`mb-10 pb-10 border-b ${d ? "border-gray-800" : "border-gray-100"}`}>
+              <div className="flex items-center justify-between mb-5">
+                <h2 className={`text-xl font-bold ${d ? "text-gray-100" : "text-gray-900"}`}>{type}</h2>
+                <button
+                  onClick={() => navigate("/añadir-investigacion", { state: { type, product } })}
+                  className={`flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-lg font-medium border ${d ? "border-gray-600 text-gray-300 hover:bg-gray-800" : "border-gray-300 text-gray-700 hover:bg-gray-50"}`}
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+                  Añadir
+                </button>
+              </div>
+
+              {items.length > 0 ? (
+                <div className="space-y-6">
+                  {items.map(inv => (
+                    <div key={inv.id} className={`rounded-2xl border overflow-hidden ${d ? "border-gray-700 bg-gray-900" : "border-gray-200 bg-white"}`}>
+                      {/* Investigation title bar */}
+                      <div className={`px-5 py-3 border-b flex items-center justify-between ${d ? "border-gray-700 bg-gray-800/50" : "border-gray-100 bg-gray-50"}`}>
+                        <div className="min-w-0">
+                          <p className={`text-sm font-semibold truncate ${d ? "text-gray-100" : "text-gray-900"}`}>{inv.title}</p>
+                          <p className={`text-xs mt-0.5 ${d ? "text-gray-500" : "text-gray-400"}`}>{inv.date} · {inv.personas?.length || 0} persona{(inv.personas?.length || 0) !== 1 ? "s" : ""}</p>
+                        </div>
+                        <button
+                          onClick={() => navigate(`/investigacion/${toSlug(inv.title)}`)}
+                          className={`flex-shrink-0 flex items-center gap-1 text-xs font-semibold ml-3 ${d ? "text-green-400 hover:text-green-300" : "text-green-600 hover:text-green-700"}`}
+                        >
+                          Ver investigación completa
+                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                        </button>
+                      </div>
+                      {/* Personas — compact 3-col */}
+                      {inv.personas && inv.personas.length > 0 && (
+                        <div className="p-5 grid grid-cols-3 gap-4">
+                          {inv.personas.map((p, i) => {
+                            const nivelPct = { "básico": 33, "intermedio": 66, "avanzado": 100 }[(p.nivelTec || "").toLowerCase()] || null;
+                            return (
+                              <div key={i} className={`rounded-xl border overflow-hidden ${d ? "border-gray-700" : "border-gray-200"}`}>
+                                <div className="px-4 py-3 flex items-center gap-2.5" style={{ backgroundColor: type === "Buyer Persona" ? "#2563EB" : "#00B369" }}>
+                                  <div className="w-8 h-8 rounded-full flex items-end justify-center overflow-hidden flex-shrink-0" style={{ backgroundColor: "rgba(255,255,255,0.25)" }}>
+                                    <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+                                  </div>
+                                  <div className="min-w-0">
+                                    <p className="text-white/70 text-xs">{type}</p>
+                                    <p className="text-white text-sm font-bold truncate">{p.nombre || `Persona ${i + 1}`}</p>
+                                  </div>
+                                </div>
+                                <div className={`p-3 space-y-2 ${d ? "bg-gray-800" : "bg-white"}`}>
+                                  {type === "Buyer Persona" ? (<>
+                                    {(p.cargo || p.edad) && <div className="grid grid-cols-2 gap-2">
+                                      {p.cargo && <div><p className={`text-xs ${d ? "text-gray-500" : "text-gray-400"}`}>Cargo</p><p className={`text-xs font-semibold ${d ? "text-gray-200" : "text-gray-800"}`}>{p.cargo}</p></div>}
+                                      {p.edad && <div><p className={`text-xs ${d ? "text-gray-500" : "text-gray-400"}`}>Edad</p><p className={`text-xs font-semibold ${d ? "text-gray-200" : "text-gray-800"}`}>{p.edad}</p></div>}
+                                    </div>}
+                                    {(p.ubicacion || p.nivelTec) && <div className="grid grid-cols-2 gap-2">
+                                      {p.ubicacion && <div><p className={`text-xs ${d ? "text-gray-500" : "text-gray-400"}`}>Ubicación</p><p className={`text-xs font-semibold ${d ? "text-gray-200" : "text-gray-800"}`}>{p.ubicacion}</p></div>}
+                                      {p.nivelTec && <div><p className={`text-xs ${d ? "text-gray-500" : "text-gray-400"}`}>Nivel tec.</p><p className={`text-xs font-semibold mb-1 ${d ? "text-gray-200" : "text-gray-800"}`}>{p.nivelTec}</p>{(() => { const pct = { "básico": 33, "intermedio": 66, "avanzado": 100 }[(p.nivelTec || "").toLowerCase()] || null; return pct ? <div className={`h-1 rounded-full overflow-hidden ${d ? "bg-gray-700" : "bg-gray-100"}`}><div className="h-full rounded-full bg-green-500" style={{ width: `${pct}%` }} /></div> : null; })()}</div>}
+                                    </div>}
+                                    {(p.rubro || p.personal) && <div className="grid grid-cols-2 gap-2">
+                                      {p.rubro && <div><p className={`text-xs ${d ? "text-gray-500" : "text-gray-400"}`}>Rubro</p><p className={`text-xs font-semibold ${d ? "text-gray-200" : "text-gray-800"}`}>{p.rubro}</p></div>}
+                                      {p.personal && <div><p className={`text-xs ${d ? "text-gray-500" : "text-gray-400"}`}>Personal</p><p className={`text-xs font-semibold ${d ? "text-gray-200" : "text-gray-800"}`}>{p.personal}</p></div>}
+                                    </div>}
+                                  </>) : (<>
+                                    {(p.cargo || p.edad) && <div className="grid grid-cols-2 gap-2">
+                                      {p.cargo && <div><p className={`text-xs ${d ? "text-gray-500" : "text-gray-400"}`}>Cargo</p><p className={`text-xs font-semibold ${d ? "text-gray-200" : "text-gray-800"}`}>{p.cargo}</p></div>}
+                                      {p.edad && <div><p className={`text-xs ${d ? "text-gray-500" : "text-gray-400"}`}>Edad</p><p className={`text-xs font-semibold ${d ? "text-gray-200" : "text-gray-800"}`}>{p.edad}</p></div>}
+                                    </div>}
+                                    {(p.ubicacion || p.nivelTec) && <div className="grid grid-cols-2 gap-2">
+                                      {p.ubicacion && <div><p className={`text-xs ${d ? "text-gray-500" : "text-gray-400"}`}>Ubicación</p><p className={`text-xs font-semibold ${d ? "text-gray-200" : "text-gray-800"}`}>{p.ubicacion}</p></div>}
+                                      {p.nivelTec && <div><p className={`text-xs ${d ? "text-gray-500" : "text-gray-400"}`}>Nivel tec.</p><p className={`text-xs font-semibold mb-1 ${d ? "text-gray-200" : "text-gray-800"}`}>{p.nivelTec}</p>{(() => { const pct = { "básico": 33, "intermedio": 66, "avanzado": 100 }[(p.nivelTec || "").toLowerCase()] || null; return pct ? <div className={`h-1 rounded-full overflow-hidden ${d ? "bg-gray-700" : "bg-gray-100"}`}><div className="h-full rounded-full bg-green-500" style={{ width: `${pct}%` }} /></div> : null; })()}</div>}
+                                    </div>}
+                                    {(p.rubro || p.tiempoNegocio) && <div className="grid grid-cols-2 gap-2">
+                                      {p.rubro && <div><p className={`text-xs ${d ? "text-gray-500" : "text-gray-400"}`}>Rubro</p><p className={`text-xs font-semibold ${d ? "text-gray-200" : "text-gray-800"}`}>{p.rubro}</p></div>}
+                                      {p.tiempoNegocio && <div><p className={`text-xs ${d ? "text-gray-500" : "text-gray-400"}`}>Tiempo negocio</p><p className={`text-xs font-semibold ${d ? "text-gray-200" : "text-gray-800"}`}>{p.tiempoNegocio}</p></div>}
+                                    </div>}
+                                  </>)}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className={`rounded-xl border-2 border-dashed p-10 flex flex-col items-center justify-center text-center ${d ? "border-gray-700" : "border-gray-200"}`}>
+                  <svg className={`w-8 h-8 mb-3 ${d ? "text-gray-600" : "text-gray-300"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg>
+                  <p className={`text-sm font-medium mb-1 ${d ? "text-gray-400" : "text-gray-600"}`}>No hay investigaciones de {type} para {product}</p>
+                  <p className={`text-xs mb-4 ${d ? "text-gray-600" : "text-gray-400"}`}>Añade la primera para este producto</p>
+                  <button
+                    onClick={() => navigate("/añadir-investigacion", { state: { type, product } })}
+                    className="flex items-center gap-2 px-4 py-2 text-white text-sm font-semibold rounded-lg"
+                    style={{ backgroundColor: "#00B369" }}
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+                    Añadir {type}
+                  </button>
+                </div>
+              )}
+            </div>
+          );
+        })}
+
+        {/* Otros apartados */}
+        <div className="mb-10">
+          <h2 className={`text-xl font-bold mb-5 ${d ? "text-gray-100" : "text-gray-900"}`}>Otros apartados</h2>
+          <div className="grid grid-cols-2 gap-5">
+            {Object.entries(byType).map(([type, items]) => (
+              <div key={type} className={`rounded-xl border p-5 ${d ? "border-gray-700 bg-gray-900" : "border-gray-200 bg-white"}`}>
+                <h3 className={`font-semibold text-base mb-1 ${d ? "text-gray-100" : "text-gray-900"}`}>{type}</h3>
+                <p className={`text-sm mb-3 ${d ? "text-gray-500" : "text-gray-400"}`}>{items.length} entregable{items.length !== 1 ? "s" : ""}</p>
+                {items.length > 0 ? (
+                  <ul className="space-y-1.5">
+                    {items.slice(0, 4).map(item => (
+                      <li key={item.id}>
+                        <button onClick={() => navigate(`/investigacion/${toSlug(item.title)}`)} className={`text-sm text-left hover:underline line-clamp-1 ${d ? "text-green-400" : "text-green-700"}`}>{item.title}</button>
+                      </li>
+                    ))}
+                    {items.length > 4 && <li className={`text-xs ${d ? "text-gray-500" : "text-gray-400"}`}>+{items.length - 4} más</li>}
+                  </ul>
+                ) : (
+                  <p className={`text-sm ${d ? "text-gray-600" : "text-gray-300"}`}>Sin entregables aún</p>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Otros productos */}
+        <div className={`pt-8 border-t ${d ? "border-gray-800" : "border-gray-200"}`}>
+          <h2 className={`text-xl font-bold mb-4 ${d ? "text-gray-100" : "text-gray-900"}`}>Otros productos</h2>
+          <div className="flex flex-wrap gap-3">
+            {PRODUCTS.filter(p => p !== product).map(p => {
+              const count = deliverables.filter(item => item.tags.includes(p)).length;
+              const pc = PRODUCT_COLORS[p] || "#00B369";
+              return (
+                <button key={p} onClick={() => navigate(`/producto/${encodeURIComponent(p)}`)}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border font-medium text-sm transition-all ${d ? "border-gray-700 bg-gray-900 hover:border-green-500 text-gray-200" : "border-gray-200 bg-white hover:border-green-400 hover:shadow-sm text-gray-700"}`}>
+                  <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: pc }} />
+                  {p}
+                  <span className={`text-xs ${d ? "text-gray-500" : "text-gray-400"}`}>({count})</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── HOME PAGE ──
+function HomePage() {
+  const navigate = useNavigate();
+  const { dark: d, deliverables, setActiveFilter } = useApp();
+  const [search, setSearch] = useState("");
+  const [solicitudUrl, setSolicitudUrl] = useState(loadSolicitudUrl);
+  const [editingUrl, setEditingUrl] = useState(false);
+  const [urlDraft, setUrlDraft] = useState("");
+
+  const handleSearch = (e) => {
+    if (e.key === "Enter" && search.trim()) {
+      const term = search.trim();
+      const matchedProduct = PRODUCTS.find(p => p.toLowerCase() === term.toLowerCase());
+      if (matchedProduct) {
+        setActiveFilter({ type: "Tipo de entregable", team: null, search: "", product: matchedProduct });
+      } else {
+        setActiveFilter({ type: "Tipo de entregable", team: null, search: term, product: null });
+      }
+      navigate("/investigaciones");
+    }
+  };
+
+  const handleSaveUrl = () => {
+    saveSolicitudUrl(urlDraft.trim());
+    setSolicitudUrl(urlDraft.trim());
+    setEditingUrl(false);
+  };
+
+  const recent = [...deliverables].slice(0, 4);
+
+  return (
+    <div className={`flex-1 overflow-y-auto ${d ? "bg-gray-950" : "bg-gray-50"}`}>
+
+      {/* Hero — centered */}
+      <div className="relative overflow-hidden" style={{
+        background: d
+          ? "linear-gradient(160deg,#0a1628 0%,#0d1f12 50%,#0a1628 100%)"
+          : "linear-gradient(160deg,#f8faff 0%,#f0fdf4 50%,#f8faff 100%)",
+        borderBottom: `1px solid ${d ? "#1a2535" : "#e5e7eb"}`
+      }}>
+        {/* Decorative rounded squares */}
+        <div className="absolute -top-16 -right-16 w-72 h-72 opacity-10" style={{ background: "radial-gradient(circle,#00B369,transparent)", borderRadius: "2.5rem", transform: "rotate(15deg)" }} />
+        <div className="absolute -bottom-12 -left-12 w-60 h-60 opacity-15" style={{  borderRadius: "2rem",  transform: "rotate(20deg)", border: "solid 1px #00B369", }} />
+
+        <div className="relative" style={{ maxWidth: 800, margin: "0 auto", padding: "5rem 2rem 4rem", textAlign: "center" }}>
+          <div className="inline-flex items-center text-sm font-semibold mb-4" style={{ color: "#00B369"}}>
+            <div className="" />
+          AtomicRepo
+          </div>
+          <h1 className={`text-5xl font-bold mb-4 leading-tight ${d ? "text-gray-100" : "text-gray-900"}`}>
+            Repositorio de <span style={{ color: "#00B369" }}>Strategic Research</span>
+          </h1>
+          <p className={`text-lg mb-8 ${d ? "text-gray-400" : "text-gray-500"}`}>
+            Centraliza y encuentra todos los entregables de investigación del equipo.
+          </p>
+
+          {/* Search */}
+          <div className="relative max-w-lg mx-auto">
+            <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+            <input
+              type="text" value={search}
+              onChange={e => setSearch(e.target.value)}
+              onKeyDown={handleSearch}
+              placeholder="Busca una investigación o producto y presiona enter"
+              className={`w-full pl-12 pr-4 py-4 text-sm rounded-2xl border focus:outline-none focus:ring-2 focus:ring-green-400 ${d ? "bg-gray-800/80 border-gray-700 text-gray-200 placeholder-gray-500" : "bg-white border-gray-200 text-gray-900 placeholder-gray-400"}`}
+              style={{ boxShadow: d ? "0 4px 24px rgba(0,0,0,0.3)" : "0 4px 24px rgba(0,0,0,0.08)" }}
+            />
+          </div>
+
+        </div>
+      </div>
+
+      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "2.5rem 2rem 4rem" }}>
+
+        {/* Crear solicitud banner */}
+        <div className={`rounded-2xl p-6 mb-10 flex items-center justify-between gap-6 ${d ? "bg-gray-900 border border-gray-800" : "bg-white border border-gray-200"}`}
+          style={{ boxShadow: d ? "0 2px 12px rgba(0,0,0,0.3)" : "0 2px 12px rgba(0,0,0,0.06)" }}>
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "linear-gradient(135deg,#00B369,#00a560)" }}>
+              <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+            </div>
+            <div>
+              <p className={`font-bold text-base ${d ? "text-gray-100" : "text-gray-900"}`}>¿Necesitas un research?</p>
+              <p className={`text-sm ${d ? "text-gray-400" : "text-gray-500"}`}>Crea una solicitud directamente en Jira y el equipo la tendrá en el radar.</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            {editingUrl ? (
+              <>
+                <input
+                  autoFocus
+                  type="url"
+                  value={urlDraft}
+                  onChange={e => setUrlDraft(e.target.value)}
+                  onKeyDown={e => { if (e.key === "Enter") handleSaveUrl(); if (e.key === "Escape") setEditingUrl(false); }}
+                  placeholder="https://tu-empresa.atlassian.net/..."
+                  className={`text-sm px-3 py-2 rounded-lg border w-72 focus:outline-none focus:ring-2 focus:ring-green-400 ${d ? "bg-gray-800 border-gray-700 text-gray-200 placeholder-gray-500" : "bg-gray-50 border-gray-300 text-gray-900 placeholder-gray-400"}`}
+                />
+                <button onClick={handleSaveUrl} className="px-3 py-2 rounded-lg text-sm font-semibold text-white" style={{ backgroundColor: "#00B369" }}>Guardar</button>
+                <button onClick={() => setEditingUrl(false)} className={`px-3 py-2 rounded-lg text-sm font-medium border ${d ? "border-gray-700 text-gray-300 hover:bg-gray-800" : "border-gray-200 text-gray-600 hover:bg-gray-50"}`}>Cancelar</button>
+              </>
+            ) : solicitudUrl ? (
+              <>
+                <a href={solicitudUrl} target="_blank" rel="noreferrer"
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white hover:opacity-90 transition-opacity"
+                  style={{ background: "linear-gradient(135deg,#00B369,#00a560)" }}>
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+                  Crear solicitud
+                </a>
+                <button onClick={() => { setUrlDraft(solicitudUrl); setEditingUrl(true); }} className={`w-8 h-9 flex items-center justify-center rounded-lg ${d ? "text-gray-500 hover:bg-gray-800 hover:text-gray-300" : "text-gray-400 hover:bg-gray-100 hover:text-gray-600"}`}>
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                </button>
+              </>
+            ) : (
+              <button onClick={() => { setUrlDraft(""); setEditingUrl(true); }}
+                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold border ${d ? "border-gray-700 text-gray-300 hover:bg-gray-800" : "border-gray-200 text-gray-600 hover:bg-gray-50"}`}>
+                Configurar enlace
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Por producto */}
+        <div className="mb-10">
+          <h2 className={`text-lg font-bold mb-4 ${d ? "text-gray-100" : "text-gray-900"}`}>Por producto</h2>
+          <div className="grid grid-cols-3 gap-4">
+            {PRODUCTS.map(product => {
+              const pc = PRODUCT_COLORS[product] || "#00B369";
+              const all = deliverables.filter(i => i.tags.includes(product));
+              const research = all.filter(i => i.type === "Research").length;
+              const usabilidad = all.filter(i => i.type === "Pruebas de usabilidad").length;
+              return (
+                <button key={product} onClick={() => navigate(`/producto/${encodeURIComponent(product)}`)}
+                  className={`text-left rounded-xl border p-5 transition-all group ${d ? "bg-gray-900 border-gray-800 hover:border-green-600" : "bg-white border-gray-200 hover:border-green-400 hover:shadow-md"}`}
+                  style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }}>
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: pc }} />
+                      <span className={`font-semibold text-base ${d ? "text-gray-100" : "text-gray-900"}`}>{product}</span>
+                    </div>
+                    <svg className={`w-4 h-4 transition-transform group-hover:translate-x-0.5 ${d ? "text-gray-700" : "text-gray-300"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                  </div>
+                  <div className={`text-xs space-y-1.5 ${d ? "text-gray-500" : "text-gray-400"}`}>
+                    <div className="flex justify-between"><span>Research</span><span className={`font-semibold ${d ? "text-gray-300" : "text-gray-600"}`}>{research}</span></div>
+                    <div className="flex justify-between"><span>Pruebas de usabilidad</span><span className={`font-semibold ${d ? "text-gray-300" : "text-gray-600"}`}>{usabilidad}</span></div>
+                    <div className={`flex justify-between pt-1.5 border-t ${d ? "border-gray-800" : "border-gray-100"}`}>
+                      <span>Total</span><span className="font-bold" style={{ color: "#00B369" }}>{all.length}</span>
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Recientes */}
+        <div>
+          <h2 className={`text-lg font-bold mb-4 ${d ? "text-gray-100" : "text-gray-900"}`}>Recientes</h2>
+          <div className="grid grid-cols-2 gap-3">
+            {recent.map(item => {
+              const tc = { amber: d ? "bg-amber-900/40 text-amber-300 border-amber-700" : "bg-amber-50 text-amber-700 border-amber-200", blue: d ? "bg-blue-900/40 text-blue-300 border-blue-700" : "bg-blue-50 text-blue-700 border-blue-200" };
+              const color = tc[item.typeColor] || tc.amber;
+              const productTag = item.tags && item.tags.find(t => PRODUCTS.includes(t));
+              const pc = productTag ? (PRODUCT_COLORS[productTag] || "#00B369") : null;
+              return (
+                <button key={item.id} onClick={() => navigate(`/investigacion/${toSlug(item.title)}`)}
+                  className={`text-left rounded-xl border p-4 flex flex-col transition-all group ${d ? "bg-gray-900 border-gray-800 hover:border-green-700" : "bg-white border-gray-200 hover:border-green-400 hover:shadow-sm"}`}>
+                  <div className="min-w-0 w-full">
+                    <p className={`font-semibold text-sm leading-snug mb-1.5 truncate ${d ? "text-gray-100" : "text-gray-900"}`}>{item.title}</p>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className={`text-xs px-2 py-0.5 rounded-full border ${color}`}>{item.type}</span>
+                      {productTag && pc && (
+                        <span className={`text-xs px-2 py-0.5 rounded-full border flex items-center gap-1 ${d ? "border-gray-700 text-gray-300" : "border-gray-200 text-gray-600"}`}>
+                          <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: pc }} />
+                          {productTag}
+                        </span>
+                      )}
+                      <span className={`text-xs ${d ? "text-gray-500" : "text-gray-400"}`}>{item.date}</span>
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── LIST PAGE ──
+function ListPage() {
+  const navigate = useNavigate();
+  const { dark, setDark, deliverables, activeFilter } = useApp();
+  const dk = dark;
+  const [localType, setLocalType] = useState("Tipo de entregable");
+  const [product, setProduct] = useState("Todos los productos");
+  const [estado, setEstado] = useState("Persona asignada");
+  const [search, setSearch] = useState("");
+  const [draftFilter, setDraftFilter] = useState("Tipo de entregable");
+  const [draftProduct, setDraftProduct] = useState("Todos los productos");
+  const [draftEstado, setDraftEstado] = useState("Persona asignada");
+  const [draftSearch, setDraftSearch] = useState("");
+
+  // Sync when sidebar changes activeFilter
+  useEffect(() => {
+    if (!activeFilter) return;
+    const t = activeFilter.team ? "Tipo de entregable" : (activeFilter.type || "Tipo de entregable");
+    setDraftFilter(t);
+    setLocalType(t);
+    if (activeFilter.search) {
+      setDraftSearch(activeFilter.search);
+      setSearch(activeFilter.search);
+    }
+    if (activeFilter.product) {
+      setDraftProduct(activeFilter.product);
+      setProduct(activeFilter.product);
+    }
+  }, [activeFilter]);
+
+  const applyFilters = () => {
+    setLocalType(draftFilter);
+    setProduct(draftProduct);
+    setSearch(draftSearch);
+    setEstado(draftEstado);
+  };
+
+  const activeType = localType;
+  const activeTeam = activeFilter?.team || null;
+
+  const filtered = deliverables.filter(d => {
+    const typeMatch = activeType === "Tipo de entregable" || d.type === activeType;
+    const teamMatch = !activeTeam || d.team.includes(activeTeam);
+    const productMatch = product === "Todos los productos" || d.tags.includes(product);
+    const estadoMatch = estado === "Persona asignada" || d.team.includes(estado);
+    const searchMatch = !search || d.title.toLowerCase().includes(search.toLowerCase());
+    return typeMatch && teamMatch && productMatch && estadoMatch && searchMatch;
+  });
+
+  const s = {
+    panel:     dk ? "bg-gray-900 border-gray-800" : "bg-white border-gray-200",
+    div:       dk ? "border-gray-800" : "border-gray-100",
+    p1:        dk ? "text-gray-100" : "text-gray-900",
+    p2:        dk ? "text-gray-400" : "text-gray-500",
+    muted:     dk ? "text-gray-600" : "text-gray-400",
+    navOn:     dk ? "text-green-500" : "text-green-700",
+    navOff:    dk ? "text-gray-400 hover:bg-gray-800" : "text-gray-600 hover:bg-gray-50",
+    input:     dk ? "bg-gray-800 border-gray-700 text-gray-200 placeholder-gray-500" : "bg-white border-gray-200 text-gray-900 placeholder-gray-400",
+    sel:       dk ? "bg-gray-800 border-gray-700 text-gray-200" : "bg-white border-gray-200 text-gray-700",
+    tHover:    dk ? "hover:bg-gray-800" : "hover:bg-gray-50",
+    emptyBox:  dk ? "bg-gray-800" : "bg-gray-100",
+  };
+
+  return (
+    <>
+      {/* MAIN */}
+      <main className="flex-1 overflow-y-auto">
+        <div className={`border-b py-5 sticky top-0 z-10 ${s.panel}`}><div style={{maxWidth:"1600px", margin:"0 auto", paddingLeft:"2rem", paddingRight:"2rem"}}>
+          <div className="flex items-center justify-between mb-5">
+            <div>
+              <h1 className={`text-2xl font-bold ${s.p1}`}>Todas las investigaciones</h1>
+              <p className={`text-base ${s.p2}`}>{filtered.length} investigaciones encontradas</p>
+            </div>
+            <button onClick={() => navigate("/añadir-investigacion")} className="flex items-center gap-2 px-4 py-2.5 text-white rounded-lg text-sm font-semibold" style={{backgroundColor:"#00B369"}}>
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              Añadir nueva
+            </button>
+          </div>
+          <div className="flex items-center gap-3 flex-wrap">
+            <div className="relative flex-1 min-w-0">
+              <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <input type="text" placeholder="Buscar entregables..." value={draftSearch}
+                onChange={e => setDraftSearch(e.target.value)}
+                onKeyDown={e => e.key === "Enter" && applyFilters()}
+                className={`w-full pl-10 pr-4 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent ${s.input}`} style={!dk ? {height:"40px", borderRadius:"8px", border:"1px solid #D5D7DA", background:"#FFF", boxShadow:"0 1px 2px 0 rgba(10,13,18,0.05)"} : {height:"40px", borderRadius:"8px", boxShadow:"0 1px 2px 0 rgba(10,13,18,0.05)"}} />
+            </div>
+
+            <CustomSelect dark={dk} value={draftFilter} onChange={v => setDraftFilter(v)} options={TYPES.map(f => ({ value: f, label: f }))} />
+            <CustomSelect dark={dk} value={draftProduct} onChange={v => setDraftProduct(v)} options={[{ value: "Todos los productos", label: "Todos los productos" }, ...PRODUCTS.map(p => ({ value: p, label: p }))]} />
+            <CustomSelect dark={dk} value={draftEstado} onChange={v => setDraftEstado(v)} options={ESTADOS.map(e => ({ value: e, label: e }))} />
+
+            <button onClick={applyFilters}
+              className="flex items-center gap-2 px-4 py-2.5 text-white rounded-lg text-sm font-semibold flex-shrink-0" style={{backgroundColor:"#00B369"}}>
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z" />
+              </svg>
+              Filtrar
+            </button>
+          </div>
+        </div></div>
+
+        <div style={{maxWidth:"1600px", margin:"0 auto", width:"100%", paddingLeft:"2rem", paddingRight:"2rem", paddingTop:"1.75rem", paddingBottom:"1.75rem"}}>
+          {filtered.length > 0
+            ? <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+                {filtered.map(item => <Card key={item.id} item={item} dark={dk} />)}
+              </div>
+            : <div className="flex flex-col items-center justify-center py-28 text-center">
+                <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-4 ${s.emptyBox}`}>
+                  <svg className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                </div>
+                <p className={`text-xl font-semibold mb-1 ${s.p1}`}>Sin resultados</p>
+                <p className={`text-base ${s.p2}`}>Intenta con otros términos de búsqueda.</p>
+              </div>
+          }
+        </div>
+      </main>
+    </>
+  );
+}
+
+// ── SIDEBAR (shared) ──
+function Sidebar({ onSettings }) {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { dark: dk, setDark } = useApp();
+  const [pinned, setPinned] = useState(false);
+  const [hovered, setHovered] = useState(false);
+  const expanded = pinned || hovered;
+
+  const s = {
+    panel:   dk ? "bg-gray-900 border-gray-800" : "bg-white border-gray-200",
+    div:     dk ? "border-gray-800" : "border-gray-100",
+    p1:      dk ? "text-gray-100" : "text-gray-900",
+    p2:      dk ? "text-gray-400" : "text-gray-500",
+    muted:   dk ? "text-gray-600" : "text-gray-400",
+    navOn:   dk ? "text-green-500" : "text-green-700",
+    navOff:  dk ? "text-gray-400 hover:bg-gray-800 hover:text-gray-200" : "text-gray-500 hover:bg-gray-50 hover:text-gray-800",
+    tHover:  dk ? "hover:bg-gray-800" : "hover:bg-gray-50",
+    pinBtn:  dk ? "text-gray-500 hover:text-gray-300 hover:bg-gray-800" : "text-gray-400 hover:text-gray-700 hover:bg-gray-100",
+    helpBox: dk ? "bg-gray-800 border-gray-700" : "bg-gray-50 border-gray-200",
+  };
+
+  const width = expanded ? 272 : 64;
+
+  return (
+    <aside
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      className={`flex flex-col flex-shrink-0 border-r overflow-hidden ${s.panel}`}
+      style={{ width, transition: "width 200ms ease" }}
+    >
+      {/* Header */}
+      <div className={`flex items-center border-b flex-shrink-0 ${s.div} ${expanded ? "px-4 py-4 justify-between" : "px-3 py-4 justify-center"}`}>
+        {expanded ? (
+          <>
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{backgroundColor:"#00B369"}}>
+                <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+<path d="M11.9995 12.0001H12.0095M15.535 15.5357C10.8488 20.222 5.46685 22.438 3.51423 20.4854C1.56161 18.5328 3.77769 13.1509 8.46398 8.46461C13.1503 3.77832 18.5322 1.56224 20.4848 3.51486C22.4374 5.46748 20.2213 10.8494 15.535 15.5357ZM15.535 8.46443C20.2213 13.1507 22.4374 18.5326 20.4848 20.4852C18.5321 22.4379 13.1502 20.2218 8.46394 15.5355C3.77765 10.8492 1.56157 5.4673 3.51419 3.51468C5.46681 1.56206 10.8487 3.77814 15.535 8.46443ZM12.4995 12.0001C12.4995 12.2763 12.2757 12.5001 11.9995 12.5001C11.7234 12.5001 11.4995 12.2763 11.4995 12.0001C11.4995 11.724 11.7234 11.5001 11.9995 11.5001C12.2757 11.5001 12.4995 11.724 12.4995 12.0001Z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>                </svg>
+              </div>
+              <div className="overflow-hidden">
+                <p className={`text-base font-bold whitespace-nowrap ${s.p1}`}>AtomicRepo</p>
+                <p className={`text-sm whitespace-nowrap ${s.p2}`}>Investigaciones</p>
+              </div>
+            </div>
+            <button
+              onClick={() => setPinned(!pinned)}
+              title={pinned ? "Desfijar sidebar" : "Fijar sidebar"}
+              className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${pinned ? (dk ? "text-green-500" : "text-green-700") : s.pinBtn}`}
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 20 20" stroke="currentColor">
+                <path d="M7.5 2.5V17.5M6.5 2.5H13.5C14.9001 2.5 15.6002 2.5 16.135 2.77248C16.6054 3.01217 16.9878 3.39462 17.2275 3.86502C17.5 4.3998 17.5 5.09987 17.5 6.5V13.5C17.5 14.9001 17.5 15.6002 17.2275 16.135C16.9878 16.6054 16.6054 16.9878 16.135 17.2275C15.6002 17.5 14.9001 17.5 13.5 17.5H6.5C5.09987 17.5 4.3998 17.5 3.86502 17.2275C3.39462 16.9878 3.01217 16.6054 2.77248 16.135C2.5 15.6002 2.5 14.9001 2.5 13.5V6.5C2.5 5.09987 2.5 4.3998 2.77248 3.86502C3.01217 3.39462 3.39462 3.01217 3.86502 2.77248C4.3998 2.5 5.09987 2.5 6.5 2.5Z" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </button>
+          </>
+        ) : (
+          <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{backgroundColor:"#00B369"}}>
+            <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+<path d="M11.9995 12.0001H12.0095M15.535 15.5357C10.8488 20.222 5.46685 22.438 3.51423 20.4854C1.56161 18.5328 3.77769 13.1509 8.46398 8.46461C13.1503 3.77832 18.5322 1.56224 20.4848 3.51486C22.4374 5.46748 20.2213 10.8494 15.535 15.5357ZM15.535 8.46443C20.2213 13.1507 22.4374 18.5326 20.4848 20.4852C18.5321 22.4379 13.1502 20.2218 8.46394 15.5355C3.77765 10.8492 1.56157 5.4673 3.51419 3.51468C5.46681 1.56206 10.8487 3.77814 15.535 8.46443ZM12.4995 12.0001C12.4995 12.2763 12.2757 12.5001 11.9995 12.5001C11.7234 12.5001 11.4995 12.2763 11.4995 12.0001C11.4995 11.724 11.7234 11.5001 11.9995 11.5001C12.2757 11.5001 12.4995 11.724 12.4995 12.0001Z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>            </svg>
+          </div>
+        )}
+      </div>
+
+      {/* Nav */}
+      <nav className={`flex-1 py-4 space-y-0.5 overflow-y-auto overflow-x-hidden ${expanded ? "px-3" : "px-2"}`}>
+        {/* Inicio */}
+        <button title={!expanded ? "Inicio" : undefined} onClick={() => navigate("/")}
+          className={`w-full flex items-center rounded-lg font-medium ${expanded ? "gap-3 px-3 py-2.5 text-base" : "justify-center py-2.5"} ${location.pathname === "/" ? s.navOn : s.navOff}`}>
+          <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
+          {expanded && <span className="whitespace-nowrap">Inicio</span>}
+        </button>
+
+        {NAV.map(item => {
+          const isActive = location.pathname.startsWith("/investigaciones");
+          return (
+          <button key={item.label} title={!expanded ? item.label : undefined}
+            onClick={() => navigate("/investigaciones")}
+            className={`w-full flex items-center rounded-lg font-medium ${expanded ? "gap-3 px-3 py-2.5 text-base" : "justify-center py-2.5"} ${isActive ? s.navOn : s.navOff}`}>
+            <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d={item.icon} />
+            </svg>
+            {expanded && <span className="whitespace-nowrap overflow-hidden">{item.label}</span>}
+          </button>);
+        })}
+
+        {/* Productos */}
+        <div className={expanded ? "pt-3" : "pt-3"}>
+          {expanded && <p className={`px-3 pb-2 text-xs font-semibold uppercase tracking-wider whitespace-nowrap ${s.muted}`}>Productos</p>}
+          {PRODUCTS.map(product => {
+            const isActive = location.pathname === `/producto/${encodeURIComponent(product)}`;
+            const pc = PRODUCT_COLORS[product] || "#00B369";
+            return (
+              <button key={product} title={!expanded ? product : undefined}
+                onClick={() => navigate(`/producto/${encodeURIComponent(product)}`)}
+                className={`w-full flex items-center rounded-lg font-medium ${expanded ? "gap-3 px-3 py-2.5 text-base" : "justify-center py-2.5"} ${isActive ? s.navOn : s.navOff}`}>
+                <div className="w-5 h-5 flex-shrink-0 flex items-center justify-center">
+                  <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: pc }} />
+                </div>
+                {expanded && <span className="whitespace-nowrap overflow-hidden">{product}</span>}
+              </button>
+            );
+          })}
+        </div>
+      </nav>
+
+      {/* Bottom */}
+      <div className={`border-t flex-shrink-0 ${s.div} ${expanded ? "px-3 py-4 space-y-1" : "px-2 py-4 space-y-1"}`}>
+
+
+        {/* Configuración */}
+        <button title={!expanded ? "Configuración" : undefined}
+          onClick={() => onSettings()}
+          className={`w-full flex items-center rounded-lg ${expanded ? "gap-3 px-3 py-2.5 text-base" : "justify-center py-2.5"} ${s.navOff}`}>
+          <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3" strokeWidth={1.8}/></svg>
+          {expanded && <span className="whitespace-nowrap">Configuración</span>}
+        </button>
+
+        {/* Modo oscuro/claro */}
+        <button title={!expanded ? (dk ? "Cambiar a modo claro" : "Cambiar a modo oscuro") : undefined}
+          onClick={() => setDark(!dk)}
+          className={`w-full flex items-center rounded-lg ${expanded ? "gap-3 px-3 py-2.5 text-base justify-between" : "justify-center py-2.5"} ${s.navOff}`}>
+          <div className={`flex items-center ${expanded ? "gap-3" : ""}`}>
+            {dk
+              ? <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M12 3v1m0 16v1m8.66-9H21M3 12H2m15.36-6.36l-.71.71M7.05 16.95l-.71.71M18.36 18.36l-.71-.71M6.34 6.34l-.71-.71M17 12a5 5 0 11-10 0 5 5 0 0110 0z" /></svg>
+              : <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" /></svg>
+            }
+            {expanded && <span className="whitespace-nowrap">{dk ? "Modo claro" : "Modo oscuro"}</span>}
+          </div>
+          {expanded && (
+            <div className={`w-8 h-4 rounded-full flex items-center px-0.5 flex-shrink-0 ${dk ? "justify-end" : "justify-start"}`} style={{backgroundColor: dk ? "#00B369" : "#e5e7eb"}}> 
+              <div className="w-3 h-3 bg-white rounded-full shadow-sm" />
+            </div>
+          )}
+        </button>
+
+      </div>
+    </aside>
+  );
+}
+
+// ── ROOT ──
+// ── EDIT PAGE ──
+function EditPage() {
+  const navigate = useNavigate();
+  const { id } = useParams();
+  const { dark: d, deliverables, handleUpdate, showToast } = useApp();
+  const item = deliverables.find(x => x.id === Number(id));
+
+  if (!item) return <div className={`flex-1 flex items-center justify-center ${d ? "bg-gray-950 text-gray-400" : "bg-gray-50 text-gray-500"}`}>Investigación no encontrada.</div>;
+
+  const today = new Date().toLocaleDateString("es-PE", { day: "2-digit", month: "short", year: "numeric" }).replace(".", "");
+  const [form, setForm] = useState({ ...item });
+  const [personaTab, setPersonaTab] = useState(0);
+  const [jiraLoading, setJiraLoading] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [jiraError, setJiraError] = useState("");
+  const pdfInputRef = useRef(null);
+
+  const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
+  const setType = (t) => {
+    if (PERSONA_TYPES.includes(t)) {
+      setForm(f => ({ ...f, type: t, personas: f.personas?.length ? f.personas : [t === "Buyer Persona" ? EMPTY_BUYER() : EMPTY_USER()] }));
+      setPersonaTab(0);
+    } else {
+      setForm(f => ({ ...f, type: t, personas: [] }));
+    }
+  };
+  const setPersonaField = (idx, field, val) => setForm(f => ({ ...f, personas: f.personas.map((p, i) => i === idx ? { ...p, [field]: val } : p) }));
+  const addPersona = () => { const empty = form.type === "Buyer Persona" ? EMPTY_BUYER() : EMPTY_USER(); setForm(f => ({ ...f, personas: [...f.personas, empty] })); setPersonaTab(form.personas.length); };
+  const removePersona = (idx) => { setForm(f => ({ ...f, personas: f.personas.filter((_, i) => i !== idx) })); setPersonaTab(t => Math.max(0, t - (idx <= t ? 1 : 0))); };
+  const toggleArr = (k, v) => setForm(f => ({ ...f, [k]: f[k].includes(v) ? f[k].filter(x => x !== v) : [...f[k], v] }));
+
+  const handleJiraUrl = async (url) => {
+    set("jiraUrl", url); setJiraError("");
+    const match = url.match(/\/browse\/([A-Z]+-\d+)/i);
+    if (!match) return;
+    const key = match[1].toUpperCase(); set("jira", key);
+    const cfg = loadJiraConfig();
+    if (!cfg.email || !cfg.token) { setJiraError("Configura tus credenciales en Configuración del menú."); return; }
+    const base = (cfg.baseUrl || url.split("/browse/")[0]).replace(/\/$/, "");
+    setJiraLoading(true);
+    try {
+      const auth = btoa(`${cfg.email.trim()}:${cfg.token.trim()}`);
+      const res = await fetch(`/api/jira/${key}`, { headers: { "x-jira-base": base, "x-jira-auth": auth } });
+      const data = await res.json();
+      if (!res.ok || data.error) throw new Error(data.errorMessages?.[0] || data.error || `HTTP ${res.status}`);
+      set("jira", `${key}: ${data.fields.summary}`); setJiraError("");
+    } catch (e) { setJiraError(`No se pudo obtener el ticket (${e.message}).`); }
+    finally { setJiraLoading(false); }
+  };
+
+  const handleSave = () => {
+    if (saving || !form.title.trim()) return;
+    setSaving(true);
+    handleUpdate({ ...form, typeColor: TYPE_COLORS[form.type] || item.typeColor });
+    showToast({ title: "Investigación actualizada", subtitle: "Los cambios se han guardado correctamente." });
+    navigate(`/investigacion/${toSlug(form.title)}`);
+  };
+
+  const inp = `w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 ${d ? "bg-gray-800 border-gray-700 text-gray-200 placeholder-gray-500" : "bg-white border-gray-300 text-gray-900 placeholder-gray-400"}`;
+  const lbl = `block text-xs font-semibold mb-1 ${d ? "text-gray-400" : "text-gray-600"}`;
+  const sec = `rounded-xl border p-4 ${d ? "bg-gray-900 border-gray-700" : "bg-gray-50 border-gray-200"}`;
+
+  return (
+    <div className={`flex-1 overflow-y-auto ${d ? "bg-gray-950" : "bg-gray-50"}`}>
+      <div style={{ maxWidth: "1200px", margin: "0 auto", paddingLeft: "2rem", paddingRight: "2rem", paddingTop: "2rem", paddingBottom: "4rem" }}>
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <button onClick={() => navigate(-1)} className={`flex items-center gap-2 text-sm font-medium mb-2 ${d ? "text-gray-400 hover:text-gray-200" : "text-gray-500 hover:text-gray-900"}`}>
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+              Volver
+            </button>
+            <h1 className={`text-2xl font-bold ${d ? "text-gray-100" : "text-gray-900"}`}>Editar investigación</h1>
+          </div>
+          <button onClick={handleSave} disabled={!form.title.trim()} className="flex items-center gap-2 px-4 py-2.5 text-white rounded-lg text-sm font-semibold disabled:opacity-40" style={{ backgroundColor: "#00B369" }}>
+            Guardar cambios
+          </button>
+        </div>
+
+        <div className={`rounded-2xl border p-6 space-y-5 ${d ? "bg-gray-900 border-gray-700" : "bg-white border-gray-200"}`}>
+          <div><label className={lbl}>Título <span className="text-green-500">*</span></label><input className={inp} value={form.title} onChange={e => set("title", e.target.value)} /></div>
+          <div className="grid grid-cols-2 gap-4">
+            <div><label className={lbl}>Tipo de entregable</label><select className={inp} value={form.type} onChange={e => setType(e.target.value)}>{TYPES.slice(1).map(t => <option key={t}>{t}</option>)}</select></div>
+            <div><label className={lbl}>Metodología</label><select className={inp} value={form.metodologia} onChange={e => set("metodologia", e.target.value)}><option value="" disabled>Seleccione</option>{METODOLOGIAS.map(m => <option key={m}>{m}</option>)}</select></div>
+          </div>
+          <div className={sec}>
+            <label className={lbl}>Link de Jira</label>
+            <div className="relative mb-3">
+              <input className={inp} type="url" placeholder="https://empresa.atlassian.net/browse/UX-0000" value={form.jiraUrl || ""} onChange={e => handleJiraUrl(e.target.value)} />
+              {jiraLoading && <div className="absolute right-3 top-1/2 -translate-y-1/2"><svg className="w-4 h-4 animate-spin text-green-500" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg></div>}
+            </div>
+            {jiraError && <p className="mb-2 text-xs text-amber-500">{jiraError}</p>}
+            {form.jira && !jiraLoading && (
+              <div className={`rounded-lg border p-3 ${d ? "bg-gray-800 border-gray-600" : "bg-white border-gray-200"}`}>
+                <p className={`text-sm font-semibold ${d ? "text-gray-100" : "text-gray-800"}`}>{form.jira}</p>
+                <button type="button" onClick={() => { set("jira", ""); set("jiraStatus", ""); set("jiraUrl", ""); }} className={`mt-2 text-xs ${d ? "text-gray-500 hover:text-gray-300" : "text-gray-400 hover:text-gray-600"}`}>Cambiar ticket</button>
+              </div>
+            )}
+          </div>
+          <div>
+            <label className={lbl}>Producto</label>
+            <div className="flex flex-wrap gap-2 mt-1">
+              {PRODUCTS.map(p => <button key={p} type="button" onClick={() => set("tags", form.tags.includes(p) ? [] : [p])} className={`px-3 py-1 rounded-full text-sm border font-medium transition-colors ${form.tags.includes(p) ? "border-green-500 text-green-600 bg-green-50" : (d ? "border-gray-700 text-gray-400 hover:border-gray-500" : "border-gray-300 text-gray-500 hover:border-gray-400")}`}>{p}</button>)}
+            </div>
+          </div>
+          <div>
+            <label className={lbl}>Persona asignada <span className={`font-normal ${d ? "text-gray-600" : "text-gray-400"}`}>— máx. 2</span></label>
+            <div className="flex flex-wrap gap-2 mt-1">
+              {TEAM_MEMBERS.map((name, i) => { const selected = form.team.includes(name); const maxReached = form.team.length >= 2 && !selected; return <button key={name} type="button" onClick={() => !maxReached && toggleArr("team", name)} className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm border font-medium transition-colors ${selected ? "border-green-500 text-green-600 bg-green-50" : maxReached ? (d ? "border-gray-800 text-gray-600 cursor-not-allowed" : "border-gray-200 text-gray-300 cursor-not-allowed") : (d ? "border-gray-700 text-gray-400 hover:border-gray-500" : "border-gray-300 text-gray-500 hover:border-gray-400")}`}><Avatar name={name} index={i} dark={d} />{name}</button>; })}
+            </div>
+          </div>
+          <div><label className={lbl}>Descripción corta</label><textarea className={`${inp} resize-none`} rows={2} value={form.descripcion || ""} onChange={e => set("descripcion", e.target.value)} /></div>
+          <div><label className={lbl}>Objetivo del research</label><RichEditor dark={d} value={form.objetivo} onChange={v => set("objetivo", v)} placeholder="¿Qué se busca lograr?" /></div>
+          <div><label className={lbl}>Usuario</label><RichEditor dark={d} value={form.usuario} onChange={v => set("usuario", v)} placeholder="Perfil de los usuarios" /></div>
+          <div><label className={lbl}>Hallazgos y conclusiones</label><RichEditor dark={d} value={form.hallazgos} onChange={v => set("hallazgos", v)} placeholder="Principales hallazgos" /></div>
+          {PERSONA_TYPES.includes(form.type) && form.personas && form.personas.length > 0 && (
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <label className={lbl}>Personas</label>
+                {form.personas.length < 3 && <button type="button" onClick={addPersona} className={`flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-lg border ${d ? "border-gray-700 text-gray-300 hover:bg-gray-800" : "border-gray-300 text-gray-600 hover:bg-gray-50"}`}><svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/></svg>Añadir persona</button>}
+              </div>
+              <div className={`flex border-b mb-4 ${d ? "border-gray-700" : "border-gray-200"}`}>
+                {form.personas.map((p, i) => <div key={i} className="flex items-center"><button type="button" onClick={() => setPersonaTab(i)} className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${personaTab === i ? "border-green-500 text-green-600" : d ? "border-transparent text-gray-400 hover:text-gray-200" : "border-transparent text-gray-500 hover:text-gray-800"}`}>{p.nombre || `Persona ${i + 1}`}</button>{form.personas.length > 1 && <button type="button" onClick={() => removePersona(i)} className={`-ml-1 mb-px w-4 h-4 flex items-center justify-center text-xs ${d ? "text-gray-600 hover:text-gray-300" : "text-gray-300 hover:text-gray-600"}`}>✕</button>}</div>)}
+              </div>
+              {(() => {
+                const p = form.personas[personaTab];
+                const fi = (field, placeholder) => <input className={inp} placeholder={placeholder} value={p[field] || ""} onChange={e => setPersonaField(personaTab, field, e.target.value)} />;
+                const group = (title, children) => <div className={`rounded-xl border p-4 ${d ? "bg-gray-900 border-gray-700" : "bg-gray-50 border-gray-200"}`}><p className={`text-xs font-bold uppercase tracking-wider mb-3 ${d ? "text-gray-500" : "text-gray-400"}`}>{title}</p><div className="space-y-3">{children}</div></div>;
+                return (
+                  <div className="space-y-4">
+                    <div><label className={lbl}>Nombre</label>{fi("nombre", "Nombre de la persona")}</div>
+                    {group("Información personal", <><div className="grid grid-cols-2 gap-3"><div><label className={lbl}>Cargo</label>{fi("cargo","Cargo o rol")}</div><div><label className={lbl}>Edad</label>{fi("edad","Ej: 35 años")}</div></div><div><label className={lbl}>Ubicación</label>{fi("ubicacion","Ciudad / País")}</div><div><label className={lbl}>Nivel tecnológico</label>{fi("nivelTec","Básico / Medio / Avanzado")}</div><div><label className={lbl}>Herramientas usadas</label>{fi("herramientas","Excel, Slack, etc.")}</div></>)}
+                    {group("Sobre el negocio", form.type === "Buyer Persona" ? <><div><label className={lbl}>Rubro</label>{fi("rubro","Sector o industria")}</div><div className="grid grid-cols-2 gap-3"><div><label className={lbl}>Cantidad de personal</label>{fi("personal","Ej: 10-50 empleados")}</div><div><label className={lbl}>Tiempo de apertura</label>{fi("tiempoApertura","Ej: 5 años")}</div></div><div><label className={lbl}>Metas a futuro</label><RichEditor dark={d} value={p.metas || ""} onChange={v => setPersonaField(personaTab, "metas", v)} placeholder="Metas y objetivos a futuro..." /></div></> : <><div><label className={lbl}>Rubro</label>{fi("rubro","Sector o industria")}</div><div><label className={lbl}>Tiempo en el negocio</label>{fi("tiempoNegocio","Ej: 3 años")}</div></>)}
+                    {form.type === "Buyer Persona" && <>{group("Adquisición del producto", <><RichEditor dark={d} value={p.adquisicion || ""} onChange={v => setPersonaField(personaTab, "adquisicion", v)} placeholder="Razones de adquisición, problemas que busca resolver..." /></>)}{group("Comunicaciones", <><RichEditor dark={d} value={p.comunicaciones || ""} onChange={v => setPersonaField(personaTab, "comunicaciones", v)} placeholder="Canal de descubrimiento, primer contacto, canales de comunicación..." /></>)}</>}
+                    {form.type === "User Persona" && <>{group("Objetivos y metas", <><RichEditor dark={d} value={p.objetivos || ""} onChange={v => setPersonaField(personaTab, "objetivos", v)} placeholder="Objetivos y metas del usuario..." /></>)}{group("Frustraciones y dolores", <><RichEditor dark={d} value={p.dolores || ""} onChange={v => setPersonaField(personaTab, "dolores", v)} placeholder="Frustraciones y dolores del usuario..." /></>)}</>}
+                  </div>
+                );
+              })()}
+            </div>
+          )}
+          <div><label className={lbl}>Estado</label><select className={inp} value={form.status} onChange={e => set("status", e.target.value)}>{STATUSES.map(s => <option key={s}>{s}</option>)}</select></div>
+          <div><label className={lbl}>Link de Google Drive</label><input className={inp} type="url" value={form.archivoUrl || ""} onChange={e => set("archivoUrl", e.target.value)} /></div>
+          <div>
+            <label className={lbl}>Subir PDF</label>
+            {form.pdfName ? (
+              <div className={`flex items-center gap-3 px-4 py-3 rounded-xl border ${d ? "border-green-700 bg-green-900/20" : "border-green-300 bg-green-50"}`}>
+                <svg className={`w-5 h-5 flex-shrink-0 ${d ? "text-green-400" : "text-green-600"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                <span className={`text-sm font-medium truncate flex-1 ${d ? "text-green-300" : "text-green-700"}`}>{form.pdfName}</span>
+                <button type="button" onClick={() => { set("pdfData", ""); set("pdfName", ""); }} className={`flex-shrink-0 ${d ? "text-gray-500 hover:text-gray-300" : "text-gray-400 hover:text-gray-600"}`}><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button>
+              </div>
+            ) : (
+              <div onClick={() => pdfInputRef.current.click()} onDragEnter={e => { e.preventDefault(); e.stopPropagation(); setDragOver(true); }} onDragOver={e => { e.preventDefault(); e.stopPropagation(); setDragOver(true); }} onDragLeave={e => { e.preventDefault(); e.stopPropagation(); setDragOver(false); }} onDrop={e => { e.preventDefault(); e.stopPropagation(); setDragOver(false); const file = e.dataTransfer.files[0]; if (!file || file.type !== "application/pdf") return; set("pdfName", file.name); const reader = new FileReader(); reader.onload = ev => set("pdfData", ev.target.result); reader.readAsDataURL(file); }} className={`flex flex-col items-center justify-center gap-3 py-8 rounded-xl border-2 border-dashed cursor-pointer transition-colors ${dragOver ? (d ? "border-green-500 bg-green-900/20" : "border-green-400 bg-green-50") : (d ? "border-gray-700 hover:border-gray-500 bg-gray-800/40" : "border-gray-200 hover:border-gray-300 bg-white")}`}>
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${d ? "bg-gray-700" : "bg-gray-100"}`}><svg className={`w-6 h-6 ${d ? "text-gray-300" : "text-gray-500"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" /></svg></div>
+                <div className="text-center"><p className={`text-sm ${d ? "text-gray-300" : "text-gray-700"}`}><span className="font-semibold text-green-600">Click para subir</span> o arrastra y suelta</p><p className={`text-xs mt-0.5 ${d ? "text-gray-500" : "text-gray-400"}`}>PDF (máx. 10MB)</p></div>
+              </div>
+            )}
+            <input ref={pdfInputRef} type="file" accept="application/pdf" className="hidden" onChange={e => { const file = e.target.files[0]; if (!file) return; set("pdfName", file.name); const reader = new FileReader(); reader.onload = ev => set("pdfData", ev.target.result); reader.readAsDataURL(file); e.target.value = ""; }} />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Layout({ toast }) {
+  const { dark } = useApp();
+  const [showSettings, setShowSettings] = useState(false);
+  return (
+    <div className={`min-h-screen ${dark ? "bg-gray-950" : "bg-gray-50"}`} style={{ fontFamily: "'DM Sans', sans-serif" }}>
+      <Toast toast={toast} />
+      <div className="flex h-screen overflow-hidden">
+        {showSettings && <SettingsModal dark={dark} onClose={() => setShowSettings(false)} />}
+        <Sidebar onSettings={() => setShowSettings(true)} />
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/investigaciones" element={<ListPage />} />
+          <Route path="/investigacion/:id" element={<DetailPage />} />
+          <Route path="/producto/:slug" element={<ProductPage />} />
+          <Route path="/añadir-investigacion" element={<AddPage />} />
+          <Route path="/editar-investigacion/:id" element={<EditPage />} />
+        </Routes>
+      </div>
+      <style>{`
+        .line-clamp-2 { display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+      `}</style>
+    </div>
+  );
+}
+
+export default function App() {
+  const [dark, setDark] = useState(() => window.matchMedia("(prefers-color-scheme: dark)").matches);
+  const [deliverables, setDeliverables] = useState([]);
+  const [activeFilter, setActiveFilter] = useState({ type: "Tipo de entregable", team: null });
+
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    const handler = (e) => setDark(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
+
+  useEffect(() => {
+    fetch("/api/deliverables")
+      .then(r => r.json())
+      .then(saved => setDeliverables(saved))
+      .catch(() => {});
+  }, []);
+
+  const handleAdd = (item) => {
+    setDeliverables(prev => prev.some(d => d.id === item.id) ? prev : [item, ...prev]);
+    fetch("/api/deliverables", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(item),
+    }).catch(() => {});
+  };
+
+  const handleDelete = (id) => {
+    setDeliverables(prev => prev.filter(d => d.id !== id));
+    fetch(`/api/deliverables/${id}`, { method: "DELETE" }).catch(() => {});
+  };
+
+  const handleUpdate = (item) => {
+    setDeliverables(prev => prev.map(d => d.id === item.id ? item : d));
+    fetch(`/api/deliverables/${item.id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(item),
+    }).catch(() => {});
+  };
+
+  const [toast, setToast] = useState(null);
+  const showToast = (msg, type = "success") => {
+    setToast({ msg, type });
+    setTimeout(() => setToast(null), 4000);
+  };
+
+  return (
+    <AppCtx.Provider value={{ dark, setDark, deliverables, activeFilter, setActiveFilter, handleAdd, handleUpdate, handleDelete, showToast }}>
+      <Layout toast={toast} />
+    </AppCtx.Provider>
+  );
+}

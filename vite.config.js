@@ -86,6 +86,51 @@ function localDb() {
           return res.end(JSON.stringify({ title: null }));
         }
 
+        // Figma oEmbed metadata
+        if (req.url.startsWith('/api/figma-thumb')) {
+          res.setHeader('Content-Type', 'application/json');
+          const qs = new URL(req.url, 'http://localhost').searchParams;
+          const figmaUrl = qs.get('url');
+          if (!figmaUrl) { res.writeHead(400); return res.end(JSON.stringify({ error: 'Missing url' })); }
+          const oembedPath = '/api/oembed?url=' + encodeURIComponent(figmaUrl);
+          const r = await new Promise((resolve, reject) => {
+            https.get({ hostname: 'www.figma.com', path: oembedPath, headers: { 'User-Agent': 'Mozilla/5.0', 'Accept': 'application/json' } }, (resp) => {
+              let d = ''; resp.on('data', c => d += c); resp.on('end', () => resolve({ status: resp.statusCode, body: d }));
+            }).on('error', reject);
+          });
+          if (r.status >= 300) { res.writeHead(r.status); return res.end(JSON.stringify({ error: 'Figma oEmbed failed' })); }
+          try { const data = JSON.parse(r.body); return res.end(JSON.stringify({ title: data.title || null, thumbnail_url: data.thumbnail_url || null })); }
+          catch { res.writeHead(500); return res.end(JSON.stringify({ error: 'Parse error' })); }
+        }
+
+        // Figma image proxy
+        if (req.url.startsWith('/api/figma-img')) {
+          const qs = new URL(req.url, 'http://localhost').searchParams;
+          const figmaUrl = qs.get('url');
+          if (!figmaUrl) { res.writeHead(400); res.setHeader('Content-Type', 'application/json'); return res.end(JSON.stringify({ error: 'Missing url' })); }
+          const oembedPath = '/api/oembed?url=' + encodeURIComponent(figmaUrl);
+          const oembedResp = await new Promise((resolve, reject) => {
+            https.get({ hostname: 'www.figma.com', path: oembedPath, headers: { 'User-Agent': 'Mozilla/5.0', 'Accept': 'application/json' } }, (resp) => {
+              let d = ''; resp.on('data', c => d += c); resp.on('end', () => resolve({ status: resp.statusCode, body: d }));
+            }).on('error', reject);
+          });
+          if (oembedResp.status >= 300) { res.writeHead(oembedResp.status); return res.end(''); }
+          let thumbUrl; try { thumbUrl = JSON.parse(oembedResp.body).thumbnail_url; } catch { res.writeHead(500); return res.end(''); }
+          if (!thumbUrl) { res.writeHead(404); return res.end(''); }
+          const parsed = new URL(thumbUrl);
+          await new Promise((resolve, reject) => {
+            https.get({ hostname: parsed.hostname, path: parsed.pathname + parsed.search, headers: { 'User-Agent': 'Mozilla/5.0', 'Accept': 'image/*' } }, (imgResp) => {
+              res.writeHead(imgResp.statusCode, {
+                'Content-Type': imgResp.headers['content-type'] || 'image/png',
+                'Cache-Control': 'public, max-age=3600',
+              });
+              imgResp.pipe(res);
+              imgResp.on('end', resolve);
+            }).on('error', reject);
+          });
+          return;
+        }
+
         // Cloudinary delete
         if (req.url === '/api/cloudinary/delete' && req.method === 'POST') {
           res.setHeader('Content-Type', 'application/json');
