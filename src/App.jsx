@@ -2512,7 +2512,7 @@ function HomePage() {
               onChange={e => setSearch(e.target.value)}
               onKeyDown={handleSearch}
               placeholder="Busca un research o producto..."
-              className="w-full pl-12 pr-4 sm:pr-28 py-4 text-sm rounded-2xl focus:outline-none focus:ring-2 focus:ring-green-400 bg-surface/80 text-primary placeholder-gray-500 border-gray-200 text-gray-900 placeholder-gray-400"
+              className="w-full pl-12 pr-4 sm:pr-28 py-4 text-sm rounded-2xl focus:outline-none focus:ring-2 focus:ring-green-400 bg-surface text-primary placeholder:text-muted"
               style={{ boxShadow: d ? "0 4px 24px rgba(0,0,0,0.3)" : "0 4px 24px rgba(0,0,0,0.08)" }}
             />
             <button
