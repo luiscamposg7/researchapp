@@ -36,11 +36,11 @@ function CustomSelect({ value, onChange, options, dark, fullWidth }) {
     <div ref={ref} className="relative" style={fullWidth ? {} : { width: 180, flexShrink: 0 }}>
       <button
         onClick={() => setOpen(!open)}
-        className={`w-full flex items-center justify-between pl-3.5 pr-3 text-sm font-medium rounded-lg cursor-pointer focus:outline-none focus:ring-2 focus:ring-green-400 ${dark ? "bg-surface border border text-primary" : "text-secondary"}`}
+        className={`w-full flex items-center justify-between pl-3.5 pr-3 text-sm font-medium rounded-lg cursor-pointer focus:outline-none focus:ring-2 focus:ring-green-400 ${dark ?"bg-surface border text-primary" :"text-secondary"}`}
         style={!dark ? { height:"40px", borderRadius:"8px", border:"1px solid #D5D7DA", background:"#FFF", boxShadow:"0 1px 2px 0 rgba(10,13,18,0.05)" } : { height:"40px", borderRadius:"8px", boxShadow:"0 1px 2px 0 rgba(10,13,18,0.05)" }}
       >
         <span className="truncate">{selected.label}</span>
-        <svg className={`w-4 h-4 flex-shrink-0 ml-2 transition-transform ${open ? "rotate-180" : ""} text-tertiary`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg className={`w-4 h-4 flex-shrink-0 ml-2 transition-transform ${open ?"rotate-180" :""} text-tertiary`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
         </svg>
       </button>
@@ -53,10 +53,7 @@ function CustomSelect({ value, onChange, options, dark, fullWidth }) {
             <li
               key={o.value}
               onClick={() => { onChange(o.value); setOpen(false); }}
-              className={`px-3.5 py-2 cursor-pointer ${value === o.value
-                ? (dark ? "bg-green-900/30 text-green-400" : "bg-green-50 text-green-700 font-medium")
-                : "hover:bg-hover"
-              }`}
+              className={`px-3.5 py-2 cursor-pointer ${value === o.value ? (dark ?"bg-green-900/30 text-green-400" :"bg-green-50 text-green-700 font-medium") :"hover:bg-hover" }`}
             >
               {o.label}
             </li>
@@ -406,11 +403,7 @@ function RichEditor({ onChange, placeholder, dark }) {
   const btn = (cmd, label, title) => (
     <button type="button" title={title}
       onMouseDown={e => { e.preventDefault(); exec(cmd); }}
-      className={`w-7 h-7 flex items-center justify-center rounded text-sm font-medium transition-colors ${
-        active[cmd === "insertUnorderedList" ? "ul" : cmd === "insertOrderedList" ? "ol" : cmd]
-          ? "bg-green-100 text-green-700"
-          : "text-tertiary hover:bg-active"
-      }`}>
+      className={`w-7 h-7 flex items-center justify-center rounded text-sm font-medium transition-colors ${ active[cmd ==="insertUnorderedList" ?"ul" : cmd ==="insertOrderedList" ?"ol" : cmd] ?"bg-green-100 text-green-700" :"text-tertiary hover:bg-active" }`}>
       {label}
     </button>
   );
@@ -539,7 +532,7 @@ function SettingsModal({ onClose, dark }) {
         <div className="px-6 py-5">
           {usersLoading ? (
             <div className="flex items-center justify-center py-12">
-              <div className="w-10 h-10 rounded-full border-4 border-gray-300 border-t-green-500 animate-spin" />
+              <div className="w-10 h-10 rounded-full -4 -gray-300 border-t-green-500 animate-spin" />
             </div>
           ) : (
             <div className="space-y-2">
@@ -556,7 +549,7 @@ function SettingsModal({ onClose, dark }) {
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
                           <p className="text-sm font-semibold truncate text-primary">{u.full_name || "—"}</p>
-                          {isSelf && <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${d ? "bg-green-900/50 text-green-400" : "bg-green-50 text-green-700"}`}>Tú</span>}
+                          {isSelf && <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${d ?"bg-green-900/50 text-green-400" :"bg-green-50 text-green-700"}`}>Tú</span>}
                         </div>
                         <p className="text-xs truncate text-tertiary">{u.email}</p>
                         {u.last_sign_in_at && (
@@ -573,7 +566,7 @@ function SettingsModal({ onClose, dark }) {
                         <select
                           value={currentRole ?? ""}
                           onChange={e => setPendingRoles(p => ({ ...p, [u.user_id]: e.target.value }))}
-                          className="text-xs font-semibold px-2 py-1.5 rounded-lg border border-strong focus:outline-none focus:ring-2 focus:ring-green-400 bg-active text-primary"
+                          className="text-xs font-semibold px-2 py-1.5 rounded-lg border-strong focus:outline-none focus:ring-2 focus:ring-green-400 bg-active text-primary"
                         >
                           {!u.role && <option value="" disabled>Sin acceso</option>}
                           <option value="visitor">Visitante</option>
@@ -582,9 +575,7 @@ function SettingsModal({ onClose, dark }) {
                         <button
                           onClick={() => handleRoleChange(u.user_id)}
                           disabled={!changed || rolesSaving[u.user_id]}
-                          className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors ${changed
-                            ? "bg-green-500 text-white hover:bg-green-600"
-                            : "bg-muted text-tertiary cursor-not-allowed"}`}
+                          className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors ${changed ?"bg-green-500 text-white hover:bg-green-600" :"bg-muted text-tertiary cursor-not-allowed"}`}
                         >
                           {rolesSaving[u.user_id] ? "..." : "Cambiar"}
                         </button>
@@ -823,12 +814,7 @@ function AddPage() {
                     key={i}
                     type="button"
                     onClick={() => select(cell.day, cell.cur)}
-                    className={`h-9 w-full flex items-center justify-center rounded-lg text-sm transition-colors
-                      ${sel ? "text-white font-semibold" : ""}
-                      ${!sel && cell.cur ? "text-secondary hover:bg-active" : ""}
-                      ${!cell.cur ? "text-muted hover:bg-hover" : ""}
-                      ${tod && !sel ? (d ? "font-semibold text-green-400" : "font-semibold text-green-600") : ""}
-                    `}
+                    className={`h-9 w-full flex items-center justify-center rounded-lg text-sm transition-colors ${sel ?"text-white font-semibold" :""} ${!sel && cell.cur ?"text-secondary hover:bg-active" :""} ${!cell.cur ?"text-muted hover:bg-hover" :""} ${tod && !sel ? (d ?"font-semibold text-green-400" :"font-semibold text-green-600") :""}`}
                     style={sel ? { backgroundColor: "#00B369" } : {}}
                   >
                     {cell.day}
@@ -991,10 +977,10 @@ function AddPage() {
                 </div>
                 {jiraError && <p className="mt-1 text-xs text-amber-500">{jiraError}</p>}
                 {form.jira && !jiraLoading && (
-                  <div className="mt-2 rounded-lg border p-3 bg-muted border-strong">
+                  <div className="mt-2 rounded-lg p-3 bg-muted border-strong">
                     <p className="text-xs font-semibold leading-snug text-primary">{form.jira}</p>
                     {form.jiraStatus && (
-                      <span className={`inline-block mt-1 text-xs font-bold px-2 py-0.5 rounded border ${/done|closed|resolved|finaliz|complet/i.test(form.jiraStatus) ? (d ? "text-green-400 border-green-700 bg-green-900/40" : "text-green-700 border-green-200 bg-green-50") : (d ? "text-blue-400 border-blue-700 bg-blue-900/40" : "text-blue-700 border-blue-200 bg-blue-50")}`}>{form.jiraStatus}</span>
+                      <span className={`inline-block mt-1 text-xs font-bold px-2 py-0.5 rounded ${/done|closed|resolved|finaliz|complet/i.test(form.jiraStatus) ? (d ?"text-green-400 -green-700 bg-green-900/40" :"text-green-700 -green-200 bg-green-50") : (d ?"text-blue-400 -blue-700 bg-blue-900/40" :"text-blue-700 border-blue-200 bg-blue-50")}`}>{form.jiraStatus}</span>
                     )}
                     <button type="button" onClick={() => { set("jira", ""); set("jiraStatus", ""); set("jiraUrl", ""); }} className="block mt-1.5 text-xs text-tertiary hover:text-secondary">Cambiar ticket</button>
                   </div>
@@ -1021,7 +1007,7 @@ function AddPage() {
                 )}
                 <Button type="button" color="secondary" disabled={imageUploading} className="flex items-center gap-2" onClick={() => setShowImagePicker(true)}>
                   {imageUploading
-                    ? <div className="w-4 h-4 rounded-full border-2 border-gray-300 border-t-green-500 animate-spin" />
+                    ? <div className="w-4 h-4 rounded-full -2 -gray-300 border-t-green-500 animate-spin" />
                     : <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                   }
                   Añadir imágenes
@@ -1066,10 +1052,10 @@ function AddPage() {
                     </Button>
                   )}
                 </div>
-                <div className="flex border-b mb-4 border">
+                <div className="flex border-b mb-4">
                   {form.personas.map((p, i) => (
                     <div key={i} className="flex items-center">
-                      <button type="button" onClick={() => setPersonaTab(i)} className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${personaTab === i ? "border-green-500 text-green-600" : d ? "border-transparent text-gray-400 hover:text-gray-200" : "border-transparent text-gray-500 hover:text-gray-800"}`}>
+                      <button type="button" onClick={() => setPersonaTab(i)} className={`px-4 py-2 text-sm font-medium -b-2 -mb-px transition-colors ${personaTab === i ?"-green-500 text-green-600" : d ?"-transparent text-gray-400 hover:text-gray-200" :"border-transparent text-gray-500 hover:text-gray-800"}`}>
                         {p.nombre || `Persona ${i + 1}`}
                       </button>
                       {form.personas.length > 1 && (
@@ -1090,7 +1076,7 @@ function AddPage() {
                   return (
                     <div className="space-y-4">
                       <div className="flex items-center gap-4">
-                        <div className={`w-20 h-20 rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center border-2 ${p.foto ? "border-green-500" : (d ? "border-gray-600" : "border-gray-200")}`}>
+                        <div className={`w-20 h-20 rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center -2 ${p.foto ?"-green-500" : (d ?"-gray-600" :"border-gray-200")}`}>
                           {p.foto ? <img src={p.foto} alt="Foto" className="w-full h-full object-cover" /> : <svg className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>}
                         </div>
                         <div className="space-y-1">
@@ -1141,11 +1127,11 @@ function AddPage() {
           <div className="space-y-4">
 
             {/* Estado + Acciones */}
-            <div className="rounded-2xl border p-5 space-y-4 bg-surface border">
+            <div className="rounded-2xl p-5 space-y-4 bg-surface border">
               <div className="flex items-center justify-between">
                 <SectionTitle>Estado</SectionTitle>
-                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${form.status === "Publicado" ? (d ? "bg-green-900/40 text-green-400 border-green-700" : "bg-green-50 text-green-700 border-green-200") : (d ? "bg-gray-800 text-gray-400 border-gray-600" : "bg-gray-100 text-gray-500 border-gray-300")}`}>
-                  <span className={`w-1.5 h-1.5 rounded-full ${form.status === "Publicado" ? "bg-green-500" : "bg-gray-400"}`} />
+                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${form.status ==="Publicado" ? (d ?"bg-green-900/40 text-green-400 -green-700" :"bg-green-50 text-green-700 -green-200") : (d ?"bg-gray-800 text-gray-400 -gray-600" :"bg-gray-100 text-gray-500 border-gray-300")}`}>
+                  <span className={`w-1.5 h-1.5 rounded-full ${form.status ==="Publicado" ?"bg-green-500" :"bg-gray-400"}`} />
                   {form.status}
                 </span>
               </div>
@@ -1164,18 +1150,18 @@ function AddPage() {
             </div>
 
             {/* Clasificación */}
-            <div className="rounded-2xl border p-5 space-y-4 bg-surface border">
+            <div className="rounded-2xl p-5 space-y-4 bg-surface border">
               <SectionTitle>Clasificación</SectionTitle>
               <div>
                 <label className={lbl}>Tipo de entregable <span className="text-green-500">*</span></label>
-                <select className={`${inp} ${d ? "dark-sel" : ""}`} value={form.type} onChange={e => setType(e.target.value)} style={!form.type ? { color: d ? "#6b7280" : "#9ca3af" } : {}}>
+                <select className={`${inp} ${d ?"dark-sel" :""}`} value={form.type} onChange={e => setType(e.target.value)} style={!form.type ? { color: d ? "#6b7280" : "#9ca3af" } : {}}>
                   <option value="" disabled>Seleccione</option>
                   {TYPES.slice(1).map(t => <option key={t}>{t}</option>)}
                 </select>
               </div>
               <div>
                 <label className={lbl}>Metodología</label>
-                <select className={`${inp} ${d ? "dark-sel" : ""}`} value={form.metodologia} onChange={e => set("metodologia", e.target.value)} style={!form.metodologia ? { color: d ? "#6b7280" : "#9ca3af" } : {}}>
+                <select className={`${inp} ${d ?"dark-sel" :""}`} value={form.metodologia} onChange={e => set("metodologia", e.target.value)} style={!form.metodologia ? { color: d ? "#6b7280" : "#9ca3af" } : {}}>
                   <option value="" disabled>Seleccione</option>
                   <option value="Sin especificar">Sin especificar</option>
                   {METODOLOGIAS.map(m => <option key={m}>{m}</option>)}
@@ -1183,14 +1169,14 @@ function AddPage() {
               </div>
               <div>
                 <label className={lbl}>Producto <span className="text-green-500">*</span></label>
-                <select className={`${inp} ${d ? "dark-sel" : ""}`} value={form.tags[0] || ""} onChange={e => set("tags", e.target.value ? [e.target.value] : [])} style={!form.tags[0] ? { color: d ? "#6b7280" : "#9ca3af" } : {}}>
+                <select className={`${inp} ${d ?"dark-sel" :""}`} value={form.tags[0] || ""} onChange={e => set("tags", e.target.value ? [e.target.value] : [])} style={!form.tags[0] ? { color: d ? "#6b7280" : "#9ca3af" } : {}}>
                   <option value="" disabled>Seleccione</option>
                   {PRODUCTS.map(p => <option key={p}>{p}</option>)}
                 </select>
               </div>
               <div>
                 <label className={lbl}>Persona asignada</label>
-                <select className={`${inp} ${d ? "dark-sel" : ""}`} value={form.team[0] || ""} onChange={e => set("team", e.target.value ? [e.target.value] : [])} style={!form.team[0] ? { color: d ? "#6b7280" : "#9ca3af" } : {}}>
+                <select className={`${inp} ${d ?"dark-sel" :""}`} value={form.team[0] || ""} onChange={e => set("team", e.target.value ? [e.target.value] : [])} style={!form.team[0] ? { color: d ? "#6b7280" : "#9ca3af" } : {}}>
                   <option value="">Seleccione</option>
                   {editors.map(n => <option key={n}>{n}</option>)}
                 </select>
@@ -1208,7 +1194,7 @@ function AddPage() {
 function CardSkeleton({ dark: d }) {
   const b = "bg-active";
   return (
-    <div className="rounded-xl border p-5 animate-pulse bg-surface border">
+    <div className="rounded-xl p-5 animate-pulse bg-surface border">
       <div className="flex gap-3 mb-4">
         <div className={`h-6 w-24 rounded-full ${b}`} />
         <div className={`h-6 w-16 rounded-full ${b}`} />
@@ -1239,7 +1225,7 @@ function ProductCard({ product: p, deliverables, coverUrl, dark: d, onClick }) {
   const usabilidad = all.filter(i => i.type === "Pruebas de usabilidad").length;
   return (
     <button onClick={onClick}
-      className="text-left rounded-xl border overflow-hidden transition-all group bg-surface hover:border-green-500 hover:shadow-md"
+      className="text-left rounded-xl overflow-hidden transition-all group bg-surface hover:border-green-500 hover:shadow-md"
       style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }}>
       <div className="h-20 w-full flex-shrink-0" style={{ backgroundColor: pc, backgroundImage: coverUrl ? `url(${coverUrl})` : undefined, backgroundSize: "cover", backgroundPosition: "center" }} />
       <div className="p-5">
@@ -1358,7 +1344,7 @@ function HeroGrid({ dark: d }) {
 function ProductCardSkeleton({ dark: d }) {
   const b = "bg-active";
   return (
-    <div className="rounded-xl border overflow-hidden animate-pulse bg-surface border">
+    <div className="rounded-xl overflow-hidden animate-pulse bg-surface border">
       <div className={`h-20 ${b}`} />
       <div className="p-5 space-y-3">
         <div className={`h-4 w-1/2 rounded-lg ${b}`} />
@@ -1378,7 +1364,7 @@ function Card({ item, dark, fromLabel }) {
   const pc = productTag ? (PRODUCT_COLORS[productTag] || "#00B369") : null;
 
   return (
-    <div onClick={() => navigate(`/research/${toSlug(item.title)}`, { state: { fromLabel } })} className="rounded-2xl border p-6 cursor-pointer group flex flex-col bg-surface hover:border-green-500 hover:shadow-md">
+    <div onClick={() => navigate(`/research/${toSlug(item.title)}`, { state: { fromLabel } })} className="rounded-2xl p-6 cursor-pointer group flex flex-col bg-surface hover:border-green-500 hover:shadow-md">
       <div className="flex items-start justify-between mb-4">
         <UIBadge color={getBadgeColor(item.typeColor)}>{item.type}</UIBadge>
         <span className="text-sm text-muted">{item.date}</span>
@@ -1386,7 +1372,7 @@ function Card({ item, dark, fromLabel }) {
       <h3 className="font-semibold text-lg leading-snug mb-3 text-primary group-hover:text-green-600">{item.title}</h3>
       <p className="text-base leading-relaxed mb-4 line-clamp-2 flex-1 text-tertiary">{item.descripcion || stripHtml(item.objetivo)}</p>
       <div className="flex flex-wrap gap-2 mb-5">
-        {item.tags.filter(tag => !PRODUCTS.includes(tag)).map(tag => <span key={tag} className="text-sm rounded-lg px-2.5 py-1 border text-tertiary bg-muted border">{tag}</span>)}
+        {item.tags.filter(tag => !PRODUCTS.includes(tag)).map(tag => <span key={tag} className="text-sm rounded-lg px-2.5 py-1 text-tertiary bg-muted border">{tag}</span>)}
       </div>
       <div className="flex items-center justify-between pt-4 border-t border-subtle">
         {(() => { const validTeam = (item.team || []).filter(n => editors.includes(n)); return validTeam.length ? (
@@ -1401,7 +1387,7 @@ function Card({ item, dark, fromLabel }) {
           </div>
         ); })()}
         {productTag && pc && (
-          <span className="text-sm rounded-lg px-2.5 py-1 border flex items-center gap-1.5 text-secondary bg-muted border">
+          <span className="text-sm rounded-lg px-2.5 py-1 flex items-center gap-1.5 text-secondary bg-muted border">
             <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: pc }} />
             {productTag}
           </span>
@@ -1423,7 +1409,7 @@ function PersonaDetailTabs({ personas, type, dark: d }) {
 
   const FieldCard = ({ label, value, description }) =>
     value ? (
-      <div className="py-2 border-b border">
+      <div className="py-2 border-b">
         <p className="text-xs mb-0.5 text-muted">{label}</p>
         <p className="text-sm font-semibold leading-snug text-primary">{value}</p>
         {description && <p className="text-xs mt-1 leading-snug text-tertiary">{description}</p>}
@@ -1432,7 +1418,7 @@ function PersonaDetailTabs({ personas, type, dark: d }) {
 
   const NivelCard = () =>
     p.nivelTec ? (
-      <div className="py-2 border-b border">
+      <div className="py-2 border-b">
         <p className="text-xs mb-0.5 text-muted">Nivel tecnológico</p>
         <p className="text-sm font-semibold mb-1.5 text-primary">{p.nivelTec}</p>
         {nivelPct && (
@@ -1452,14 +1438,14 @@ function PersonaDetailTabs({ personas, type, dark: d }) {
 
   const ContentCard = ({ title, description }) =>
     title ? (
-      <div className="rounded-lg p-4 border bg-surface border">
+      <div className="rounded-lg p-4 bg-surface border">
         <p className="text-sm font-bold leading-snug text-primary">{title}</p>
         {description && <p className="text-sm mt-1.5 leading-snug text-tertiary">{description}</p>}
       </div>
     ) : null;
 
   const SideSection = ({ title, children }) => (
-    <div className="rounded-xl border overflow-hidden border">
+    <div className="rounded-xl overflow-hidden border">
       <div className="px-3 py-2" style={{ backgroundColor: bannerColor }}>
         <p className="text-white font-bold text-sm">{title}</p>
       </div>
@@ -1468,15 +1454,13 @@ function PersonaDetailTabs({ personas, type, dark: d }) {
   );
 
   return (
-    <div className="rounded-2xl border p-5 bg-surface border">
+    <div className="rounded-2xl p-5 bg-surface border">
       {/* Persona tabs */}
       {personas.length > 1 && (
-        <div className="flex border-b mb-4 border">
+        <div className="flex border-b mb-4">
           {personas.map((persona, i) => (
             <button key={i} onClick={() => setTab(i)}
-              className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
-                tab === i ? "border-green-500 text-green-600" : d ? "border-transparent text-gray-400 hover:text-gray-200" : "border-transparent text-gray-500 hover:text-gray-800"
-              }`}>
+              className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${ tab === i ?"-green-500 text-green-600" : d ?"-transparent text-gray-400 hover:text-gray-200" :"border-transparent text-gray-500 hover:text-gray-800" }`}>
               {persona.nombre || `Persona ${i + 1}`}
             </button>
           ))}
@@ -1516,7 +1500,7 @@ function PersonaDetailTabs({ personas, type, dark: d }) {
                 <FieldCard label="Cantidad de personal" value={p.personal} />
                 <FieldCard label="Tiempo de apertura" value={p.tiempoApertura} />
                 {p.metas && (
-                  <div className="py-2 border-b border">
+                  <div className="py-2 border-b">
                     <p className="text-xs mb-0.5 text-muted">Metas a futuro</p>
                     <div className="rich-content text-sm leading-snug text-primary" dangerouslySetInnerHTML={{ __html: sanitizeHtml(p.metas) }} />
                   </div>
@@ -1575,15 +1559,13 @@ function Toast({ toast }) {
   if (!toast) return null;
   return (
     <div className="fixed top-5 right-5 z-[100]">
-      <div className={`flex items-start gap-3 px-4 py-3.5 rounded-xl shadow-xl border max-w-sm ${
-        "bg-surface border text-primary"
-      }`} style={{ boxShadow: "0 8px 32px rgba(0,0,0,0.18)" }}>
+      <div className={`flex items-start gap-3 px-4 py-3.5 rounded-xl shadow-xl border max-w-sm ${"bg-surface border text-primary" }`} style={{ boxShadow: "0 8px 32px rgba(0,0,0,0.18)" }}>
         {toast.type === "success" ? (
-          <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${d ? "bg-green-900/60" : "bg-green-100"}`}>
+          <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${d ?"bg-green-900/60" :"bg-green-100"}`}>
             <svg className="w-4 h-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
           </div>
         ) : (
-          <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${d ? "bg-red-900/60" : "bg-red-100"}`}>
+          <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${d ?"bg-red-900/60" :"bg-red-100"}`}>
             <svg className="w-4 h-4 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
           </div>
         )}
@@ -1601,10 +1583,10 @@ function ConfirmModal({ title, message, confirmLabel = "Confirmar", danger = fal
   const { dark: d } = useApp();
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backgroundColor: "rgba(0,0,0,0.6)" }}>
-      <div className="rounded-2xl shadow-2xl border w-full max-w-sm bg-surface border">
+      <div className="rounded-2xl shadow-2xl w-full max-w-sm bg-surface border">
         <div className="px-6 pt-6 pb-4">
-          <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-4 ${danger ? (d ? "bg-red-900/50" : "bg-red-100") : (d ? "bg-amber-900/50" : "bg-amber-100")}`}>
-            <svg className={`w-5 h-5 ${danger ? "text-red-500" : "text-amber-500"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-4 ${danger ? (d ?"bg-red-900/50" :"bg-red-100") : (d ?"bg-amber-900/50" :"bg-amber-100")}`}>
+            <svg className={`w-5 h-5 ${danger ?"text-red-500" :"text-amber-500"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
             </svg>
           </div>
@@ -1615,7 +1597,7 @@ function ConfirmModal({ title, message, confirmLabel = "Confirmar", danger = fal
           <Button color="secondary" onClick={onCancel} className="flex-1">
             Cancelar
           </Button>
-          <button onClick={onConfirm} className={`flex-1 px-4 py-2 text-sm font-semibold rounded-lg text-white ${danger ? "bg-red-500 hover:bg-red-600" : "bg-amber-500 hover:bg-amber-600"}`}>
+          <button onClick={onConfirm} className={`flex-1 px-4 py-2 text-sm font-semibold rounded-lg text-white ${danger ?"bg-red-500 hover:bg-red-600" :"bg-amber-500 hover:bg-amber-600"}`}>
             {confirmLabel}
           </button>
         </div>
@@ -1639,7 +1621,7 @@ function ViewsModal({ researchId, dark: d, onClose }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
       <div className="w-full max-w-md rounded-2xl shadow-2xl bg-surface border">
-        <div className="flex items-center justify-between px-6 py-4 border-b border">
+        <div className="flex items-center justify-between px-6 py-4 border-b">
           <div className="flex items-center gap-2">
             <svg className="w-5 h-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
             <h2 className="text-lg font-bold text-primary">Vistas</h2>
@@ -1650,7 +1632,7 @@ function ViewsModal({ researchId, dark: d, onClose }) {
         </div>
         <div className="px-6 py-5">
           {loading ? (
-            <div className="flex justify-center py-8"><div className="w-8 h-8 rounded-full border-4 border-gray-300 border-t-green-500 animate-spin" /></div>
+            <div className="flex justify-center py-8"><div className="w-8 h-8 rounded-full -4 -gray-300 border-t-green-500 animate-spin" /></div>
           ) : views.length === 0 ? (
             <p className="text-sm text-center py-8 text-muted">Nadie ha visto este research aún.</p>
           ) : (
@@ -1672,7 +1654,7 @@ function ViewsModal({ researchId, dark: d, onClose }) {
             </div>
           )}
         </div>
-        <div className="flex justify-end px-6 py-4 border-t border">
+        <div className="flex justify-end px-6 py-4 border-t">
           <Button color="secondary" onClick={onClose}>Cerrar</Button>
         </div>
       </div>
@@ -1786,7 +1768,7 @@ function DetailPage() {
               const thumbUrl = driveId ? `https://drive.google.com/thumbnail?id=${driveId}&sz=w400` : null;
               const openUrl = item.archivoUrl || null;
               return (
-                <div className="rounded-xl border overflow-hidden bg-surface border" style={{boxShadow:"0 1px 4px rgba(0,0,0,0.08)"}}>
+                <div className="rounded-xl overflow-hidden bg-surface border" style={{boxShadow:"0 1px 4px rgba(0,0,0,0.08)"}}>
                   {/* Thumbnail row */}
                   <div className="flex" style={{minHeight:90}}>
                     <div className="flex-1 p-3 flex flex-col justify-between min-w-0">
@@ -1815,12 +1797,12 @@ function DetailPage() {
                     )}
                   </div>
                   {/* Footer */}
-                  <div className="flex items-center justify-between px-3 py-2 border-t border">
+                  <div className="flex items-center justify-between px-3 py-2 border-t">
                     <svg className="w-14" viewBox="0 0 87.3 24" xmlns="http://www.w3.org/2000/svg">
                       <text y="18" fontSize="18" fontFamily="sans-serif" fill={d ? "#9ca3af" : "#5f6368"} fontWeight="500">Drive</text>
                     </svg>
                     <a href={openUrl || "#"} target={openUrl ? "_blank" : undefined} rel="noreferrer"
-                      className={`text-xs font-semibold px-3 py-1 rounded-lg border border-strong hover:bg-hover ${d ? "text-green-400" : "text-green-600"}`}>
+                      className={`text-xs font-semibold px-3 py-1 rounded-lg border-strong hover:bg-hover ${d ?"text-green-400" :"text-green-600"}`}>
                       Abrir archivo
                     </a>
                   </div>
@@ -1849,7 +1831,7 @@ function DetailPage() {
               <div>
                 <p className="text-xs font-semibold mb-1 text-muted">Link de Jira</p>
                 <a
-                  className={`text-sm font-semibold leading-snug block mb-1.5 break-words text-[var(--color-brand)] hover:text-[var(--color-brand-hover)] ${!item.jiraUrl && "pointer-events-none"}`}
+                  className={`text-sm font-semibold leading-snug block mb-1.5 break-words text-[var(--color-brand)] hover:text-[var(--color-brand-hover)] ${!item.jiraUrl &&"pointer-events-none"}`}
                   href={item.jiraUrl || "#"}
                   target={item.jiraUrl ? "_blank" : undefined}
                   rel="noreferrer"
@@ -1859,7 +1841,7 @@ function DetailPage() {
                 {item.jira && item.jiraStatus && <span className={`text-xs font-bold px-2 py-0.5 rounded border ${entryJiraColor}`}>{item.jiraStatus}</span>}
               </div>
               {item.isCustom && isEditor && (
-                <div className="mt-6 pt-4 border-t border">
+                <div className="mt-6 pt-4 border-t">
                   <button
                     onClick={() => setConfirmDelete(true)}
                     className="flex items-center gap-1.5 text-sm font-semibold text-red-500 hover:text-red-700 transition-colors"
@@ -1932,7 +1914,7 @@ function DetailPage() {
                   <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5">
                     {item.imagenes.map((_, i) => (
                       <button key={i} onClick={e => { e.stopPropagation(); setLightbox(i); }}
-                        className={`w-2 h-2 rounded-full transition-colors ${i === lightbox ? "bg-white" : "bg-white/30 hover:bg-white/60"}`} />
+                        className={`w-2 h-2 rounded-full transition-colors ${i === lightbox ?"bg-white" :"bg-white/30 hover:bg-white/60"}`} />
                     ))}
                   </div>
                 )}
@@ -1946,7 +1928,7 @@ function DetailPage() {
 
         {/* Related */}
         {related.length > 0 && (
-          <div className="mt-16 pt-10 border-t border">
+          <div className="mt-16 pt-10 border-t">
             <h2 className="text-xl font-bold mb-5 text-primary">
               Research relacionados
             </h2>
@@ -1983,7 +1965,7 @@ function CoverPickerModal({ dark: d, onSelect, onUpload, onClose }) {
         className="w-[560px] max-h-[80vh] rounded-2xl flex flex-col shadow-2xl bg-surface border"
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border">
+        <div className="flex items-center justify-between px-6 py-4 border-b">
           <h2 className="font-semibold text-base text-primary">Elegir portada</h2>
           <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-hover text-tertiary">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
@@ -1991,7 +1973,7 @@ function CoverPickerModal({ dark: d, onSelect, onUpload, onClose }) {
         </div>
 
         {/* Upload button */}
-        <div className="px-6 py-3 border-b border">
+        <div className="px-6 py-3 border-b">
           <Button
             color="secondary"
            
@@ -2006,7 +1988,7 @@ function CoverPickerModal({ dark: d, onSelect, onUpload, onClose }) {
         {/* Grid */}
         <div className="flex-1 overflow-y-auto p-6">
           {loading ? (
-            <div className="flex justify-center py-8"><div className="w-8 h-8 rounded-full border-4 border-gray-300 border-t-green-500 animate-spin" /></div>
+            <div className="flex justify-center py-8"><div className="w-8 h-8 rounded-full -4 -gray-300 border-t-green-500 animate-spin" /></div>
           ) : files.length === 0 ? (
             <p className="text-sm text-center py-8 text-muted">No hay imágenes subidas aún.</p>
           ) : (
@@ -2017,7 +1999,7 @@ function CoverPickerModal({ dark: d, onSelect, onUpload, onClose }) {
                 return (
                   <div key={f.name} className="relative group">
                     <button onClick={() => onSelect(f.name)}
-                      className="w-full rounded-xl overflow-hidden border-2 transition-all hover:border-green-500 aspect-video border">
+                      className="w-full rounded-xl overflow-hidden -2 transition-all hover:-green-500 aspect-video border">
                       <img src={url} alt={f.name} className="w-full h-full object-cover" />
                     </button>
                     <button onClick={() => setConfirmTarget(f)}
@@ -2067,13 +2049,13 @@ function PersonaPhotoPickerModal({ dark: d, onSelect, onUpload, onClose }) {
     <>
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={onClose}>
       <div onClick={e => e.stopPropagation()} className="w-[480px] max-h-[80vh] rounded-2xl flex flex-col shadow-2xl bg-surface border">
-        <div className="flex items-center justify-between px-6 py-4 border-b border">
+        <div className="flex items-center justify-between px-6 py-4 border-b">
           <h2 className="font-semibold text-base text-primary">Elegir foto de perfil</h2>
           <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-hover text-tertiary">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/></svg>
           </button>
         </div>
-        <div className="px-6 py-3 border-b border">
+        <div className="px-6 py-3 border-b">
           <Button color="secondary" onClick={onUpload} className="flex items-center gap-2">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
             Subir nueva foto
@@ -2081,7 +2063,7 @@ function PersonaPhotoPickerModal({ dark: d, onSelect, onUpload, onClose }) {
         </div>
         <div className="flex-1 overflow-y-auto p-6">
           {loading ? (
-            <div className="flex justify-center py-8"><div className="w-8 h-8 rounded-full border-4 border-gray-300 border-t-green-500 animate-spin" /></div>
+            <div className="flex justify-center py-8"><div className="w-8 h-8 rounded-full -4 -gray-300 border-t-green-500 animate-spin" /></div>
           ) : files.length === 0 ? (
             <p className="text-sm text-center py-8 text-muted">No hay fotos subidas aún.</p>
           ) : (
@@ -2091,7 +2073,7 @@ function PersonaPhotoPickerModal({ dark: d, onSelect, onUpload, onClose }) {
                 const url = data?.publicUrl;
                 return (
                   <div key={f.name} className="relative group">
-                    <button onClick={() => onSelect(url)} className="w-full rounded-full overflow-hidden border-2 transition-all hover:border-green-500 aspect-square border">
+                    <button onClick={() => onSelect(url)} className="w-full rounded-full overflow-hidden -2 transition-all hover:-green-500 aspect-square border">
                       <img src={url} alt={f.name} className="w-full h-full object-cover" />
                     </button>
                     <button onClick={() => setConfirmTarget(f)}
@@ -2153,13 +2135,13 @@ function ImagePickerModal({ dark: d, deliverables, onSelect, onUpload, onDelete,
     <>
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={onClose}>
       <div onClick={e => e.stopPropagation()} className="w-[560px] max-h-[80vh] rounded-2xl flex flex-col shadow-2xl bg-surface border">
-        <div className="flex items-center justify-between px-6 py-4 border-b border">
+        <div className="flex items-center justify-between px-6 py-4 border-b">
           <h2 className="font-semibold text-base text-primary">Imágenes adjuntas</h2>
           <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-hover text-tertiary">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/></svg>
           </button>
         </div>
-        <div className="px-6 py-3 border-b border">
+        <div className="px-6 py-3 border-b">
           <Button color="secondary" onClick={onUpload} className="flex items-center gap-2">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
             Subir nueva imagen
@@ -2173,9 +2155,9 @@ function ImagePickerModal({ dark: d, deliverables, onSelect, onUpload, onDelete,
               {images.map((url, i) => (
                 <div key={i} className="relative group">
                   <button onClick={() => onSelect(url)}
-                    className={`w-full rounded-xl overflow-hidden border-2 transition-all hover:border-green-500 aspect-video border ${deleting === url ? "opacity-40" : ""}`}>
+                    className={`w-full rounded-xl overflow-hidden -2 transition-all hover:-green-500 aspect-video border ${deleting === url ?"opacity-40" :""}`}>
                     {deleting === url
-                      ? <div className="w-full h-full flex items-center justify-center"><div className="w-6 h-6 rounded-full border-2 border-gray-300 border-t-green-500 animate-spin" /></div>
+                      ? <div className="w-full h-full flex items-center justify-center"><div className="w-6 h-6 rounded-full -2 -gray-300 border-t-green-500 animate-spin" /></div>
                       : <img src={url} alt="" className="w-full h-full object-cover" />}
                   </button>
                   {deleting !== url && (
@@ -2333,9 +2315,9 @@ function ProductPage() {
               {items.length > 0 ? (
                 <div className="space-y-6">
                   {items.map(inv => (
-                    <div key={inv.id} className="rounded-2xl border overflow-hidden border bg-surface">
+                    <div key={inv.id} className="rounded-2xl overflow-hidden border bg-surface">
                       {/* Investigation title bar */}
-                      <div className={`px-5 py-3 border-b flex items-center justify-between border ${d ? "bg-gray-800/50" : "bg-gray-50"}`}>
+                      <div className={`px-5 py-3 border-b flex items-center justify-between border ${d ?"bg-gray-800/50" :"bg-gray-50"}`}>
                         <div className="min-w-0">
                           <p className="text-sm font-semibold truncate text-primary">{inv.title}</p>
                           <p className="text-xs mt-0.5 text-muted">{inv.date} · {inv.personas?.length || 0} persona{(inv.personas?.length || 0) !== 1 ? "s" : ""}</p>
@@ -2354,7 +2336,7 @@ function ProductPage() {
                           {inv.personas.map((p, i) => {
                             const nivelPct = { "básico": 33, "intermedio": 66, "avanzado": 100 }[(p.nivelTec || "").toLowerCase()] || null;
                             return (
-                              <div key={i} className="rounded-xl border overflow-hidden border">
+                              <div key={i} className="rounded-xl overflow-hidden border">
                                 <div className="px-4 py-3 flex items-center gap-2.5" style={{ backgroundColor: type === "Buyer Persona" ? "#2563EB" : "#00B369" }}>
                                   <div className="w-8 h-8 rounded-full flex items-end justify-center overflow-hidden flex-shrink-0" style={{ backgroundColor: "rgba(255,255,255,0.25)" }}>
                                     <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
@@ -2402,7 +2384,7 @@ function ProductPage() {
                   ))}
                 </div>
               ) : (
-                <div className="rounded-xl border-2 border-dashed p-10 flex flex-col items-center justify-center text-center border">
+                <div className="rounded-xl -2 -dashed p-10 flex flex-col items-center justify-center text-center border">
                   <svg className="w-8 h-8 mb-3 text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg>
                   <p className="text-sm font-medium mb-1 text-tertiary">No hay research de {type} para {product}</p>
                   <p className="text-xs text-muted">Añade la primera para este producto</p>
@@ -2436,7 +2418,7 @@ function ProductPage() {
         })()}
 
         {/* Otros productos */}
-        <div className="pt-8 border-t border">
+        <div className="pt-8 border-t">
           <h2 className="text-base font-semibold mb-4 text-tertiary">Otros productos</h2>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
             {PRODUCTS.filter(p => p !== product).map(p => {
@@ -2444,7 +2426,7 @@ function ProductPage() {
               const all = deliverables.filter(i => i.tags.includes(p));
               return (
                 <button key={p} onClick={() => navigate(`/producto/${toSlug(p)}`)}
-                  className="text-left rounded-xl border p-4 transition-all group bg-surface border hover:border-strong hover:shadow-sm">
+                  className="text-left rounded-xl p-4 transition-all group bg-surface hover:border-strong hover:shadow-sm">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
                       <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: pc }} />
@@ -2525,12 +2507,12 @@ function HomePage() {
               onChange={e => setSearch(e.target.value)}
               onKeyDown={handleSearch}
               placeholder="Busca un research o producto..."
-              className="w-full pl-12 pr-4 sm:pr-28 py-4 text-sm rounded-2xl border focus:outline-none focus:ring-2 focus:ring-green-400 bg-surface/80 text-primary placeholder-gray-500 border-gray-200 text-gray-900 placeholder-gray-400"
+              className="w-full pl-12 pr-4 sm:pr-28 py-4 text-sm rounded-2xl focus:outline-none focus:ring-2 focus:ring-green-400 bg-surface/80 text-primary placeholder-gray-500 border-gray-200 text-gray-900 placeholder-gray-400"
               style={{ boxShadow: d ? "0 4px 24px rgba(0,0,0,0.3)" : "0 4px 24px rgba(0,0,0,0.08)" }}
             />
             <button
               onClick={doSearch}
-              className={`hidden sm:flex absolute right-3 top-1/2 -translate-y-1/2 items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-lg border transition-colors ${search.trim() ? "bg-muted border text-secondary hover:bg-active" : "bg-muted border text-muted cursor-default"}`}
+              className={`hidden sm:flex absolute right-3 top-1/2 -translate-y-1/2 items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-lg transition-colors ${search.trim() ?"bg-muted text-secondary hover:bg-active" :"bg-muted border text-muted cursor-default"}`}
             >
               Enter ↵
             </button>
@@ -2579,7 +2561,7 @@ function HomePage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {loadingDeliverables
               ? Array.from({ length: 4 }).map((_, i) => (
-                  <div key={i} className="rounded-xl border p-4 animate-pulse bg-surface border">
+                  <div key={i} className="rounded-xl p-4 animate-pulse bg-surface border">
                     <div className="h-4 w-3/4 rounded mb-2 bg-active" />
                     <div className="flex gap-2">
                       <div className="h-3 w-16 rounded-full bg-active" />
@@ -2594,13 +2576,13 @@ function HomePage() {
               const pc = productTag ? (PRODUCT_COLORS[productTag] || "#00B369") : null;
               return (
                 <button key={item.id} onClick={() => navigate(`/research/${toSlug(item.title)}`, { state: { fromLabel: "Inicio" } })}
-                  className="text-left rounded-xl border p-4 flex flex-col transition-all group bg-surface border-gray-800 hover:border-green-700 border-gray-200 hover:border-green-400 hover:shadow-sm">
+                  className="text-left rounded-xl p-4 flex flex-col transition-all group bg-surface -gray-800 hover:-green-700 -gray-200 hover:border-green-400 hover:shadow-sm">
                   <div className="min-w-0 w-full">
                     <p className="font-semibold text-sm leading-snug mb-1.5 truncate text-primary">{item.title}</p>
                     <div className="flex items-center gap-1.5 flex-wrap">
                       <span className={`text-xs px-2 py-0.5 rounded-full border ${color}`}>{item.type}</span>
                       {productTag && pc && (
-                        <span className="text-xs px-2 py-0.5 rounded-full border flex items-center gap-1 border text-secondary">
+                        <span className="text-xs px-2 py-0.5 rounded-full flex items-center gap-1 border text-secondary">
                           <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: pc }} />
                           {productTag}
                         </span>
@@ -2704,7 +2686,7 @@ function ListPage() {
               </svg>
               <input type="text" placeholder="Buscar research..." value={search}
                 onChange={e => setSearch(e.target.value)}
-                className={`w-full pl-10 pr-4 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent bg-surface text-primary placeholder:text-muted`}
+                className={`w-full pl-10 pr-4 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent bg-surface text-primary placeholder:text-muted`}
                 style={{height:"40px"}} />
             </div>
             <div className="flex items-center gap-3 flex-1">
@@ -2723,17 +2705,17 @@ function ListPage() {
                 </svg>
                 <input type="text" placeholder="Buscar research..." value={search}
                   onChange={e => setSearch(e.target.value)}
-                  className={`w-full pl-10 pr-4 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent bg-surface text-primary placeholder:text-muted`}
+                  className={`w-full pl-10 pr-4 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent bg-surface text-primary placeholder:text-muted`}
                   style={{height:"40px"}} />
               </div>
               <button
                 onClick={() => setFiltersOpen(o => !o)}
-                className={`flex items-center gap-1.5 px-3 text-sm font-semibold border rounded-lg flex-shrink-0 ${filtersOpen ? (dk ? "bg-green-900/30 border-green-700 text-green-400" : "bg-green-50 border-green-400 text-green-700") : "bg-surface border text-secondary"}`}
+                className={`flex items-center gap-1.5 px-3 text-sm font-semibold rounded-lg flex-shrink-0 ${filtersOpen ? (dk ?"bg-green-900/30 -green-700 text-green-400" :"bg-green-50 -green-400 text-green-700") :"bg-surface border text-secondary"}`}
                 style={{height:"40px"}}
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z"/></svg>
                 Filtros
-                <svg className={`w-3.5 h-3.5 transition-transform ${filtersOpen ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7"/></svg>
+                <svg className={`w-3.5 h-3.5 transition-transform ${filtersOpen ?"rotate-180" :""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7"/></svg>
               </button>
             </div>
             {filtersOpen && (
@@ -2758,7 +2740,7 @@ function ListPage() {
               {shown.map(item => <Card key={item.id} item={item} dark={dk} fromLabel="Todos los research" />)}
             </div>
             <div ref={sentinelRef} className="h-10 flex items-center justify-center mt-4">
-              {hasMore && <div className="w-6 h-6 rounded-full border-2 border-gray-300 border-t-green-500 animate-spin" />}
+              {hasMore && <div className="w-6 h-6 rounded-full -2 -gray-300 border-t-green-500 animate-spin" />}
             </div>
           </>
         ) : (
@@ -2780,7 +2762,7 @@ function MobileTopBar({ onMenu, dark: d }) {
   const { setDark } = useApp();
   const navigate = useNavigate();
   return (
-    <div className="flex lg:hidden items-center justify-between px-4 py-3 border-b flex-shrink-0 border bg-surface">
+    <div className="flex lg:hidden items-center justify-between px-4 py-3 border-b flex-shrink-0 bg-surface">
       <button onClick={() => navigate("/")} className="flex items-center gap-2">
         <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: "#00B369" }}>
           <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -2825,11 +2807,11 @@ function Sidebar({ onSettings, user, mobileOpen = false, onMobileClose }) {
     <aside
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      className={`flex flex-col flex-shrink-0 border-r overflow-hidden ${s.panel} fixed inset-y-0 left-0 z-50 lg:static lg:z-auto ${mobileOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full"} lg:translate-x-0`}
+      className={`flex flex-col flex-shrink-0 border-r overflow-hidden ${s.panel} fixed inset-y-0 left-0 z-50 lg:static lg:z-auto ${mobileOpen ?"translate-x-0 shadow-2xl" :"-translate-x-full"} lg:translate-x-0`}
       style={{ width, transition: "transform 300ms ease, width 200ms ease" }}
     >
       {/* Header */}
-      <div className={`flex items-center border-b flex-shrink-0 ${s.div} ${expanded ? "px-4 py-4 justify-between" : "px-3 py-4 justify-center"}`}>
+      <div className={`flex items-center border-b flex-shrink-0 ${s.div} ${expanded ?"px-4 py-4 justify-between" :"px-3 py-4 justify-center"}`}>
         {expanded ? (
           <>
             <div className="flex items-center gap-3">
@@ -2850,7 +2832,7 @@ function Sidebar({ onSettings, user, mobileOpen = false, onMobileClose }) {
               <button
                 onClick={() => { const next = !pinned; setPinned(next); if (!next) setHovered(false); }}
                 title={pinned ? "Desfijar sidebar" : "Fijar sidebar"}
-                className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${pinned ? (dk ? "text-green-500" : "text-green-700") : s.pinBtn}`}
+                className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${pinned ? (dk ?"text-green-500" :"text-green-700") : s.pinBtn}`}
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 20 20" stroke="currentColor">
                   <path d="M7.5 2.5V17.5M6.5 2.5H13.5C14.9001 2.5 15.6002 2.5 16.135 2.77248C16.6054 3.01217 16.9878 3.39462 17.2275 3.86502C17.5 4.3998 17.5 5.09987 17.5 6.5V13.5C17.5 14.9001 17.5 15.6002 17.2275 16.135C16.9878 16.6054 16.6054 16.9878 16.135 17.2275C15.6002 17.5 14.9001 17.5 13.5 17.5H6.5C5.09987 17.5 4.3998 17.5 3.86502 17.2275C3.39462 16.9878 3.01217 16.6054 2.77248 16.135C2.5 15.6002 2.5 14.9001 2.5 13.5V6.5C2.5 5.09987 2.5 4.3998 2.77248 3.86502C3.01217 3.39462 3.39462 3.01217 3.86502 2.77248C4.3998 2.5 5.09987 2.5 6.5 2.5Z" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
@@ -2867,10 +2849,10 @@ function Sidebar({ onSettings, user, mobileOpen = false, onMobileClose }) {
       </div>
 
       {/* Nav */}
-      <nav className={`flex-1 py-4 space-y-0.5 overflow-y-auto overflow-x-hidden ${expanded ? "px-3" : "px-2"}`}>
+      <nav className={`flex-1 py-4 space-y-0.5 overflow-y-auto overflow-x-hidden ${expanded ?"px-3" :"px-2"}`}>
         {/* Inicio */}
         <button title={!expanded ? "Inicio" : undefined} onClick={() => navigate("/")}
-          className={`w-full flex items-center rounded-lg font-medium ${expanded ? "gap-3 px-3 py-2.5 text-base" : "justify-center py-2.5"} ${location.pathname === "/" ? s.navOn : s.navOff}`}>
+          className={`w-full flex items-center rounded-lg font-medium ${expanded ?"gap-3 px-3 py-2.5 text-base" :"justify-center py-2.5"} ${location.pathname ==="/" ? s.navOn : s.navOff}`}>
           <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
           {expanded && <span className="whitespace-nowrap">Inicio</span>}
         </button>
@@ -2880,7 +2862,7 @@ function Sidebar({ onSettings, user, mobileOpen = false, onMobileClose }) {
           return (
           <button key={item.label} title={!expanded ? item.label : undefined}
             onClick={() => navigate("/research")}
-            className={`w-full flex items-center rounded-lg font-medium ${expanded ? "gap-3 px-3 py-2.5 text-base" : "justify-center py-2.5"} ${isActive ? s.navOn : s.navOff}`}>
+            className={`w-full flex items-center rounded-lg font-medium ${expanded ?"gap-3 px-3 py-2.5 text-base" :"justify-center py-2.5"} ${isActive ? s.navOn : s.navOff}`}>
             <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d={item.icon} />
             </svg>
@@ -2897,7 +2879,7 @@ function Sidebar({ onSettings, user, mobileOpen = false, onMobileClose }) {
             return (
               <button key={product} title={!expanded ? product : undefined}
                 onClick={() => navigate(`/producto/${toSlug(product)}`)}
-                className={`w-full flex items-center rounded-lg font-medium ${expanded ? "gap-3 px-3 py-2.5 text-base" : "justify-center py-2.5"} ${isActive ? s.navOn : s.navOff}`}>
+                className={`w-full flex items-center rounded-lg font-medium ${expanded ?"gap-3 px-3 py-2.5 text-base" :"justify-center py-2.5"} ${isActive ? s.navOn : s.navOff}`}>
                 <div className="w-5 h-5 flex-shrink-0 flex items-center justify-center">
                   <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: pc }} />
                 </div>
@@ -2909,14 +2891,14 @@ function Sidebar({ onSettings, user, mobileOpen = false, onMobileClose }) {
       </nav>
 
       {/* Bottom */}
-      <div className={`border-t flex-shrink-0 ${s.div} ${expanded ? "px-3 py-4 space-y-1" : "px-2 py-4 space-y-1"}`}>
+      <div className={`border-t flex-shrink-0 ${s.div} ${expanded ?"px-3 py-4 space-y-1" :"px-2 py-4 space-y-1"}`}>
 
 
         {/* Configuración — solo super admin */}
         {roleLoaded && isSuperAdmin && (
           <button title={!expanded ? "Configuración" : undefined}
             onClick={() => onSettings()}
-            className={`w-full flex items-center rounded-lg ${expanded ? "gap-3 px-3 py-2.5 text-base" : "justify-center py-2.5"} ${s.navOff}`}>
+            className={`w-full flex items-center rounded-lg ${expanded ?"gap-3 px-3 py-2.5 text-base" :"justify-center py-2.5"} ${s.navOff}`}>
             <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3" strokeWidth={1.8}/></svg>
             {expanded && <span className="whitespace-nowrap">Configuración</span>}
           </button>
@@ -2925,8 +2907,8 @@ function Sidebar({ onSettings, user, mobileOpen = false, onMobileClose }) {
         {/* Modo oscuro/claro */}
         <button title={!expanded ? (dk ? "Cambiar a modo claro" : "Cambiar a modo oscuro") : undefined}
           onClick={() => setDark(!dk)}
-          className={`w-full flex items-center rounded-lg ${expanded ? "gap-3 px-3 py-2.5 text-base justify-between" : "justify-center py-2.5"} ${s.navOff}`}>
-          <div className={`flex items-center ${expanded ? "gap-3" : ""}`}>
+          className={`w-full flex items-center rounded-lg ${expanded ?"gap-3 px-3 py-2.5 text-base justify-between" :"justify-center py-2.5"} ${s.navOff}`}>
+          <div className={`flex items-center ${expanded ?"gap-3" :""}`}>
             {dk
               ? <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M12 3v1m0 16v1m8.66-9H21M3 12H2m15.36-6.36l-.71.71M7.05 16.95l-.71.71M18.36 18.36l-.71-.71M6.34 6.34l-.71-.71M17 12a5 5 0 11-10 0 5 5 0 0110 0z" /></svg>
               : <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" /></svg>
@@ -2934,7 +2916,7 @@ function Sidebar({ onSettings, user, mobileOpen = false, onMobileClose }) {
             {expanded && <span className="whitespace-nowrap">{dk ? "Modo oscuro" : "Modo claro"}</span>}
           </div>
           {expanded && (
-            <div className={`w-8 h-4 rounded-full flex items-center px-0.5 flex-shrink-0 ${dk ? "justify-end" : "justify-start"}`} style={{backgroundColor: dk ? "#00B369" : "#e5e7eb"}}>
+            <div className={`w-8 h-4 rounded-full flex items-center px-0.5 flex-shrink-0 ${dk ?"justify-end" :"justify-start"}`} style={{backgroundColor: dk ? "#00B369" : "#e5e7eb"}}>
               <div className="w-3 h-3 bg-white rounded-full shadow-sm" />
             </div>
           )}
@@ -2943,7 +2925,7 @@ function Sidebar({ onSettings, user, mobileOpen = false, onMobileClose }) {
         {/* Cerrar sesión */}
         <button title={!expanded ? "Cerrar sesión" : undefined}
           onClick={() => supabase.auth.signOut()}
-          className={`w-full flex items-center rounded-lg ${expanded ? "gap-3 px-3 py-2.5 text-base" : "justify-center py-2.5"} ${s.navOff}`}>
+          className={`w-full flex items-center rounded-lg ${expanded ?"gap-3 px-3 py-2.5 text-base" :"justify-center py-2.5"} ${s.navOff}`}>
           <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
           {expanded && <span className="whitespace-nowrap">Cerrar sesión</span>}
         </button>
@@ -3070,7 +3052,7 @@ function EditPage() {
           <span className={value ? "" : "text-muted"}>{display}</span>
         </button>
         {open && (
-          <div className="absolute z-50 mt-1 w-72 rounded-2xl border shadow-xl p-4 bg-surface border">
+          <div className="absolute z-50 mt-1 w-72 rounded-2xl shadow-xl p-4 bg-surface border">
             <div className="flex items-center justify-between mb-3">
               <button type="button" onClick={prev} className="w-8 h-8 flex items-center justify-center rounded-lg text-tertiary hover:bg-hover"><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7"/></svg></button>
               <span className="text-sm font-semibold text-primary">{MONTHS[cursor.m]} {cursor.y}</span>
@@ -3079,10 +3061,10 @@ function EditPage() {
             <div className="grid grid-cols-7 mb-1">{DAYS.map(day => <div key={day} className="text-center text-xs font-medium py-1 text-muted">{day}</div>)}</div>
             <div className="grid grid-cols-7 gap-y-0.5">
               {cells().map((cell, i) => { const sel = isSelected(cell.day, cell.cur); const tod = isToday(cell.day, cell.cur); return (
-                <button key={i} type="button" onClick={() => select(cell.day, cell.cur)} className={`h-9 w-full flex items-center justify-center rounded-lg text-sm transition-colors ${sel ? "text-white font-semibold" : ""} ${!sel && cell.cur ? "text-primary hover:bg-hover" : ""} ${!cell.cur ? "text-muted hover:bg-hover" : ""} ${tod && !sel ? "font-semibold text-brand" : ""}`} style={sel ? { backgroundColor: "#00B369" } : {}}>{cell.day}</button>
+                <button key={i} type="button" onClick={() => select(cell.day, cell.cur)} className={`h-9 w-full flex items-center justify-center rounded-lg text-sm transition-colors ${sel ?"text-white font-semibold" :""} ${!sel && cell.cur ?"text-primary hover:bg-hover" :""} ${!cell.cur ?"text-muted hover:bg-hover" :""} ${tod && !sel ?"font-semibold text-brand" :""}`} style={sel ? { backgroundColor: "#00B369" } : {}}>{cell.day}</button>
               ); })}
             </div>
-            <div className="mt-3 pt-3 border-t flex justify-between border">
+            <div className="mt-3 pt-3 border-t flex justify-between">
               <button type="button" onClick={() => { const n = new Date(); onChange(`${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,"0")}-${String(n.getDate()).padStart(2,"0")}`); setCursor({ y: n.getFullYear(), m: n.getMonth() }); setOpen(false); }} className="text-xs font-medium text-tertiary hover:text-secondary">Hoy</button>
               <button type="button" onClick={() => setOpen(false)} className="text-xs font-medium text-tertiary hover:text-secondary">Cancelar</button>
             </div>
@@ -3147,7 +3129,7 @@ function EditPage() {
             <div className="space-y-3">
               <div>
                 <label className={lbl}>Título <span className="text-green-500">*</span></label>
-                <input className="w-full px-3 py-2 text-xl font-semibold border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 bg-surface border-gray-700 text-gray-100 placeholder-gray-500 text-primary placeholder-gray-400" value={form.title} onChange={e => set("title", e.target.value)} placeholder="Título del research..." />
+                <input className="w-full px-3 py-2 text-xl font-semibold rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 bg-surface border-gray-700 text-gray-100 placeholder-gray-500 text-primary placeholder-gray-400" value={form.title} onChange={e => set("title", e.target.value)} placeholder="Título del research..." />
               </div>
               <div>
                 <label className={lbl}>Descripción corta</label>
@@ -3156,7 +3138,7 @@ function EditPage() {
             </div>
 
             {/* Contenido */}
-            <div className="rounded-2xl border p-5 space-y-4 bg-surface border">
+            <div className="rounded-2xl p-5 space-y-4 bg-surface border">
               <SectionTitle>Contenido</SectionTitle>
               <div><label className={lbl}>Objetivo del research</label><RichEditor value={form.objetivo} onChange={v => set("objetivo", v)} placeholder="¿Qué se busca lograr con este entregable?" /></div>
               <div><label className={lbl}>Usuario</label><RichEditor value={form.usuario} onChange={v => set("usuario", v)} placeholder="Perfil de los usuarios involucrados" /></div>
@@ -3164,7 +3146,7 @@ function EditPage() {
             </div>
 
             {/* Referencias */}
-            <div className="rounded-2xl border p-5 space-y-4 bg-surface border">
+            <div className="rounded-2xl p-5 space-y-4 bg-surface border">
               <SectionTitle>Referencias</SectionTitle>
               <div>
                 <label className={lbl}>Link de Google Drive</label>
@@ -3182,9 +3164,9 @@ function EditPage() {
                 </div>
                 {jiraError && <p className="mt-1 text-xs text-amber-500">{jiraError}</p>}
                 {form.jira && !jiraLoading && (
-                  <div className="mt-2 rounded-lg border p-3 bg-muted border">
+                  <div className="mt-2 rounded-lg p-3 bg-muted border">
                     <p className="text-xs font-semibold leading-snug text-primary">{form.jira}</p>
-                    {form.jiraStatus && <span className={`inline-block mt-1 text-xs font-bold px-2 py-0.5 rounded border ${/done|closed|resolved|finaliz|complet/i.test(form.jiraStatus) ? (d ? "text-green-400 border-green-700 bg-green-900/40" : "text-green-700 border-green-200 bg-green-50") : (d ? "text-blue-400 border-blue-700 bg-blue-900/40" : "text-blue-700 border-blue-200 bg-blue-50")}`}>{form.jiraStatus}</span>}
+                    {form.jiraStatus && <span className={`inline-block mt-1 text-xs font-bold px-2 py-0.5 rounded ${/done|closed|resolved|finaliz|complet/i.test(form.jiraStatus) ? (d ?"text-green-400 -green-700 bg-green-900/40" :"text-green-700 -green-200 bg-green-50") : (d ?"text-blue-400 -blue-700 bg-blue-900/40" :"text-blue-700 border-blue-200 bg-blue-50")}`}>{form.jiraStatus}</span>}
                     <button type="button" onClick={() => { set("jira", ""); set("jiraStatus", ""); set("jiraUrl", ""); }} className="block mt-1.5 text-xs text-muted hover:text-secondary">Cambiar ticket</button>
                   </div>
                 )}
@@ -3193,7 +3175,7 @@ function EditPage() {
 
             {/* Imágenes adjuntas */}
             {!PERSONA_TYPES.includes(form.type) && (
-              <div className="rounded-2xl border p-5 space-y-4 bg-surface border">
+              <div className="rounded-2xl p-5 space-y-4 bg-surface border">
                 <SectionTitle>Imágenes adjuntas</SectionTitle>
                 {(form.imagenes || []).length > 0 && (
                   <div className="grid grid-cols-4 gap-2">
@@ -3210,7 +3192,7 @@ function EditPage() {
                 )}
                 <Button type="button" color="secondary" disabled={imageUploading} className="flex items-center gap-2" onClick={() => setShowImagePicker(true)}>
                   {imageUploading
-                    ? <div className="w-4 h-4 rounded-full border-2 border-gray-300 border-t-green-500 animate-spin" />
+                    ? <div className="w-4 h-4 rounded-full -2 -gray-300 border-t-green-500 animate-spin" />
                     : <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                   }
                   Añadir imágenes
@@ -3245,13 +3227,13 @@ function EditPage() {
 
             {/* Personas */}
             {PERSONA_TYPES.includes(form.type) && form.personas && form.personas.length > 0 && (
-              <div className="rounded-2xl border p-5 bg-surface border">
+              <div className="rounded-2xl p-5 bg-surface border">
                 <div className="flex items-center justify-between mb-4">
                   <SectionTitle>Personas</SectionTitle>
                   {form.personas.length < 3 && <Button type="button" size="xs" color="secondary" onClick={addPersona} className="flex items-center gap-1"><svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/></svg>Añadir</Button>}
                 </div>
-                <div className="flex border-b mb-4 border">
-                  {form.personas.map((p, i) => <div key={i} className="flex items-center"><button type="button" onClick={() => setPersonaTab(i)} className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${personaTab === i ? "border-green-500 text-green-600" : d ? "border-transparent text-gray-400 hover:text-gray-200" : "border-transparent text-gray-500 hover:text-gray-800"}`}>{p.nombre || `Persona ${i+1}`}</button>{form.personas.length > 1 && <button type="button" onClick={() => removePersona(i)} className="-ml-1 mb-px w-4 h-4 flex items-center justify-center text-xs text-muted hover:text-secondary">✕</button>}</div>)}
+                <div className="flex border-b mb-4">
+                  {form.personas.map((p, i) => <div key={i} className="flex items-center"><button type="button" onClick={() => setPersonaTab(i)} className={`px-4 py-2 text-sm font-medium -b-2 -mb-px transition-colors ${personaTab === i ?"-green-500 text-green-600" : d ?"-transparent text-gray-400 hover:text-gray-200" :"border-transparent text-gray-500 hover:text-gray-800"}`}>{p.nombre || `Persona ${i+1}`}</button>{form.personas.length > 1 && <button type="button" onClick={() => removePersona(i)} className="-ml-1 mb-px w-4 h-4 flex items-center justify-center text-xs text-muted hover:text-secondary">✕</button>}</div>)}
                 </div>
                 {(() => {
                   const p = form.personas[personaTab];
@@ -3260,7 +3242,7 @@ function EditPage() {
                   return (
                     <div className="space-y-4">
                       <div className="flex items-center gap-4">
-                        <div className={`w-20 h-20 rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center border-2 ${p.foto ? "border-green-500" : (d ? "border-gray-600" : "border-gray-200")}`}>
+                        <div className={`w-20 h-20 rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center -2 ${p.foto ?"-green-500" : (d ?"-gray-600" :"border-gray-200")}`}>
                           {p.foto ? <img src={p.foto} alt="Foto" className="w-full h-full object-cover" /> : <svg className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>}
                         </div>
                         <div className="space-y-1">
@@ -3287,11 +3269,11 @@ function EditPage() {
           <div className="space-y-4">
 
             {/* Publicación */}
-            <div className="rounded-2xl border p-5 space-y-4 bg-surface border">
+            <div className="rounded-2xl p-5 space-y-4 bg-surface border">
               <div className="flex items-center justify-between">
                 <SectionTitle>Publicación</SectionTitle>
-                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${form.status === "Publicado" ? (d ? "bg-green-900/40 text-green-400 border-green-700" : "bg-green-50 text-green-700 border-green-200") : (d ? "bg-gray-800 text-gray-400 border-gray-600" : "bg-gray-100 text-gray-500 border-gray-300")}`}>
-                  <span className={`w-1.5 h-1.5 rounded-full ${form.status === "Publicado" ? "bg-green-500" : "bg-gray-400"}`} />
+                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${form.status ==="Publicado" ? (d ?"bg-green-900/40 text-green-400 -green-700" :"bg-green-50 text-green-700 -green-200") : (d ?"bg-gray-800 text-gray-400 -gray-600" :"bg-gray-100 text-gray-500 border-gray-300")}`}>
+                  <span className={`w-1.5 h-1.5 rounded-full ${form.status ==="Publicado" ?"bg-green-500" :"bg-gray-400"}`} />
                   {form.status}
                 </span>
               </div>
@@ -3315,18 +3297,18 @@ function EditPage() {
             </div>
 
             {/* Clasificación */}
-            <div className="rounded-2xl border p-5 space-y-4 bg-surface border">
+            <div className="rounded-2xl p-5 space-y-4 bg-surface border">
               <SectionTitle>Clasificación</SectionTitle>
               <div>
                 <label className={lbl}>Tipo de entregable <span className="text-green-500">*</span></label>
-                <select className={`${inp} ${d ? "dark-sel" : ""}`} value={form.type} onChange={e => setType(e.target.value)} style={!form.type ? { color: d ? "#6b7280" : "#9ca3af" } : {}}>
+                <select className={`${inp} ${d ?"dark-sel" :""}`} value={form.type} onChange={e => setType(e.target.value)} style={!form.type ? { color: d ? "#6b7280" : "#9ca3af" } : {}}>
                   <option value="" disabled>Seleccione</option>
                   {TYPES.slice(1).map(t => <option key={t}>{t}</option>)}
                 </select>
               </div>
               <div>
                 <label className={lbl}>Metodología</label>
-                <select className={`${inp} ${d ? "dark-sel" : ""}`} value={form.metodologia || ""} onChange={e => set("metodologia", e.target.value)} style={!form.metodologia ? { color: d ? "#6b7280" : "#9ca3af" } : {}}>
+                <select className={`${inp} ${d ?"dark-sel" :""}`} value={form.metodologia || ""} onChange={e => set("metodologia", e.target.value)} style={!form.metodologia ? { color: d ? "#6b7280" : "#9ca3af" } : {}}>
                   <option value="" disabled>Seleccione</option>
                   <option value="Sin especificar">Sin especificar</option>
                   {METODOLOGIAS.map(m => <option key={m}>{m}</option>)}
@@ -3334,14 +3316,14 @@ function EditPage() {
               </div>
               <div>
                 <label className={lbl}>Producto <span className="text-green-500">*</span></label>
-                <select className={`${inp} ${d ? "dark-sel" : ""}`} value={form.tags[0] || ""} onChange={e => set("tags", e.target.value ? [e.target.value] : [])} style={!form.tags[0] ? { color: d ? "#6b7280" : "#9ca3af" } : {}}>
+                <select className={`${inp} ${d ?"dark-sel" :""}`} value={form.tags[0] || ""} onChange={e => set("tags", e.target.value ? [e.target.value] : [])} style={!form.tags[0] ? { color: d ? "#6b7280" : "#9ca3af" } : {}}>
                   <option value="" disabled>Seleccione</option>
                   {PRODUCTS.map(p => <option key={p}>{p}</option>)}
                 </select>
               </div>
               <div>
                 <label className={lbl}>Persona asignada</label>
-                <select className={`${inp} ${d ? "dark-sel" : ""}`} value={form.team[0] || ""} onChange={e => set("team", e.target.value ? [e.target.value] : [])} style={!form.team[0] ? { color: d ? "#6b7280" : "#9ca3af" } : {}}>
+                <select className={`${inp} ${d ?"dark-sel" :""}`} value={form.team[0] || ""} onChange={e => set("team", e.target.value ? [e.target.value] : [])} style={!form.team[0] ? { color: d ? "#6b7280" : "#9ca3af" } : {}}>
                   <option value="">Seleccione</option>
                   {editors.map(n => <option key={n}>{n}</option>)}
                 </select>
@@ -3406,7 +3388,7 @@ function LoginPage({ dark: d }) {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-page">
-      <div className="w-full max-w-sm rounded-2xl border p-10 flex flex-col items-center gap-6 bg-surface border shadow-sm">
+      <div className="w-full max-w-sm rounded-2xl p-10 flex flex-col items-center gap-6 bg-surface border shadow-sm">
         <div className="flex flex-col items-center gap-2">
           <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ backgroundColor: "#00B369" }}>
             <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
