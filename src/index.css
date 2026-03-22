@@ -73,6 +73,14 @@
 ::-webkit-scrollbar-thumb:hover { background: var(--color-text-muted); }
 * { scrollbar-width: thin; scrollbar-color: var(--color-border-strong) transparent; }
 
+/* shadow-xs — Untitled UI design system */
+.shadow-xs {
+  box-shadow: 0 1px 2px 0 rgba(10, 13, 18, 0.05);
+}
+.dark-mode .shadow-xs {
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+}
+
 /* Select option colors */
 select option { color: #111827; background-color: #ffffff; }
 select option:disabled { color: #9ca3af; }
