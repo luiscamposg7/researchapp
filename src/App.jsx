@@ -2593,8 +2593,7 @@ function HomePage() {
               onChange={e => setSearch(e.target.value)}
               onKeyDown={handleSearch}
               placeholder="Busca un research o producto..."
-              className="w-full pl-12 pr-4 sm:pr-28 py-4 text-sm rounded-2xl focus:outline-none focus:ring-2 focus:ring-green-400 bg-surface text-primary placeholder:text-muted"
-              style={{ boxShadow: d ? "0 4px 24px rgba(0,0,0,0.3)" : "0 4px 24px rgba(0,0,0,0.08)" }}
+              className={`w-full pl-12 pr-4 sm:pr-28 py-4 text-sm rounded-2xl border focus:outline-none focus:ring-1 focus:ring-green-400 focus:border-green-400 bg-surface text-primary placeholder:text-muted ${d ? "shadow-[0_4px_24px_rgba(0,0,0,0.3)]" : "shadow-[0_4px_24px_rgba(0,0,0,0.08)]"}`}
             />
             <button
               onClick={doSearch}
@@ -2773,7 +2772,7 @@ function ListPage() {
               </svg>
               <input type="text" placeholder="Buscar research..." value={search}
                 onChange={e => setSearch(e.target.value)}
-                className={`w-full pl-10 pr-4 text-sm rounded-lg border focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent bg-surface text-primary placeholder:text-muted`}
+                className={`w-full pl-10 pr-4 text-sm rounded-lg border focus:outline-none focus:ring-1 focus:ring-green-400 focus:border-green-400 bg-surface text-primary placeholder:text-muted`}
                 style={{height:"40px"}} />
             </div>
             <div className="flex items-center gap-3 flex-1">
@@ -2792,7 +2791,7 @@ function ListPage() {
                 </svg>
                 <input type="text" placeholder="Buscar research..." value={search}
                   onChange={e => setSearch(e.target.value)}
-                  className={`w-full pl-10 pr-4 text-sm rounded-lg border focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent bg-surface text-primary placeholder:text-muted`}
+                  className={`w-full pl-10 pr-4 text-sm rounded-lg border focus:outline-none focus:ring-1 focus:ring-green-400 focus:border-green-400 bg-surface text-primary placeholder:text-muted`}
                   style={{height:"40px"}} />
               </div>
               <button
@@ -3425,8 +3424,8 @@ function Layout({ toast, user }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   return (
     <div className="min-h-screen bg-page" style={{ fontFamily: "'Inter', sans-serif" }}>
-      <div className="orb orb-1" />
-      <div className="orb orb-2" />
+      <div className="animated-bg animated-bg-1" />
+      <div className="animated-bg animated-bg-2" />
       <Toast toast={toast} />
       <div className="flex h-screen overflow-hidden" style={{position:"relative", zIndex:1}}>
         {showSettings && <SettingsModal dark={dark} onClose={() => setShowSettings(false)} />}
