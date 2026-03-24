@@ -4,6 +4,7 @@ import https from 'https'
 import crypto from 'crypto'
 import dotenv from 'dotenv'
 import path from 'path'
+import { fileURLToPath } from 'url'
 
 dotenv.config({ path: '.env.local' })
 
@@ -84,6 +85,34 @@ function localDb() {
             if (title) return res.end(JSON.stringify({ title }));
           }
           return res.end(JSON.stringify({ title: null }));
+        }
+
+        // Google Drive thumbnail proxy
+        if (req.url.startsWith('/api/drive-thumb/')) {
+          const fileId = req.url.replace('/api/drive-thumb/', '').split('?')[0];
+          if (!fileId) { res.writeHead(400); return res.end(''); }
+          const fetchImg = (url, redirects = 0) => new Promise((resolve, reject) => {
+            if (redirects > 5) return reject(new Error('Too many redirects'));
+            const parsed = new URL(url);
+            https.get({
+              hostname: parsed.hostname,
+              path: parsed.pathname + parsed.search,
+              headers: { 'User-Agent': 'Mozilla/5.0' },
+            }, (imgResp) => {
+              if (imgResp.statusCode >= 300 && imgResp.statusCode < 400 && imgResp.headers.location) {
+                imgResp.resume();
+                return fetchImg(imgResp.headers.location, redirects + 1).then(resolve).catch(reject);
+              }
+              res.writeHead(imgResp.statusCode, {
+                'Content-Type': imgResp.headers['content-type'] || 'image/jpeg',
+                'Cache-Control': 'public, max-age=3600',
+              });
+              imgResp.pipe(res);
+              imgResp.on('end', resolve);
+            }).on('error', reject);
+          });
+          await fetchImg(`https://drive.google.com/thumbnail?id=${fileId}&sz=w800`);
+          return;
         }
 
         // Figma oEmbed metadata
@@ -198,7 +227,7 @@ export default defineConfig({
   plugins: [react(), localDb()],
   resolve: {
     alias: {
-      '@': path.resolve(path.dirname(new URL(import.meta.url).pathname), './src'),
+      '@': path.resolve(path.dirname(fileURLToPath(import.meta.url)), './src'),
     },
   },
   server: {
