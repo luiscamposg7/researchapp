@@ -1,6 +1,7 @@
 {
   "name": "ux-research-app",
   "private": true,
+
   "version": "1.0.6",
   "type": "module",
   "scripts": {

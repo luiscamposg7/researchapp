@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback, useMemo, createContext, useContext } from "react";
+import { version as APP_VERSION } from "../package.json";
 import { flushSync } from "react-dom";
 import { Routes, Route, useNavigate, useParams, useLocation } from "react-router-dom";
 import { supabase } from "./supabase";
@@ -41,6 +42,7 @@ const EMPTY_USER  = () => ({ foto: "", nombre: "", cargo: "", edad: "", ubicacio
 
 const ESTADOS = ["Persona asignada", "Ana R.", "Sofia K.", "Luis M.", "Carlos T."];
 
+
 function CustomSelect({ value, onChange, options, dark, fullWidth }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
@@ -57,18 +59,18 @@ function CustomSelect({ value, onChange, options, dark, fullWidth }) {
     <div ref={ref} className="relative" style={fullWidth ? {} : { width: 180, flexShrink: 0 }}>
       <button
         onClick={() => setOpen(!open)}
-        className={`w-full flex items-center justify-between pl-3.5 pr-3 text-sm font-medium rounded-lg cursor-pointer focus:outline-none focus:ring-2 focus:ring-green-400 ${dark ?"bg-surface border text-primary" :"text-secondary"}`}
-        style={!dark ? { height:"40px", borderRadius:"8px", border:"1px solid #D5D7DA", background:"#FFF", boxShadow:"0 1px 2px 0 rgba(10,13,18,0.05)" } : { height:"40px", borderRadius:"8px", boxShadow:"0 1px 2px 0 rgba(10,13,18,0.05)" }}
+        className={`w-full flex items-center justify-between text-sm font-medium rounded-lg cursor-pointer focus:outline-none focus:ring-2 focus:ring-green-400 ${dark ?"bg-surface border text-primary" :"text-secondary"}`}
+        style={!dark ? { height:"40px", borderRadius:"8px", border:"1px solid #D5D7DA", background:"#FFF", boxShadow:"0 1px 2px 0 rgba(10,13,18,0.05)", paddingLeft:"14px", paddingRight:"14px" } : { height:"40px", borderRadius:"8px", boxShadow:"0 1px 2px 0 rgba(10,13,18,0.05)", paddingLeft:"14px", paddingRight:"14px" }}
       >
-        <span className="truncate">{selected.label}</span>
-        <svg className={`w-4 h-4 flex-shrink-0 ml-2 transition-transform ${open ?"rotate-180" :""} text-tertiary`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <span className={`truncate ${selected.value === "" ? "text-muted" : ""}`}>{selected.label}</span>
+        <svg className={`w-4 h-4 flex-shrink-0 transition-transform ${open ?"rotate-180" :""} text-tertiary`} style={{marginLeft:"8px", marginRight:"4px"}} fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
         </svg>
       </button>
       {open && (
         <ul
           className="absolute z-50 w-full mt-1 py-1 text-sm bg-surface border text-secondary"
-          style={{ borderRadius:"8px", border:"1px solid #D5D7DA", boxShadow:"0 1px 2px 0 rgba(10,13,18,0.05)", top:"100%", left:0 }}
+          style={{ borderRadius:"8px", boxShadow:"0 1px 2px 0 rgba(10,13,18,0.05)", top:"100%", left:0 }}
         >
           {options.map(o => (
             <li
@@ -573,7 +575,7 @@ function SettingsModal({ onClose, dark }) {
             <h2 className="text-lg font-bold text-primary">Roles de usuario</h2>
           </div>
           <div className="flex items-center gap-3">
-            <span className="text-sm font-medium text-muted">v1.0.4</span>
+            <span className="text-sm font-medium text-muted">v{APP_VERSION}</span>
             <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-lg text-tertiary hover:bg-hover">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
@@ -618,7 +620,7 @@ function SettingsModal({ onClose, dark }) {
                         <select
                           value={currentRole ?? ""}
                           onChange={e => setPendingRoles(p => ({ ...p, [u.user_id]: e.target.value }))}
-                          className="text-sm font-semibold px-2 py-1.5 rounded-lg border-strong focus:outline-none focus:ring-2 focus:ring-green-400 bg-active text-primary"
+                          className="sel-arrow text-sm font-semibold px-2 py-1.5 rounded-lg border-strong focus:outline-none focus:ring-2 focus:ring-green-400 bg-active text-primary"
                         >
                           {!u.role && <option value="" disabled>Sin acceso</option>}
                           <option value="visitor">Visitante</option>
@@ -766,6 +768,7 @@ function AddPage() {
   };
 
   const inp = "w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 bg-surface border text-primary placeholder-muted";
+  const sel = inp + " sel-arrow";
   const lbl = "block text-sm font-semibold mb-1 text-tertiary";
   const sec = "rounded-xl border p-4 bg-muted";
 
@@ -1147,10 +1150,7 @@ function AddPage() {
                         </div>
                         <div><label className={lbl}>Ubicación</label>{fi("ubicacion","Distrito, departamento")}</div>
                         <div><label className={lbl}>Nivel tecnológico</label>
-                          <select className={inp} value={p.nivelTec || ""} onChange={e => setPersonaField(personaTab, "nivelTec", e.target.value)}>
-                            <option value="">Sin especificar</option>
-                            {NIVEL_TEC.map(n => <option key={n.label} value={n.label}>{n.label} — {n.pct}%</option>)}
-                          </select>
+                          <CustomSelect dark={d} fullWidth value={p.nivelTec || ""} onChange={v => setPersonaField(personaTab, "nivelTec", v)} options={[{value:"",label:"Sin especificar"}, ...NIVEL_TEC.map(n => ({value:n.label,label:`${n.label} — ${n.pct}%`}))]} />
                         </div>
                         <div><label className={lbl}>Herramientas usadas</label>{fi("herramientas","Excel, Slack, etc.")}</div>
                       </>)}
@@ -1211,32 +1211,19 @@ function AddPage() {
               <SectionTitle>Clasificación</SectionTitle>
               <div>
                 <label className={lbl}>Tipo de entregable <span className="text-green-500">*</span></label>
-                <select className={`${inp} ${d ?"dark-sel" :""}`} value={form.type} onChange={e => setType(e.target.value)} style={!form.type ? { color: d ? "#6b7280" : "#9ca3af" } : {}}>
-                  <option value="" disabled>Seleccione</option>
-                  {TYPES.slice(1).map(t => <option key={t}>{t}</option>)}
-                </select>
+                <CustomSelect dark={d} fullWidth value={form.type} onChange={setType} options={[{value:"",label:"Seleccione"}, ...TYPES.slice(1).map(t => ({value:t,label:t}))]} />
               </div>
               <div>
                 <label className={lbl}>Metodología</label>
-                <select className={`${inp} ${d ?"dark-sel" :""}`} value={form.metodologia} onChange={e => set("metodologia", e.target.value)} style={!form.metodologia ? { color: d ? "#6b7280" : "#9ca3af" } : {}}>
-                  <option value="" disabled>Seleccione</option>
-                  <option value="Sin especificar">Sin especificar</option>
-                  {METODOLOGIAS.map(m => <option key={m}>{m}</option>)}
-                </select>
+                <CustomSelect dark={d} fullWidth value={form.metodologia || ""} onChange={v => set("metodologia", v)} options={[{value:"",label:"Seleccione"},{value:"Sin especificar",label:"Sin especificar"}, ...METODOLOGIAS.map(m => ({value:m,label:m}))]} />
               </div>
               <div>
                 <label className={lbl}>Producto <span className="text-green-500">*</span></label>
-                <select className={`${inp} ${d ?"dark-sel" :""}`} value={form.tags[0] || ""} onChange={e => set("tags", e.target.value ? [e.target.value] : [])} style={!form.tags[0] ? { color: d ? "#6b7280" : "#9ca3af" } : {}}>
-                  <option value="" disabled>Seleccione</option>
-                  {PRODUCTS.map(p => <option key={p}>{p}</option>)}
-                </select>
+                <CustomSelect dark={d} fullWidth value={form.tags[0] || ""} onChange={v => set("tags", v ? [v] : [])} options={[{value:"",label:"Seleccione"}, ...PRODUCTS.map(p => ({value:p,label:p}))]} />
               </div>
               <div>
                 <label className={lbl}>Persona asignada</label>
-                <select className={`${inp} ${d ?"dark-sel" :""}`} value={form.team[0] || ""} onChange={e => set("team", e.target.value ? [e.target.value] : [])} style={!form.team[0] ? { color: d ? "#6b7280" : "#9ca3af" } : {}}>
-                  <option value="">Seleccione</option>
-                  {editors.map(n => <option key={n}>{n}</option>)}
-                </select>
+                <CustomSelect dark={d} fullWidth value={form.team[0] || ""} onChange={v => set("team", v ? [v] : [])} options={[{value:"",label:"Seleccione"}, ...editors.map(n => ({value:n,label:n}))]} />
               </div>
             </div>
 
@@ -3104,6 +3091,7 @@ function EditPage() {
   };
 
   const inp = `w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 bg-surface text-primary placeholder-gray-500 text-primary placeholder-gray-400`;
+  const sel = inp + " sel-arrow";
   const lbl = `block text-sm font-semibold mb-1 text-tertiary`;
 
   const SectionTitle = ({ children }) => (
@@ -3353,7 +3341,7 @@ function EditPage() {
                         </div>
                       </div>
                       <div><label className={lbl}>Nombre</label>{fi("nombre","Nombre de la persona")}</div>
-                      {group("Información personal", <><div className="grid grid-cols-2 gap-3"><div><label className={lbl}>Cargo</label>{fi("cargo","Cargo o rol")}</div><div><label className={lbl}>Edad</label>{fi("edad","Ej: 35 años")}</div></div><div><label className={lbl}>Ubicación</label>{fi("ubicacion","Distrito, departamento")}</div><div><label className={lbl}>Nivel tecnológico</label><select className={inp} value={p.nivelTec||""} onChange={e => setPersonaField(personaTab,"nivelTec",e.target.value)}><option value="">Sin especificar</option>{NIVEL_TEC.map(n => <option key={n.label} value={n.label}>{n.label} — {n.pct}%</option>)}</select></div><div><label className={lbl}>Herramientas usadas</label>{fi("herramientas","Excel, Slack, etc.")}</div></>)}
+                      {group("Información personal", <><div className="grid grid-cols-2 gap-3"><div><label className={lbl}>Cargo</label>{fi("cargo","Cargo o rol")}</div><div><label className={lbl}>Edad</label>{fi("edad","Ej: 35 años")}</div></div><div><label className={lbl}>Ubicación</label>{fi("ubicacion","Distrito, departamento")}</div><div><label className={lbl}>Nivel tecnológico</label><CustomSelect dark={d} fullWidth value={p.nivelTec||""} onChange={v => setPersonaField(personaTab,"nivelTec",v)} options={[{value:"",label:"Sin especificar"},...NIVEL_TEC.map(n => ({value:n.label,label:`${n.label} — ${n.pct}%`}))]} /></div><div><label className={lbl}>Herramientas usadas</label>{fi("herramientas","Excel, Slack, etc.")}</div></>)}
                       {group("Sobre el negocio", form.type === "Buyer Persona" ? <><div><label className={lbl}>Rubro</label>{fi("rubro","Sector o industria")}</div><div className="grid grid-cols-2 gap-3"><div><label className={lbl}>Personal</label>{fi("personal","Ej: 10-50 empleados")}</div><div><label className={lbl}>Tiempo de apertura</label>{fi("tiempoApertura","Ej: 5 años")}</div></div><div><label className={lbl}>Metas a futuro</label><RichEditor value={p.metas||""} onChange={v => setPersonaField(personaTab,"metas",v)} placeholder="Metas y objetivos a futuro..." /></div></> : <><div><label className={lbl}>Rubro</label>{fi("rubro","Sector o industria")}</div><div><label className={lbl}>Tiempo en el negocio</label>{fi("tiempoNegocio","Ej: 3 años")}</div></>)}
                       {form.type === "Buyer Persona" && <>{group("Adquisición del producto", <RichEditor value={p.adquisicion||""} onChange={v => setPersonaField(personaTab,"adquisicion",v)} placeholder="Razones de adquisición..." />)}{group("Comunicaciones", <RichEditor value={p.comunicaciones||""} onChange={v => setPersonaField(personaTab,"comunicaciones",v)} placeholder="Canales de comunicación..." />)}</>}
                       {form.type === "User Persona" && <>{group("Objetivos y metas", <RichEditor value={p.objetivos||""} onChange={v => setPersonaField(personaTab,"objetivos",v)} placeholder="Objetivos y metas del usuario..." />)}{group("Frustraciones y dolores", <RichEditor value={p.dolores||""} onChange={v => setPersonaField(personaTab,"dolores",v)} placeholder="Frustraciones y dolores..." />)}</>}
@@ -3400,32 +3388,19 @@ function EditPage() {
               <SectionTitle>Clasificación</SectionTitle>
               <div>
                 <label className={lbl}>Tipo de entregable <span className="text-green-500">*</span></label>
-                <select className={`${inp} ${d ?"dark-sel" :""}`} value={form.type} onChange={e => setType(e.target.value)} style={!form.type ? { color: d ? "#6b7280" : "#9ca3af" } : {}}>
-                  <option value="" disabled>Seleccione</option>
-                  {TYPES.slice(1).map(t => <option key={t}>{t}</option>)}
-                </select>
+                <CustomSelect dark={d} fullWidth value={form.type} onChange={setType} options={[{value:"",label:"Seleccione"}, ...TYPES.slice(1).map(t => ({value:t,label:t}))]} />
               </div>
               <div>
                 <label className={lbl}>Metodología</label>
-                <select className={`${inp} ${d ?"dark-sel" :""}`} value={form.metodologia || ""} onChange={e => set("metodologia", e.target.value)} style={!form.metodologia ? { color: d ? "#6b7280" : "#9ca3af" } : {}}>
-                  <option value="" disabled>Seleccione</option>
-                  <option value="Sin especificar">Sin especificar</option>
-                  {METODOLOGIAS.map(m => <option key={m}>{m}</option>)}
-                </select>
+                <CustomSelect dark={d} fullWidth value={form.metodologia || ""} onChange={v => set("metodologia", v)} options={[{value:"",label:"Seleccione"},{value:"Sin especificar",label:"Sin especificar"}, ...METODOLOGIAS.map(m => ({value:m,label:m}))]} />
               </div>
               <div>
                 <label className={lbl}>Producto <span className="text-green-500">*</span></label>
-                <select className={`${inp} ${d ?"dark-sel" :""}`} value={form.tags[0] || ""} onChange={e => set("tags", e.target.value ? [e.target.value] : [])} style={!form.tags[0] ? { color: d ? "#6b7280" : "#9ca3af" } : {}}>
-                  <option value="" disabled>Seleccione</option>
-                  {PRODUCTS.map(p => <option key={p}>{p}</option>)}
-                </select>
+                <CustomSelect dark={d} fullWidth value={form.tags[0] || ""} onChange={v => set("tags", v ? [v] : [])} options={[{value:"",label:"Seleccione"}, ...PRODUCTS.map(p => ({value:p,label:p}))]} />
               </div>
               <div>
                 <label className={lbl}>Persona asignada</label>
-                <select className={`${inp} ${d ?"dark-sel" :""}`} value={form.team[0] || ""} onChange={e => set("team", e.target.value ? [e.target.value] : [])} style={!form.team[0] ? { color: d ? "#6b7280" : "#9ca3af" } : {}}>
-                  <option value="">Seleccione</option>
-                  {editors.map(n => <option key={n}>{n}</option>)}
-                </select>
+                <CustomSelect dark={d} fullWidth value={form.team[0] || ""} onChange={v => set("team", v ? [v] : [])} options={[{value:"",label:"Seleccione"}, ...editors.map(n => ({value:n,label:n}))]} />
               </div>
             </div>
 

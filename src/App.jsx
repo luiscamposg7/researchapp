@@ -2773,7 +2773,7 @@ function ListPage() {
               </svg>
               <input type="text" placeholder="Buscar research..." value={search}
                 onChange={e => setSearch(e.target.value)}
-                className={`w-full pl-10 pr-4 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent bg-surface text-primary placeholder:text-muted`}
+                className={`w-full pl-10 pr-4 text-sm rounded-lg border focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent bg-surface text-primary placeholder:text-muted`}
                 style={{height:"40px"}} />
             </div>
             <div className="flex items-center gap-3 flex-1">
@@ -2792,7 +2792,7 @@ function ListPage() {
                 </svg>
                 <input type="text" placeholder="Buscar research..." value={search}
                   onChange={e => setSearch(e.target.value)}
-                  className={`w-full pl-10 pr-4 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent bg-surface text-primary placeholder:text-muted`}
+                  className={`w-full pl-10 pr-4 text-sm rounded-lg border focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent bg-surface text-primary placeholder:text-muted`}
                   style={{height:"40px"}} />
               </div>
               <button
