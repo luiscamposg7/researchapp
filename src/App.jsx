@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback, useMemo, createContext, useContext } from "react";
 import { version as APP_VERSION } from "../package.json";
-import { flushSync } from "react-dom";
+import { flushSync, createPortal } from "react-dom";
 import { Routes, Route, useNavigate, useParams, useLocation } from "react-router-dom";
 import { supabase } from "./supabase";
 import { Button } from "./components/ui/button";
@@ -37,8 +37,9 @@ const NIVEL_TEC = [
 ];
 const nivelPctMap = Object.fromEntries(NIVEL_TEC.map(n => [n.label.toLowerCase(), n.pct]));
 
-const EMPTY_BUYER = () => ({ foto: "", nombre: "", cargo: "", edad: "", ubicacion: "", nivelTec: "", herramientas: "", rubro: "", personal: "", tiempoApertura: "", metas: "", adquisicion: "", comunicaciones: "" });
-const EMPTY_USER  = () => ({ foto: "", nombre: "", cargo: "", edad: "", ubicacion: "", nivelTec: "", herramientas: "", rubro: "", tiempoNegocio: "", objetivos: "", dolores: "" });
+const EMPTY_PERSONA = () => ({ images: [] });
+const EMPTY_BUYER = EMPTY_PERSONA;
+const EMPTY_USER  = EMPTY_PERSONA;
 
 const ESTADOS = ["Persona asignada", "Ana R.", "Sofia K.", "Luis M.", "Carlos T."];
 
@@ -93,11 +94,15 @@ const NAV = [
 const stripHtml = (html) => html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
 
 
-const ALLOWED = new Set(["B","STRONG","I","EM","U","UL","OL","LI","H3","P","BR","BLOCKQUOTE"]);
+const ALLOWED = new Set(["B","STRONG","I","EM","U","UL","OL","LI","H1","H2","H3","H4","H5","H6","P","BR","BLOCKQUOTE"]);
+const BLOCK_TAGS = new Set(["P","H1","H2","H3","H4","H5","H6","LI","BLOCKQUOTE"]);
 const sanitizeNode = (node) => {
   if (node.nodeType !== 1) return; // text nodes: leave as-is
-  // Strip all attributes (style, color, class, font, etc.)
+  // Strip all attributes except text-align style on block elements
+  const tag = node.tagName;
+  const align = node.style?.textAlign;
   Array.from(node.attributes).forEach(a => node.removeAttribute(a.name));
+  if (align && BLOCK_TAGS.has(tag)) node.style.textAlign = align;
   // Replace disallowed block tags with their text content wrapped in <p>
   if (!ALLOWED.has(node.tagName)) {
     const isBlock = ["DIV","SECTION","ARTICLE","HEADER","FOOTER","TABLE","TR","TD","TH","TBODY"].includes(node.tagName);
@@ -152,10 +157,10 @@ const METODOLOGIAS = ["Cualitativa", "Cuantitativa", "Mixta", "Desk Research"];
 const JIRA_STATUSES = ["EN CURSO", "FINALIZADO"];
 
 const PRODUCT_COLORS = {
-  "PGH": "#00CB75",
-  "Factoring": "#3DD68C",
+  "PGH": "#00D97A",
+  "Factoring": "#00975B",
   "Gestora": "#5EBDB3",
-  "Tandia": "#2F6DEA",
+  "Tandia": "#1D4ED8",
   "Recadia": "#2D8E5F",
   "Cambio Seguro": "#7C3AED",
 };
@@ -425,8 +430,13 @@ function RichEditor({ onChange, placeholder, dark, value }) {
     setActive({
       bold: document.queryCommandState("bold"),
       italic: document.queryCommandState("italic"),
+      underline: document.queryCommandState("underline"),
       ul: document.queryCommandState("insertUnorderedList"),
       ol: document.queryCommandState("insertOrderedList"),
+      justifyLeft: document.queryCommandState("justifyLeft"),
+      justifyCenter: document.queryCommandState("justifyCenter"),
+      justifyRight: document.queryCommandState("justifyRight"),
+      justifyFull: document.queryCommandState("justifyFull"),
     });
   };
 
@@ -467,8 +477,9 @@ function RichEditor({ onChange, placeholder, dark, value }) {
   return (
     <div className="rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-green-400 border bg-surface">
       <div className="flex items-center gap-0.5 px-2 py-1 border-b bg-muted">
-        {btn("bold",   <strong>B</strong>, "Negrita")}
-        {btn("italic", <em>I</em>,         "Cursiva")}
+        {btn("bold",      <strong>B</strong>,                   "Negrita")}
+        {btn("italic",    <em>I</em>,                           "Cursiva")}
+        {btn("underline", <span className="underline">U</span>, "Subrayado")}
         {divider}
         {btn("insertUnorderedList",
           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>,
@@ -476,6 +487,19 @@ function RichEditor({ onChange, placeholder, dark, value }) {
         {btn("insertOrderedList",
           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h10M7 16h10M3 8h.01M3 12h.01M3 16h.01"/></svg>,
           "Lista numerada")}
+        {divider}
+        {btn("justifyLeft",
+          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h10M4 14h16M4 18h10"/></svg>,
+          "Alinear izquierda")}
+        {btn("justifyCenter",
+          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M7 10h10M4 14h16M7 18h10"/></svg>,
+          "Centrar")}
+        {btn("justifyRight",
+          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M10 10h10M4 14h16M10 18h10"/></svg>,
+          "Alinear derecha")}
+        {btn("justifyFull",
+          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>,
+          "Justificar")}
         {divider}
         <div className="relative">
           <button type="button"
@@ -487,16 +511,19 @@ function RichEditor({ onChange, placeholder, dark, value }) {
           {headingOpen && (
             <>
               <div className="fixed inset-0 z-10" onMouseDown={() => setHeadingOpen(false)} />
-              <div className="absolute left-0 top-full mt-1 z-20 rounded-lg shadow-lg border overflow-hidden min-w-[110px] bg-surface">
+              <div className="absolute left-0 top-full mt-1 z-20 rounded-lg shadow-lg border overflow-hidden min-w-[120px] bg-surface">
+                {[["h1","text-2xl font-black","H1","Encabezado 1"],["h2","text-xl font-bold","H2","Encabezado 2"],["h3","text-lg font-bold","H3","Encabezado 3"],["h4","text-base font-semibold","H4","Encabezado 4"],["h5","text-sm font-medium","H5","Encabezado 5"],["h6","text-xs font-medium text-muted","H6","Encabezado 6"]].map(([tag, cls, label, name]) => (
+                  <button key={tag} type="button"
+                    onMouseDown={e => { e.preventDefault(); exec("formatBlock", `<${tag}>`); setHeadingOpen(false); }}
+                    className={`w-full text-left px-3 py-1.5 transition-colors hover:bg-active text-primary whitespace-nowrap ${cls}`}>
+                    {name}
+                  </button>
+                ))}
+                <div className="border-t" />
                 <button type="button"
-                  onMouseDown={e => { e.preventDefault(); exec("formatBlock", "<h3>"); setHeadingOpen(false); }}
-                  className="w-full text-left px-3 py-2 text-sm font-bold transition-colors text-primary hover:bg-active">
-                  Título
-                </button>
-                <button type="button"
-                  onMouseDown={e => { e.preventDefault(); exec("formatBlock", "<h4>"); setHeadingOpen(false); }}
-                  className="w-full text-left px-3 py-2 text-sm font-semibold transition-colors text-secondary hover:bg-active">
-                  Subtítulo
+                  onMouseDown={e => { e.preventDefault(); exec("formatBlock", "<p>"); setHeadingOpen(false); }}
+                  className="w-full text-left px-3 py-1.5 text-sm transition-colors text-secondary hover:bg-active">
+                  Párrafo
                 </button>
               </div>
             </>
@@ -512,7 +539,7 @@ function RichEditor({ onChange, placeholder, dark, value }) {
         onKeyUp={updateActive}
         onMouseUp={updateActive}
         data-placeholder={placeholder}
-        className="min-h-[88px] px-3 py-2 text-sm focus:outline-none empty:before:content-[attr(data-placeholder)] empty:before:pointer-events-none text-primary empty:before:text-muted"
+        className="min-h-[320px] px-3 py-2 text-sm focus:outline-none empty:before:content-[attr(data-placeholder)] empty:before:pointer-events-none text-primary empty:before:text-muted"
       />
     </div>
   );
@@ -568,7 +595,6 @@ function SettingsModal({ onClose, dark }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
       <div className="w-full max-w-xl rounded-2xl shadow-2xl bg-surface border">
-        {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-subtle">
           <div className="flex items-center gap-2">
             <svg className="w-5 h-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
@@ -675,7 +701,7 @@ function AddPage() {
       jira: "", jiraUrl: "", jiraStatus: "EN CURSO",
       team: [], tags,
       descripcion: "",
-      objetivo: "", usuario: "", hallazgos: "",
+      objetivo: "", usuario: "", hallazgos: "", contenido: "",
       status: "Borrador", archivo: "", archivoUrl: "", reunionUrl: "",
       date: new Date().toISOString().slice(0, 10),
       imagenes: [],
@@ -683,15 +709,11 @@ function AddPage() {
     };
   });
   const [personaTab, setPersonaTab] = useState(0);
-  const [personaPhotoUploading, setPersonaPhotoUploading] = useState(false);
-  const [showPersonaPhotoPicker, setShowPersonaPhotoPicker] = useState(false);
-  const personaPhotoInputRef = useRef(null);
+  const [personaImgUploading, setPersonaImgUploading] = useState(false);
   const [jiraLoading, setJiraLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [jiraError, setJiraError] = useState("");
   const [imageUploading, setImageUploading] = useState(false);
-  const [showImagePicker, setShowImagePicker] = useState(false);
-  const imageInputRef = useRef(null);
   const [showLeaveModal, setShowLeaveModal] = useState(false);
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
   const setType = (t) => {
@@ -918,26 +940,11 @@ function AddPage() {
           </div>
         )}
 
-        {showPersonaPhotoPicker && (
-          <PersonaPhotoPickerModal
-           
-            onClose={() => setShowPersonaPhotoPicker(false)}
-            onSelect={(url) => { setPersonaField(personaTab, "foto", url); setShowPersonaPhotoPicker(false); }}
-            onUpload={() => { personaPhotoInputRef.current?.click(); setShowPersonaPhotoPicker(false); }}
-          />
-        )}
-        <input type="file" accept="image/*" ref={personaPhotoInputRef} className="hidden" onChange={async (e) => {
-          const file = e.target.files?.[0]; if (!file) return;
-          setPersonaPhotoUploading(true);
-          try { const url = await uploadPersonaPhoto(file); setPersonaField(personaTab, "foto", url); } catch (err) { console.error(err); showToast({ title: "Error al subir foto", subtitle: err?.message || "Revisa los permisos del bucket en Supabase." }, "error"); }
-          setPersonaPhotoUploading(false); e.target.value = "";
-        }} />
-
         {/* Top bar */}
         <div className="border-b px-4 py-3 md:px-8 md:py-4 sticky top-0 z-10 bg-page border-subtle">
           <button
             onClick={() => {
-              const hasData = form.title.trim() || form.descripcion.trim() || form.objetivo.trim() || form.hallazgos.trim() || form.jiraUrl || form.archivoUrl;
+              const hasData = form.title.trim() || form.descripcion.trim() || form.contenido.trim() || form.jiraUrl || form.archivoUrl;
               hasData ? setShowLeaveModal(true) : onClose();
             }}
             className="flex items-center gap-2 text-sm font-semibold text-tertiary hover:text-primary"
@@ -948,7 +955,6 @@ function AddPage() {
         </div>
 
       <div className="w-full mx-auto px-4 md:px-8 py-6 md:py-8" style={{ maxWidth: "1600px" }}>
-        {/* Header */}
         <div className="mb-6">
           <h1 className="text-2xl font-bold mb-1 text-primary">Añadir research</h1>
           {form.title.trim() && (
@@ -961,7 +967,7 @@ function AddPage() {
           )}
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-start">
           {/* Columna principal */}
           <div className="md:col-span-3 space-y-4">
 
@@ -991,18 +997,7 @@ function AddPage() {
             {/* Contenido */}
             <div className="rounded-2xl border p-5 space-y-4 bg-surface">
               <SectionTitle>Contenido</SectionTitle>
-              <div>
-                <label className={lbl}>Objetivo del research</label>
-                <RichEditor value={form.objetivo} onChange={v => set("objetivo", v)} placeholder="¿Qué se busca lograr con este entregable?" />
-              </div>
-              <div>
-                <label className={lbl}>Usuario</label>
-                <RichEditor value={form.usuario} onChange={v => set("usuario", v)} placeholder="Perfil de los usuarios involucrados" />
-              </div>
-              <div>
-                <label className={lbl}>Hallazgos y conclusiones</label>
-                <RichEditor value={form.hallazgos} onChange={v => set("hallazgos", v)} placeholder="Principales hallazgos o estado actual" />
-              </div>
+              <RichEditor value={form.contenido} onChange={v => set("contenido", v)} placeholder="" />
             </div>
 
             {/* Referencias */}
@@ -1043,75 +1038,23 @@ function AddPage() {
               </div>
             </div>
 
-            {/* Imágenes adjuntas */}
-            {!PERSONA_TYPES.includes(form.type) && (
-              <div className="rounded-2xl border p-5 space-y-4 bg-surface">
-                <SectionTitle>Imágenes adjuntas</SectionTitle>
-                {(form.imagenes || []).length > 0 && (
-                  <div className="grid grid-cols-4 gap-2">
-                    {(form.imagenes || []).map((url, i) => (
-                      <div key={i} className="relative group aspect-square rounded-lg overflow-hidden cursor-pointer" onClick={() => setShowImagePicker(true)}>
-                        <img src={url} alt="" className="w-full h-full object-cover" />
-                        <button type="button" onClick={e => { e.stopPropagation(); set("imagenes", (form.imagenes || []).filter((_, j) => j !== i)); }}
-                          className="absolute top-1 right-1 w-6 h-6 flex items-center justify-center rounded-lg bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity">
-                          <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/></svg>
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                <Button type="button" color="secondary" disabled={imageUploading} className="flex items-center gap-2" onClick={() => setShowImagePicker(true)}>
-                  {imageUploading
-                    ? <div className="w-4 h-4 rounded-full -2 -gray-300 border-t-green-500 animate-spin" />
-                    : <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                  }
-                  Añadir imágenes
-                </Button>
-                {showImagePicker && (
-                  <ImagePickerModal deliverables={deliverables}
-                    onSelect={(url) => { if (!(form.imagenes || []).includes(url)) set("imagenes", [...(form.imagenes || []), url]); setShowImagePicker(false); }}
-                    onUpload={() => { setShowImagePicker(false); setTimeout(() => imageInputRef.current?.click(), 100); }}
-                    onDelete={async (url) => {
-                      const affected = deliverables.filter(x => (x.imagenes || []).includes(url));
-                      await Promise.all(affected.map(x => supabase.from("deliverables").update({ data: { ...x, imagenes: x.imagenes.filter(u => u !== url) } }).eq("id", x.id)));
-                      if ((form.imagenes || []).includes(url)) set("imagenes", (form.imagenes || []).filter(u => u !== url));
-                    }}
-                    onClose={() => setShowImagePicker(false)} />
-                )}
-                <input ref={imageInputRef} type="file" accept="image/*" multiple className="hidden"
-                  onChange={async (e) => {
-                    const files = Array.from(e.target.files || []);
-                    if (!files.length) return;
-                    setImageUploading(true);
-                    try {
-                      const urls = await Promise.all(files.map(uploadToCloudinary));
-                      set("imagenes", [...(form.imagenes || []), ...urls]);
-                    } catch (err) {
-                      showToast({ title: "Error al subir imagen", subtitle: err?.message || "Inténtalo de nuevo." }, "error");
-                    }
-                    setImageUploading(false);
-                    e.target.value = "";
-                  }} />
-              </div>
-            )}
-
             {/* Personas */}
             {PERSONA_TYPES.includes(form.type) && form.personas.length > 0 && (
-              <div className="rounded-2xl border p-5 bg-surface">
-                <div className="flex items-center justify-between mb-4">
-                  <SectionTitle>Personas</SectionTitle>
+              <div className="rounded-2xl border bg-surface">
+                <div className="flex items-center justify-between px-5 pt-5 pb-4">
+                  <SectionTitle>{form.type === "Buyer Persona" ? "Buyer Personas" : "User Personas"}</SectionTitle>
                   {form.personas.length < 3 && (
                     <Button type="button" size="xs" color="secondary" onClick={addPersona}>
                       <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/></svg>
-                      Añadir
+                      Añadir persona
                     </Button>
                   )}
                 </div>
-                <div className="flex border-b mb-4">
-                  {form.personas.map((p, i) => (
+                <div className="flex border-b px-5">
+                  {form.personas.map((_, i) => (
                     <div key={i} className="flex items-center">
                       <button type="button" onClick={() => setPersonaTab(i)} className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${personaTab === i ? "border-green-500 text-green-600" : "border-transparent text-tertiary hover:text-primary"}`}>
-                        {p.nombre || `Persona ${i + 1}`}
+                        Persona {i + 1}
                       </button>
                       {form.personas.length > 1 && (
                         <button type="button" onClick={() => removePersona(i)} className="-ml-1 mb-px w-4 h-4 flex items-center justify-center text-sm text-muted hover:text-secondary">✕</button>
@@ -1119,65 +1062,25 @@ function AddPage() {
                     </div>
                   ))}
                 </div>
-                {(() => {
-                  const p = form.personas[personaTab];
-                  const fi = (field, placeholder) => <input className={inp} placeholder={placeholder} value={p[field] || ""} onChange={e => setPersonaField(personaTab, field, e.target.value)} />;
-                  const group = (title, children) => (
-                    <div>
-                      <p className="text-sm font-bold uppercase tracking-wider mb-3 text-muted">{title}</p>
-                      <div className="space-y-3">{children}</div>
-                    </div>
-                  );
-                  return (
-                    <div key={personaTab} className="space-y-4">
-                      <div className="flex items-center gap-4">
-                        <div className={`w-20 h-20 rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center border-2 ${p.foto ? "border-green-500" : "border"}`}>
-                          {p.foto ? <img src={p.foto} alt="Foto" className="w-full h-full object-cover" /> : <svg className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>}
-                        </div>
-                        <div className="space-y-1">
-                          <p className="text-sm font-semibold text-tertiary">Imagen de perfil</p>
-                          <p className="text-sm text-muted">500×500 px · JPG</p>
-                          <Button type="button" size="xs" color="secondary" onClick={() => setShowPersonaPhotoPicker(true)} isDisabled={personaPhotoUploading} className="flex items-center gap-2">
-                            {personaPhotoUploading ? "Subiendo..." : (p.foto ? "Cambiar foto" : "Subir foto")}
-                          </Button>
-                        </div>
-                      </div>
-                      <div><label className={lbl}>Nombre</label>{fi("nombre", "Nombre de la persona")}</div>
-                      {group("Información personal", <>
-                        <div className="grid grid-cols-2 gap-3">
-                          <div><label className={lbl}>Cargo</label>{fi("cargo","Cargo o rol")}</div>
-                          <div><label className={lbl}>Edad</label>{fi("edad","Ej: 35 años")}</div>
-                        </div>
-                        <div><label className={lbl}>Ubicación</label>{fi("ubicacion","Distrito, departamento")}</div>
-                        <div><label className={lbl}>Nivel tecnológico</label>
-                          <CustomSelect dark={d} fullWidth value={p.nivelTec || ""} onChange={v => setPersonaField(personaTab, "nivelTec", v)} options={[{value:"",label:"Sin especificar"}, ...NIVEL_TEC.map(n => ({value:n.label,label:`${n.label} — ${n.pct}%`}))]} />
-                        </div>
-                        <div><label className={lbl}>Herramientas usadas</label>{fi("herramientas","Excel, Slack, etc.")}</div>
-                      </>)}
-                      {group("Sobre el negocio", form.type === "Buyer Persona" ? <>
-                        <div><label className={lbl}>Rubro</label>{fi("rubro","Sector o industria")}</div>
-                        <div className="grid grid-cols-2 gap-3">
-                          <div><label className={lbl}>Personal</label>{fi("personal","Ej: 10-50 empleados")}</div>
-                          <div><label className={lbl}>Tiempo de apertura</label>{fi("tiempoApertura","Ej: 5 años")}</div>
-                        </div>
-                        <div><label className={lbl}>Metas a futuro</label><RichEditor value={p.metas || ""} onChange={v => setPersonaField(personaTab, "metas", v)} placeholder="Metas y objetivos a futuro..." /></div>
-                      </> : <>
-                        <div><label className={lbl}>Rubro</label>{fi("rubro","Sector o industria")}</div>
-                        <div><label className={lbl}>Tiempo en el negocio</label>{fi("tiempoNegocio","Ej: 3 años")}</div>
-                      </>)}
-                      {form.type === "Buyer Persona" && <>
-                        {group("Adquisición del producto", <RichEditor value={p.adquisicion || ""} onChange={v => setPersonaField(personaTab, "adquisicion", v)} placeholder="Razones de adquisición..." />)}
-                        {group("Comunicaciones", <RichEditor value={p.comunicaciones || ""} onChange={v => setPersonaField(personaTab, "comunicaciones", v)} placeholder="Canales de comunicación..." />)}
-                      </>}
-                      {form.type === "User Persona" && <>
-                        {group("Objetivos y metas", <RichEditor value={p.objetivos || ""} onChange={v => setPersonaField(personaTab, "objetivos", v)} placeholder="Objetivos y metas del usuario..." />)}
-                        {group("Frustraciones y dolores", <RichEditor value={p.dolores || ""} onChange={v => setPersonaField(personaTab, "dolores", v)} placeholder="Frustraciones y dolores..." />)}
-                      </>}
-                    </div>
-                  );
-                })()}
+                <div className="p-5">
+                  <PersonaImageUploader
+                    key={personaTab}
+                    images={(form.personas[personaTab]?.images) || []}
+                    uploading={personaImgUploading}
+                    onChange={urls => setPersonaField(personaTab, "images", urls)}
+                    onUpload={async (files) => {
+                      setPersonaImgUploading(true);
+                      try {
+                        const url = await uploadToCloudinary(files[0]);
+                        setPersonaField(personaTab, "images", [url]);
+                      } catch (err) { showToast({ title: "Error al subir imagen", subtitle: err?.message }, "error"); }
+                      setPersonaImgUploading(false);
+                    }}
+                  />
+                </div>
               </div>
             )}
+
           </div>
 
           {/* Sidebar */}
@@ -1225,6 +1128,24 @@ function AddPage() {
                 <label className={lbl}>Persona asignada</label>
                 <CustomSelect dark={d} fullWidth value={form.team[0] || ""} onChange={v => set("team", v ? [v] : [])} options={[{value:"",label:"Seleccione"}, ...editors.map(n => ({value:n,label:n}))]} />
               </div>
+            </div>
+
+            {/* Imágenes adjuntas */}
+            <div className="rounded-2xl border p-5 space-y-4 bg-surface shadow-xs">
+              <SectionTitle>Imágenes adjuntas</SectionTitle>
+              <AttachedImagesUploader
+                images={form.imagenes || []}
+                onChange={urls => set("imagenes", urls)}
+                uploading={imageUploading}
+                onUploadFile={async (file) => {
+                  setImageUploading(true);
+                  try {
+                    const url = await uploadToCloudinary(file);
+                    setForm(f => ({ ...f, imagenes: [...(f.imagenes || []), url] }));
+                  } catch (err) { showToast({ title: "Error al subir imagen", subtitle: err?.message }, "error"); }
+                  setImageUploading(false);
+                }}
+              />
             </div>
 
           </div>
@@ -1300,6 +1221,7 @@ function HeroGrid({ dark: d }) {
     const SIZE = 64;
     const DURATION = 5.5; // seconds per ripple
     const PAUSE    = 1.2; // gap between ripples
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     let rafId, timeoutId;
     let ripple = null;
 
@@ -1320,7 +1242,7 @@ function HeroGrid({ dark: d }) {
       };
       timeoutId = setTimeout(spawnRipple, (DURATION + PAUSE) * 1000);
     };
-    spawnRipple();
+    if (!reducedMotion) spawnRipple();
 
     const [cr, cg, cb] = d ? [0, 210, 115] : [0, 179, 105];
 
@@ -1407,12 +1329,12 @@ function Card({ item, dark, fromLabel }) {
   const pc = productTag ? (PRODUCT_COLORS[productTag] || "#00B369") : null;
 
   return (
-    <div onClick={() => navigate(`/research/${toSlug(item.title)}`, { state: { fromLabel } })} className="rounded-2xl p-6 cursor-pointer group flex flex-col bg-surface border hover:border-green-500 hover:shadow-md shadow-xs">
+    <button onClick={() => navigate(`/research/${toSlug(item.title)}`, { state: { fromLabel } })} className="w-full text-left rounded-2xl p-6 cursor-pointer group flex flex-col bg-surface border hover:border-green-500 hover:shadow-md shadow-xs focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-1 transition-all duration-150">
       <div className="flex items-start justify-between mb-4">
         <UIBadge color={getBadgeColor(item.typeColor)}>{item.type}</UIBadge>
         <span className="text-sm text-muted">{formatDate(item.date)}</span>
       </div>
-      <h3 className="font-semibold text-lg leading-snug mb-3 text-primary group-hover:text-green-600">{item.title}</h3>
+      <h3 className="card-title font-semibold text-lg leading-snug mb-3 text-primary group-hover:text-green-600">{item.title}</h3>
       <p className="text-base leading-relaxed mb-4 line-clamp-2 flex-1 text-tertiary">{item.descripcion || stripHtml(item.objetivo)}</p>
       <div className="flex flex-wrap gap-2 mb-5">
         {item.tags.filter(tag => !PRODUCTS.includes(tag)).map(tag => <span key={tag} className="text-sm rounded-lg px-2.5 py-1 text-tertiary bg-muted border">{tag}</span>)}
@@ -1436,164 +1358,407 @@ function Card({ item, dark, fromLabel }) {
           </span>
         )}
       </div>
-    </div>
+    </button>
+  );
+}
+
+// ── CLOUDINARY LIBRARY PICKER ──
+function CloudinaryPickerModal({ onSelect, onClose }) {
+  const [resources, setResources] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState("");
+  const [confirmDelete, setConfirmDelete] = useState(null); // { public_id, url }
+  const [deleting, setDeleting] = useState(false);
+
+  const fetchList = () => {
+    setLoading(true);
+    fetch("/api/cloudinary/list")
+      .then(r => r.json())
+      .then(data => { setResources(data.resources || []); setLoading(false); })
+      .catch(() => { setError("No se pudo cargar la librería."); setLoading(false); });
+  };
+
+  useEffect(() => { fetchList(); }, []);
+
+  const handleUpload = async (e) => {
+    const file = e.target.files?.[0]; if (!file) return;
+    setUploading(true);
+    try {
+      const url = await uploadToCloudinary(file);
+      onSelect(url);
+    } catch (err) { setError("Error al subir imagen."); }
+    setUploading(false);
+    e.target.value = "";
+  };
+
+  const handleDelete = async () => {
+    if (!confirmDelete) return;
+    setDeleting(true);
+    try {
+      await deleteFromCloudinary(confirmDelete.url);
+      setResources(r => r.filter(i => i.public_id !== confirmDelete.public_id));
+    } catch (e) { console.error(e); }
+    setDeleting(false);
+    setConfirmDelete(null);
+  };
+
+  return (
+    <>
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={onClose}>
+        <div onClick={e => e.stopPropagation()} className="w-[640px] max-h-[80vh] rounded-2xl flex flex-col shadow-2xl bg-surface border">
+          <div className="flex items-center justify-between px-6 py-4 border-b flex-shrink-0">
+            <h2 className="font-semibold text-base text-primary">Librería de imágenes</h2>
+            <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-hover text-tertiary">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+          </div>
+          <div className="px-5 py-3 border-b flex-shrink-0">
+            <Button color="secondary" size="sm" className="flex items-center gap-2 relative" isDisabled={uploading}>
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+              {uploading ? "Subiendo..." : "Subir imagen"}
+              <input type="file" accept="image/*" className="absolute inset-0 opacity-0 cursor-pointer" onChange={handleUpload} />
+            </Button>
+          </div>
+          <div className="flex-1 overflow-y-auto p-5">
+            {loading ? (
+              <div className="flex justify-center py-12"><div className="w-8 h-8 rounded-full border-4 border-gray-200 border-t-green-500 animate-spin" /></div>
+            ) : error ? (
+              <p className="text-sm text-center py-12 text-red-500">{error}</p>
+            ) : resources.length === 0 ? (
+              <p className="text-sm text-center py-12 text-muted">No hay imágenes en la librería.</p>
+            ) : (
+              <div className="grid grid-cols-3 gap-3">
+                {resources.map(img => (
+                  <div key={img.public_id} className="relative group rounded-xl overflow-hidden border aspect-square">
+                    <img
+                      src={img.url}
+                      alt=""
+                      onClick={() => onSelect(img.url)}
+                      className="w-full h-full object-cover cursor-pointer"
+                    />
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition-colors pointer-events-none" />
+                    <button
+                      type="button"
+                      onClick={() => setConfirmDelete(img)}
+                      className="absolute bottom-2 right-2 w-8 h-8 rounded-lg bg-red-600 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-700 pointer-events-auto"
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+      {confirmDelete && (
+        <ConfirmModal
+          title="Eliminar imagen"
+          message="¿Estás seguro de que quieres eliminar esta imagen de la librería? Esta acción no se puede deshacer."
+          confirmLabel={deleting ? "Eliminando..." : "Sí, eliminar"}
+          danger
+          onConfirm={handleDelete}
+          onCancel={() => setConfirmDelete(null)}
+        />
+      )}
+    </>
+  );
+}
+
+// ── PERSONA IMAGE UPLOADER ──
+function AttachedImagesUploader({ images = [], onChange, uploading, onUploadFile }) {
+  const [dragging, setDragging] = useState(false);
+  const [showPicker, setShowPicker] = useState(false);
+
+  const handleFiles = async (files) => {
+    const arr = Array.from(files).filter(f => f.type.startsWith("image/"));
+    for (const file of arr) await onUploadFile(file);
+  };
+
+  return (
+    <>
+      {showPicker && (
+        <CloudinaryPickerModal
+          onClose={() => setShowPicker(false)}
+          onSelect={url => { if (!images.includes(url)) onChange([...images, url]); setShowPicker(false); }}
+        />
+      )}
+      <div className="space-y-3">
+        <Button type="button" color="secondary" size="sm" onClick={() => setShowPicker(true)} className="w-full flex items-center justify-center gap-2">
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+          Seleccionar de la librería
+        </Button>
+        {images.length === 0 && (
+          <label
+            className={`flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed p-8 cursor-pointer transition-colors ${uploading ? "opacity-50 pointer-events-none" : dragging ? "border-green-400 bg-green-50/10" : "hover:border-green-400"}`}
+            onDragOver={e => { e.preventDefault(); setDragging(true); }}
+            onDragLeave={() => setDragging(false)}
+            onDrop={e => { e.preventDefault(); setDragging(false); handleFiles(e.dataTransfer.files); }}
+          >
+            <svg className={`w-6 h-6 transition-colors ${dragging ? "text-green-500" : "text-muted"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+            </svg>
+            <span className="text-sm font-medium text-tertiary">{uploading ? "Subiendo..." : dragging ? "Suelta aquí" : "Subir imágenes"}</span>
+            <span className="text-xs text-muted">PNG, JPG, WebP · arrastra o haz clic</span>
+            <input type="file" accept="image/*" multiple className="hidden" onChange={e => handleFiles(e.target.files)} />
+          </label>
+        )}
+        {images.length > 0 && (
+          <div className="grid grid-cols-3 gap-2">
+            {images.map((url, i) => (
+              <div key={i} className="relative group aspect-square rounded-lg overflow-hidden">
+                <img src={url} alt="" className="w-full h-full object-cover" />
+                <button type="button" onClick={() => onChange(images.filter((_, j) => j !== i))}
+                  className="absolute top-1 right-1 w-6 h-6 flex items-center justify-center rounded-lg bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity">
+                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </>
+  );
+}
+
+function PersonaImageUploader({ images = [], onChange, uploading, onUpload }) {
+  const [dragging, setDragging] = useState(false);
+  const [showPicker, setShowPicker] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const image = images[0] || null;
+
+  const handleFiles = (files) => {
+    const arr = Array.from(files).filter(f => f.type.startsWith("image/"));
+    if (arr.length) onUpload([arr[0]]);
+  };
+
+  const handleDelete = async () => {
+    setDeleting(true);
+    try { await deleteFromCloudinary(image); } catch (e) { console.error(e); }
+    onChange([]);
+    setDeleting(false);
+    setConfirmDelete(false);
+  };
+
+  return (
+    <>
+      {showPicker && (
+        <CloudinaryPickerModal
+          onClose={() => setShowPicker(false)}
+          onSelect={url => { onChange([url]); setShowPicker(false); }}
+        />
+      )}
+      {confirmDelete && (
+        <ConfirmModal
+          title="Eliminar imagen"
+          message="¿Estás seguro de que quieres eliminar esta imagen? Esta acción no se puede deshacer."
+          confirmLabel={deleting ? "Eliminando..." : "Sí, eliminar"}
+          danger
+          onConfirm={handleDelete}
+          onCancel={() => setConfirmDelete(false)}
+        />
+      )}
+
+      {image ? (
+        <div className="space-y-2">
+          <div className="flex gap-2">
+            <Button type="button" color="secondary" size="sm" onClick={() => setShowPicker(true)} className="flex-1 flex items-center justify-center gap-1.5" isDisabled={uploading || deleting}>
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+              Cambiar imagen
+            </Button>
+            <Button type="button" color="secondary" size="sm" onClick={() => setConfirmDelete(true)} className="flex items-center justify-center gap-1.5 text-red-600 hover:text-red-700 border-red-200 hover:border-red-300" isDisabled={deleting || uploading}>
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+              Eliminar
+            </Button>
+          </div>
+          <div className="rounded-xl overflow-hidden border">
+            <img src={image} alt="" className="w-full object-contain max-h-[480px] bg-muted" />
+          </div>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          <label
+            className={`flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed p-8 cursor-pointer transition-colors ${uploading ? "opacity-50 pointer-events-none" : dragging ? "border-green-400 bg-green-50/10" : "hover:border-green-400"}`}
+            onDragOver={e => { e.preventDefault(); setDragging(true); }}
+            onDragLeave={() => setDragging(false)}
+            onDrop={e => { e.preventDefault(); setDragging(false); handleFiles(e.dataTransfer.files); }}
+          >
+            <svg className={`w-6 h-6 transition-colors ${dragging ? "text-green-500" : "text-muted"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+            </svg>
+            <span className="text-sm font-medium text-tertiary">{uploading ? "Subiendo..." : dragging ? "Suelta aquí" : "Subir imagen"}</span>
+            <span className="text-xs text-muted">PNG, JPG, WebP · arrastra o haz clic</span>
+            <input type="file" accept="image/*" className="hidden" onChange={e => handleFiles(e.target.files)} />
+          </label>
+          <Button type="button" color="secondary" size="sm" onClick={() => setShowPicker(true)} className="w-full flex items-center justify-center gap-1.5">
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+            Seleccionar de la librería
+          </Button>
+        </div>
+      )}
+    </>
   );
 }
 
 // ── PERSONA DETAIL TABS ──
 function PersonaDetailTabs({ personas, type, dark: d }) {
   const [tab, setTab] = useState(0);
+  const [lightbox, setLightbox] = useState(null); // { images, index }
+  const [zoom, setZoom] = useState(1);
   const p = personas[tab] || {};
   const isBuyer = type === "Buyer Persona";
-
-  const nivelPct = nivelPctMap[(p.nivelTec || "").toLowerCase()] || null;
-
   const bannerColor = isBuyer ? "#2563EB" : "#00B369";
+  const sectionTitle = isBuyer ? "Buyer Personas" : "User Personas";
 
-  const FieldCard = ({ label, value, description }) =>
-    value ? (
-      <div className="py-2 border-b">
-        <p className="text-sm mb-0.5 text-muted">{label}</p>
-        <p className="text-sm font-semibold leading-snug text-primary">{value}</p>
-        {description && <p className="text-sm mt-1 leading-snug text-tertiary">{description}</p>}
-      </div>
-    ) : null;
+  const openLightbox = (images, index) => { setLightbox({ images, index }); setZoom(1); };
+  const closeLightbox = () => { setLightbox(null); setZoom(1); };
+  const zoomIn  = (e) => { e.stopPropagation(); setZoom(z => Math.min(z + 0.5, 1.5)); };
+  const zoomOut = (e) => { e.stopPropagation(); setZoom(z => Math.max(z - 0.5, 1)); };
 
-  const NivelCard = () =>
-    p.nivelTec ? (
-      <div className="py-2 border-b">
-        <p className="text-sm mb-0.5 text-muted">Nivel tecnológico</p>
-        <p className="text-sm font-semibold mb-1.5 text-primary">{p.nivelTec}</p>
-        {nivelPct && (
-          <div className="h-1.5 rounded-full overflow-hidden bg-active">
-            <div className="h-full rounded-full bg-green-500 transition-all" style={{ width: `${nivelPct}%` }} />
-          </div>
-        )}
-        {p.herramientas && <p className="text-sm mt-1.5 text-tertiary">Utiliza <strong>{p.herramientas}</strong></p>}
-      </div>
-    ) : null;
+  useEffect(() => {
+    if (!lightbox) return;
+    const onKey = (e) => {
+      if (e.key === "Escape") closeLightbox();
+      if (e.key === "ArrowRight" && lightbox.index < lightbox.images.length - 1)
+        setLightbox(lb => ({ ...lb, index: lb.index + 1 }));
+      if (e.key === "ArrowLeft" && lightbox.index > 0)
+        setLightbox(lb => ({ ...lb, index: lb.index - 1 }));
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [lightbox]);
 
-  const SectionHeader = ({ children }) => (
-    <div className="rounded-lg px-4 py-2.5 mb-3 bg-muted">
-      <p className="text-sm font-bold text-primary">{children}</p>
-    </div>
-  );
-
-  const ContentCard = ({ title, description }) =>
-    title ? (
-      <div className="rounded-lg p-4 bg-surface border">
-        <p className="text-sm font-bold leading-snug text-primary">{title}</p>
-        {description && <p className="text-sm mt-1.5 leading-snug text-tertiary">{description}</p>}
-      </div>
-    ) : null;
-
-  const SideSection = ({ title, children }) => (
-    <div className="rounded-xl overflow-hidden border">
-      <div className="px-3 py-2" style={{ backgroundColor: bannerColor }}>
-        <p className="text-white font-bold text-sm">{title}</p>
-      </div>
-      <div className="px-3 bg-surface">{children}</div>
-    </div>
-  );
+  const handleDownload = async (e) => {
+    e.stopPropagation();
+    const url = lightbox.images[lightbox.index];
+    try {
+      const res = await fetch(url);
+      const blob = await res.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = blobUrl;
+      a.download = `persona-${lightbox.index + 1}.jpg`;
+      a.click();
+      URL.revokeObjectURL(blobUrl);
+    } catch {
+      window.open(url, "_blank");
+    }
+  };
 
   return (
-    <div className="rounded-2xl p-5 bg-surface border shadow-xs">
-      {/* Persona tabs */}
-      {personas.length > 1 && (
-        <div className="flex border-b mb-4">
-          {personas.map((persona, i) => (
+    <>
+      <div className="rounded-2xl overflow-hidden border shadow-xs bg-surface">
+        {/* Banner */}
+        <div className="px-6 py-4 flex items-center gap-3" style={{ backgroundColor: bannerColor }}>
+          <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: "rgba(255,255,255,0.2)" }}>
+            {isBuyer
+              ? <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+              : <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+            }
+          </div>
+          <p className="text-white text-base font-bold">{sectionTitle}</p>
+        </div>
+        {/* Tabs Persona 1 / Persona 2 */}
+        <div className="flex border-b">
+          {personas.map((_, i) => (
             <button key={i} onClick={() => setTab(i)}
-              className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${tab === i ? "border-green-500 text-green-600" : "border-transparent text-tertiary hover:text-primary"}`}>
-              {persona.nombre || `Persona ${i + 1}`}
+              className={`px-5 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors ${tab === i ? "border-green-500 text-green-600" : "border-transparent text-tertiary hover:text-primary"}`}>
+              Persona {i + 1}
             </button>
           ))}
         </div>
-      )}
-
-      {/* Header banner */}
-      <div className="rounded-xl overflow-hidden mb-5" style={{ backgroundColor: bannerColor }}>
-        <div className="px-6 py-5 flex items-center gap-5">
-          <div className="w-16 h-16 rounded-full flex-shrink-0 flex items-end justify-center overflow-hidden" style={{ backgroundColor: "rgba(255,255,255,0.25)" }}>
-            {p.foto
-              ? <img src={p.foto} alt={p.nombre} className="w-full h-full object-cover rounded-full" />
-              : <svg className="w-12 h-12 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
-            }
-          </div>
-          <div>
-            <p className="text-white/80 text-sm font-semibold mb-0.5">{type}</p>
-            <h2 className="text-white text-2xl font-bold leading-tight">{p.nombre || "Sin nombre"}</h2>
-            {p.cargo && <p className="text-white/70 text-sm mt-0.5">{p.cargo}</p>}
-          </div>
-        </div>
-      </div>
-
-      {/* Two-column layout */}
-      <div className="flex flex-col md:flex-row gap-5">
-        {/* LEFT sidebar — below main on mobile */}
-        <div className="w-full md:w-64 md:flex-shrink-0 space-y-5">
-          <SideSection title="Información personal">
-            <FieldCard label="Cargo" value={p.cargo} />
-            <FieldCard label="Edad" value={p.edad} />
-            <FieldCard label="Ubicación" value={p.ubicacion} />
-            <NivelCard />
-          </SideSection>
-          <SideSection title="Sobre el negocio">
-            <FieldCard label="Rubro" value={p.rubro} />
-            {isBuyer ? (
-              <>
-                <FieldCard label="Cantidad de personal" value={p.personal} />
-                <FieldCard label="Tiempo de apertura" value={p.tiempoApertura} />
-                {p.metas && (
-                  <div className="py-2 border-b">
-                    <p className="text-sm mb-0.5 text-muted">Metas a futuro</p>
-                    <div className="rich-content text-sm leading-snug text-primary" dangerouslySetInnerHTML={{ __html: sanitizeHtml(p.metas) }} />
-                  </div>
-                )}
-              </>
-            ) : (
-              <FieldCard label="Tiempo en el negocio" value={p.tiempoNegocio} />
-            )}
-          </SideSection>
-        </div>
-
-        {/* RIGHT content */}
-        <div className="flex-1 min-w-0 space-y-5">
-          {isBuyer ? (
-            <>
-              {/* Adquisición del producto */}
-              {p.adquisicion && (
-                <div>
-                  <SectionHeader>Adquisición del producto</SectionHeader>
-                  <div className="rich-content text-sm leading-relaxed text-secondary" dangerouslySetInnerHTML={{ __html: sanitizeHtml(p.adquisicion) }} />
-                </div>
-              )}
-              {/* Comunicaciones */}
-              {p.comunicaciones && (
-                <div>
-                  <SectionHeader>Comunicaciones</SectionHeader>
-                  <div className="rich-content text-sm leading-relaxed text-secondary" dangerouslySetInnerHTML={{ __html: sanitizeHtml(p.comunicaciones) }} />
-                </div>
-              )}
-            </>
+        {/* Imagen de la persona activa */}
+        <div className="p-5">
+          {(p.images || []).length > 0 ? (
+            <div className="space-y-4">
+              {(p.images || []).map((url, i) => (
+                <button key={i} onClick={() => openLightbox(p.images, i)}
+                  className="w-full block rounded-xl overflow-hidden cursor-zoom-in border">
+                  <img src={url} alt={`Imagen ${i + 1}`} className="w-full" />
+                </button>
+              ))}
+            </div>
           ) : (
-            <>
-              {p.objetivos && (
-                <div>
-                  <SectionHeader>Objetivos y metas</SectionHeader>
-                  <div className="rich-content text-sm leading-relaxed text-secondary" dangerouslySetInnerHTML={{ __html: sanitizeHtml(p.objetivos) }} />
-                </div>
-              )}
-              {p.dolores && (
-                <div>
-                  <SectionHeader>Frustraciones y dolores</SectionHeader>
-                  <div className="rich-content text-sm leading-relaxed text-secondary" dangerouslySetInnerHTML={{ __html: sanitizeHtml(p.dolores) }} />
-                </div>
-              )}
-            </>
+            <p className="text-sm text-center py-8 text-muted">No hay imagen para esta persona.</p>
           )}
         </div>
       </div>
-    </div>
+
+      {/* Lightbox — portal para evitar contención por overflow de ancestros */}
+      {lightbox && createPortal(
+        <div className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm" onClick={closeLightbox}>
+          {/* Botones — absolute top-right */}
+          <div className="absolute top-3 right-3 flex items-center gap-2" onClick={e => e.stopPropagation()}>
+            <button onClick={zoomOut} disabled={zoom <= 1}
+              className="w-9 h-9 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM7 10h6"/></svg>
+            </button>
+            <button onClick={zoomIn} disabled={zoom >= 1.5}
+              className="w-9 h-9 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/></svg>
+            </button>
+            <button onClick={handleDownload}
+              className="w-9 h-9 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors" title="Descargar imagen">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+            </button>
+            <button onClick={closeLightbox}
+              className="w-9 h-9 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors">
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+          </div>
+
+          {/* Imagen — ocupa todo el alto */}
+          <div className="w-full h-full overflow-auto" onClick={e => e.stopPropagation()}>
+            <div style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: zoom === 1 ? "center" : "flex-start",
+              minHeight: "100%",
+              padding: "16px 64px",
+            }}>
+              <img
+                src={lightbox.images[lightbox.index]}
+                alt=""
+                style={{
+                  maxWidth: zoom === 1 ? "100%" : "none",
+                  maxHeight: zoom === 1 ? "calc(100vh - 120px)" : "none",
+                  width: zoom === 1 ? "auto" : `${zoom * 100}%`,
+                  transition: "width 200ms ease, max-width 200ms ease, max-height 200ms ease",
+                }}
+                className="rounded-lg shadow-2xl object-contain"
+              />
+            </div>
+          </div>
+
+          {/* Prev / Next */}
+          {lightbox.index > 0 && (
+            <button onClick={e => { e.stopPropagation(); setLightbox(lb => ({ ...lb, index: lb.index - 1 })); setZoom(1); }}
+              className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors">
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7"/></svg>
+            </button>
+          )}
+          {lightbox.index < lightbox.images.length - 1 && (
+            <button onClick={e => { e.stopPropagation(); setLightbox(lb => ({ ...lb, index: lb.index + 1 })); setZoom(1); }}
+              className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors">
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7"/></svg>
+            </button>
+          )}
+
+          {/* Dots */}
+          {lightbox.images.length > 1 && (
+            <div className="flex justify-center gap-1.5 pb-4 flex-shrink-0" onClick={e => e.stopPropagation()}>
+              {lightbox.images.map((_, i) => (
+                <button key={i} onClick={() => { setLightbox(lb => ({ ...lb, index: i })); setZoom(1); }}
+                  className={`w-2 h-2 rounded-full transition-colors ${i === lightbox.index ? "bg-white" : "bg-white/30 hover:bg-white/60"}`} />
+              ))}
+            </div>
+          )}
+        </div>,
+        document.body
+      )}
+    </>
   );
 }
 
@@ -1792,7 +1957,15 @@ function DetailPage() {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [showViews, setShowViews] = useState(false);
   const [lightbox, setLightbox] = useState(null);
+  const [viewCount, setViewCount] = useState(null);
   const item = deliverables.find(x => toSlug(x.title) === slug);
+
+  useEffect(() => {
+    if (!item) return;
+    supabase.from("research_views").select("*", { count: "exact", head: true })
+      .eq("research_id", String(item.id))
+      .then(({ count }) => setViewCount(count ?? 0));
+  }, [item?.id]);
 
   // Registrar vista — debe ir antes del early return (Rules of Hooks)
   useEffect(() => {
@@ -1811,7 +1984,7 @@ function DetailPage() {
     });
   }, [item?.id]);
 
-  if (!item) return <div className="flex-1 flex items-center justify-center bg-page text-gray-400 text-gray-500">Research no encontrado.</div>;
+  if (!item) return <div className="flex-1 flex items-center justify-center bg-page text-gray-500">Research no encontrado.</div>;
   const related = deliverables.filter(r => r.id !== item.id && r.tags[0] === item.tags[0] && r.status === "Publicado").slice(0, 3);
 
   const jiraDone = /done|closed|resolved|finaliz|complet/i.test(item.jiraStatus || "");
@@ -1833,7 +2006,7 @@ function DetailPage() {
       )}
       {/* Top bar */}
       <div className="border-b px-4 py-3 md:px-8 md:py-4 sticky top-0 z-10 flex items-center justify-between bg-page border">
-        <button onClick={() => window.history.length > 1 ? navigate(-1) : navigate("/research")} className="flex items-center gap-2 text-sm font-semibold text-tertiary hover:text-primary">
+        <button onClick={() => window.history.length > 1 ? navigate(-1) : navigate("/research")} className="flex items-center gap-2 text-sm font-semibold text-tertiary hover:text-primary transition-colors duration-150 cursor-pointer">
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
@@ -1845,6 +2018,9 @@ function DetailPage() {
             <Button color="secondary" onClick={() => setShowViews(true)} className="flex items-center gap-1.5">
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
               Ver vistas
+              {viewCount !== null && (
+                <span className="inline-flex items-center justify-center w-5 h-5 rounded-full text-xs font-bold" style={{ backgroundColor: "var(--color-text-secondary)", color: "var(--color-bg-surface)" }}>{viewCount}</span>
+              )}
             </Button>
           )}
           {item.isCustom && isEditor && (
@@ -1935,28 +2111,33 @@ function DetailPage() {
 
           {/* RIGHT — content */}
           <div className="flex-1 min-w-0 space-y-6">
-            {item.descripcion && (
-              <div>
-                <h3 className="text-xl font-bold mb-2 text-primary">Descripción corta</h3>
-                <p className="text-base leading-relaxed text-secondary">{item.descripcion}</p>
-              </div>
+            {item.contenido ? (
+              <div className="rich-content text-base leading-relaxed text-secondary" dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.contenido) }} />
+            ) : (
+              <>
+                {item.objetivo && (
+                  <div>
+                    <h3 className="text-xl font-bold mb-2 text-primary">Objetivo del research</h3>
+                    <div className="rich-content text-base leading-relaxed text-secondary" dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.objetivo) }} />
+                  </div>
+                )}
+                {item.usuario && (
+                  <div>
+                    <h3 className="text-xl font-bold mb-2 text-primary">Usuario</h3>
+                    <div className="rich-content text-base leading-relaxed text-secondary" dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.usuario) }} />
+                  </div>
+                )}
+                {item.hallazgos && (
+                  <div>
+                    <h3 className="text-xl font-bold mb-2 text-primary">Hallazgos y conclusiones</h3>
+                    <div className="rich-content text-base leading-relaxed text-secondary" dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.hallazgos) }} />
+                  </div>
+                )}
+              </>
             )}
-            {item.objetivo && (
-              <div>
-                <h3 className="text-xl font-bold mb-2 text-primary">Objetivo del research</h3>
-                <div className="rich-content text-base leading-relaxed text-secondary" dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.objetivo) }} />
-              </div>
-            )}
-            {item.usuario && (
-              <div>
-                <h3 className="text-xl font-bold mb-2 text-primary">Usuario</h3>
-                <div className="rich-content text-base leading-relaxed text-secondary" dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.usuario) }} />
-              </div>
-            )}
-            {item.hallazgos && (
-              <div>
-                <h3 className="text-xl font-bold mb-2 text-primary">Hallazgos y conclusiones</h3>
-                <div className="rich-content text-base leading-relaxed text-secondary" dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.hallazgos) }} />
+            {PERSONA_TYPES.includes(item.type) && item.personas && item.personas.length > 0 && (
+              <div className="space-y-4">
+                <PersonaDetailTabs personas={item.personas} type={item.type} />
               </div>
             )}
             {item.imagenes && item.imagenes.length > 0 && (
@@ -1996,9 +2177,6 @@ function DetailPage() {
                   </div>
                 )}
               </div>
-            )}
-            {PERSONA_TYPES.includes(item.type) && item.personas && item.personas.length > 0 && (
-              <PersonaDetailTabs personas={item.personas} type={item.type} />
             )}
           </div>
         </div>
@@ -2041,7 +2219,6 @@ function CoverPickerModal({ dark: d, onSelect, onUpload, onClose }) {
         onClick={e => e.stopPropagation()}
         className="w-[560px] max-h-[80vh] rounded-2xl flex flex-col shadow-2xl bg-surface border"
       >
-        {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b">
           <h2 className="font-semibold text-base text-primary">Elegir portada</h2>
           <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-hover text-tertiary">
@@ -2311,6 +2488,41 @@ function ProductPage() {
     }
   };
 
+  const [ppLightbox, setPpLightbox] = useState(null); // { images, index }
+  const [ppZoom, setPpZoom] = useState(1);
+  const openPpLightbox = (images, index) => { setPpLightbox({ images, index }); setPpZoom(1); };
+  const closePpLightbox = () => { setPpLightbox(null); setPpZoom(1); };
+
+  useEffect(() => {
+    if (!ppLightbox) return;
+    const onKey = (e) => {
+      if (e.key === "Escape") closePpLightbox();
+      if (e.key === "ArrowRight" && ppLightbox.index < ppLightbox.images.length - 1)
+        setPpLightbox(lb => ({ ...lb, index: lb.index + 1 }));
+      if (e.key === "ArrowLeft" && ppLightbox.index > 0)
+        setPpLightbox(lb => ({ ...lb, index: lb.index - 1 }));
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [ppLightbox]);
+
+  const handlePpDownload = async (e) => {
+    e.stopPropagation();
+    const url = ppLightbox.images[ppLightbox.index];
+    try {
+      const res = await fetch(url);
+      const blob = await res.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = blobUrl;
+      a.download = `persona-${ppLightbox.index + 1}.jpg`;
+      a.click();
+      URL.revokeObjectURL(blobUrl);
+    } catch {
+      window.open(url, "_blank");
+    }
+  };
+
   const color = PRODUCT_COLORS[product] || "#00B369";
   const productDeliverables = deliverables.filter(item => item.tags.includes(product));
 
@@ -2331,6 +2543,7 @@ function ProductPage() {
   };
 
   return (
+    <>
     <div className="flex-1 overflow-y-auto">
       {showCoverPicker && (
         <CoverPickerModal
@@ -2390,7 +2603,7 @@ function ProductPage() {
                     className="flex items-center gap-1.5"
                   >
                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
-                    Añadir
+                    Añadir nueva
                   </Button>
                 )}
               </div>
@@ -2416,54 +2629,25 @@ function ProductPage() {
                       {/* Personas — compact 3-col */}
                       {inv.personas && inv.personas.length > 0 && (
                         <div className="p-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                          {inv.personas.map((p, i) => {
-                            const nivelPct = nivelPctMap[(p.nivelTec || "").toLowerCase()] || null;
-                            return (
-                              <div key={i} className="rounded-xl overflow-hidden border">
-                                <div className="px-4 py-3 flex items-center gap-2.5" style={{ backgroundColor: type === "Buyer Persona" ? "#2563EB" : "#00B369" }}>
-                                  <div className="w-8 h-8 rounded-full flex items-end justify-center overflow-hidden flex-shrink-0" style={{ backgroundColor: "rgba(255,255,255,0.25)" }}>
-                                    {p.foto
-                                      ? <img src={p.foto} alt="" className="w-full h-full object-cover" />
-                                      : <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
-                                    }
-                                  </div>
-                                  <div className="min-w-0">
-                                    <p className="text-white/70 text-sm">{type}</p>
-                                    <p className="text-white text-sm font-bold truncate">{p.nombre || `Persona ${i + 1}`}</p>
-                                  </div>
-                                </div>
-                                <div className="p-3 space-y-2 bg-surface">
-                                  {type === "Buyer Persona" ? (<>
-                                    {(p.cargo || p.edad) && <div className="grid grid-cols-2 gap-2">
-                                      {p.cargo && <div><p className="text-sm text-muted">Cargo</p><p className="text-sm font-semibold text-primary">{p.cargo}</p></div>}
-                                      {p.edad && <div><p className="text-sm text-muted">Edad</p><p className="text-sm font-semibold text-primary">{p.edad}</p></div>}
-                                    </div>}
-                                    {(p.ubicacion || p.nivelTec) && <div className="grid grid-cols-2 gap-2">
-                                      {p.ubicacion && <div><p className="text-sm text-muted">Ubicación</p><p className="text-sm font-semibold text-primary">{p.ubicacion}</p></div>}
-                                      {p.nivelTec && <div><p className="text-sm text-muted">Nivel tec.</p><p className="text-sm font-semibold mb-1 text-primary">{p.nivelTec}</p>{(() => { const pct = nivelPctMap[(p.nivelTec || "").toLowerCase()] || null; return pct ? <div className="h-1 rounded-full overflow-hidden bg-active"><div className="h-full rounded-full bg-green-500" style={{ width: `${pct}%` }} /></div> : null; })()}</div>}
-                                    </div>}
-                                    {(p.rubro || p.personal) && <div className="grid grid-cols-2 gap-2">
-                                      {p.rubro && <div><p className="text-sm text-muted">Rubro</p><p className="text-sm font-semibold text-primary">{p.rubro}</p></div>}
-                                      {p.personal && <div><p className="text-sm text-muted">Personal</p><p className="text-sm font-semibold text-primary">{p.personal}</p></div>}
-                                    </div>}
-                                  </>) : (<>
-                                    {(p.cargo || p.edad) && <div className="grid grid-cols-2 gap-2">
-                                      {p.cargo && <div><p className="text-sm text-muted">Cargo</p><p className="text-sm font-semibold text-primary">{p.cargo}</p></div>}
-                                      {p.edad && <div><p className="text-sm text-muted">Edad</p><p className="text-sm font-semibold text-primary">{p.edad}</p></div>}
-                                    </div>}
-                                    {(p.ubicacion || p.nivelTec) && <div className="grid grid-cols-2 gap-2">
-                                      {p.ubicacion && <div><p className="text-sm text-muted">Ubicación</p><p className="text-sm font-semibold text-primary">{p.ubicacion}</p></div>}
-                                      {p.nivelTec && <div><p className="text-sm text-muted">Nivel tec.</p><p className="text-sm font-semibold mb-1 text-primary">{p.nivelTec}</p>{(() => { const pct = nivelPctMap[(p.nivelTec || "").toLowerCase()] || null; return pct ? <div className="h-1 rounded-full overflow-hidden bg-active"><div className="h-full rounded-full bg-green-500" style={{ width: `${pct}%` }} /></div> : null; })()}</div>}
-                                    </div>}
-                                    {(p.rubro || p.tiempoNegocio) && <div className="grid grid-cols-2 gap-2">
-                                      {p.rubro && <div><p className="text-sm text-muted">Rubro</p><p className="text-sm font-semibold text-primary">{p.rubro}</p></div>}
-                                      {p.tiempoNegocio && <div><p className="text-sm text-muted">Tiempo negocio</p><p className="text-sm font-semibold text-primary">{p.tiempoNegocio}</p></div>}
-                                    </div>}
-                                  </>)}
-                                </div>
+                          {inv.personas.map((p, i) => (
+                            <div key={i} className="rounded-xl overflow-hidden border">
+                              <div className="px-4 py-2.5 flex items-center gap-2" style={{ backgroundColor: type === "Buyer Persona" ? "#2563EB" : "#00B369" }}>
+                                <p className="text-white/70 text-sm">{type}</p>
+                                <span className="text-white/40 text-sm">·</span>
+                                <p className="text-white text-sm font-bold">Persona {i + 1}</p>
+                                {(p.images || []).length > 0 && <p className="ml-auto text-white/60 text-xs">{p.images.length} img.</p>}
                               </div>
-                            );
-                          })}
+                              {(p.images || []).length > 0 ? (
+                                <button onClick={() => openPpLightbox(p.images, 0)} className="w-full block cursor-zoom-in">
+                                  <img src={p.images[0]} alt="" className="w-full object-contain max-h-[600px] bg-muted" />
+                                </button>
+                              ) : (
+                                <div className="h-28 bg-muted flex items-center justify-center">
+                                  <p className="text-sm text-muted">Sin imágenes</p>
+                                </div>
+                              )}
+                            </div>
+                          ))}
                         </div>
                       )}
                     </div>
@@ -2527,7 +2711,62 @@ function ProductPage() {
           </div>
         </div>
       </div>
+
     </div>
+
+    {/* Lightbox personas ProductPage — fuera del overflow-y-auto para cubrir 100vh */}
+    {ppLightbox && (
+        <div className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm" onClick={closePpLightbox}>
+          {/* Botones — absolute top-right */}
+          <div className="absolute top-3 right-3 flex items-center gap-2 z-10" onClick={e => e.stopPropagation()}>
+            <button onClick={e => { e.stopPropagation(); setPpZoom(z => Math.max(z - 0.5, 1)); }} disabled={ppZoom <= 1}
+              className="w-9 h-9 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM7 10h6"/></svg>
+            </button>
+            <button onClick={e => { e.stopPropagation(); setPpZoom(z => Math.min(z + 0.5, 1.5)); }} disabled={ppZoom >= 1.5}
+              className="w-9 h-9 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/></svg>
+            </button>
+            <button onClick={handlePpDownload}
+              className="w-9 h-9 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors" title="Descargar">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+            </button>
+            <button onClick={closePpLightbox}
+              className="w-9 h-9 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors">
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+          </div>
+          {/* Imagen — ocupa todo el alto */}
+          <div className="w-full h-full overflow-auto" onClick={e => e.stopPropagation()}>
+            <div style={{ display: "flex", justifyContent: "center", alignItems: ppZoom === 1 ? "center" : "flex-start", minHeight: "100%", padding: "16px 64px" }}>
+              <img src={ppLightbox.images[ppLightbox.index]} alt=""
+                style={{ maxWidth: ppZoom === 1 ? "100%" : "none", maxHeight: ppZoom === 1 ? "calc(100vh - 120px)" : "none", width: ppZoom === 1 ? "auto" : `${ppZoom * 100}%`, transition: "width 200ms ease, max-width 200ms ease, max-height 200ms ease" }}
+                className="rounded-lg shadow-2xl object-contain" />
+            </div>
+          </div>
+          {ppLightbox.index > 0 && (
+            <button onClick={e => { e.stopPropagation(); setPpLightbox(lb => ({ ...lb, index: lb.index - 1 })); setPpZoom(1); }}
+              className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors">
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7"/></svg>
+            </button>
+          )}
+          {ppLightbox.index < ppLightbox.images.length - 1 && (
+            <button onClick={e => { e.stopPropagation(); setPpLightbox(lb => ({ ...lb, index: lb.index + 1 })); setPpZoom(1); }}
+              className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors">
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7"/></svg>
+            </button>
+          )}
+          {ppLightbox.images.length > 1 && (
+            <div className="flex justify-center gap-1.5 pb-4 flex-shrink-0" onClick={e => e.stopPropagation()}>
+              {ppLightbox.images.map((_, i) => (
+                <button key={i} onClick={() => { setPpLightbox(lb => ({ ...lb, index: i })); setPpZoom(1); }}
+                  className={`w-2 h-2 rounded-full transition-colors ${i === ppLightbox.index ? "bg-white" : "bg-white/30 hover:bg-white/60"}`} />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </>
   );
 }
 
@@ -2759,7 +2998,7 @@ function ListPage() {
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                 </svg>
-                <span className="hidden sm:inline">Añadir nueva</span>
+                <span className="hidden sm:inline">Añadir research</span>
                 <span className="sm:hidden">Añadir</span>
               </Button>
             )}
@@ -2796,7 +3035,7 @@ function ListPage() {
               </div>
               <button
                 onClick={() => setFiltersOpen(o => !o)}
-                className={`flex items-center gap-1.5 px-3 text-sm font-semibold rounded-lg flex-shrink-0 ${filtersOpen ? (dk ?"bg-green-900/30 -green-700 text-green-400" :"bg-green-50 -green-400 text-green-700") :"bg-surface border text-secondary"}`}
+                className={`flex items-center gap-1.5 px-3 text-sm font-semibold rounded-lg flex-shrink-0 ${filtersOpen ? (dk ?"bg-green-900/30 border border-green-700 text-green-400" :"bg-green-50 border border-green-300 text-green-700") :"bg-surface border text-secondary"}`}
                 style={{height:"40px"}}
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z"/></svg>
@@ -2826,7 +3065,7 @@ function ListPage() {
               {shown.map(item => <Card key={item.id} item={item} dark={dk} fromLabel="Todos los research" />)}
             </div>
             <div ref={sentinelRef} className="h-10 flex items-center justify-center mt-4">
-              {hasMore && <div className="w-6 h-6 rounded-full -2 -gray-300 border-t-green-500 animate-spin" />}
+              {hasMore && <div className="w-6 h-6 rounded-full border-2 border-gray-300 border-t-green-500 animate-spin" />}
             </div>
           </>
         ) : (
@@ -2881,7 +3120,7 @@ function Sidebar({ onSettings, user, mobileOpen = false, onMobileClose }) {
     p2:      "text-tertiary",
     muted:   "text-muted",
     navOn:   dk ? "text-green-500" : "text-green-700",
-    navOff:  "text-tertiary hover:bg-hover hover:text-primary",
+    navOff:  "text-tertiary hover:bg-hover hover:text-primary transition-colors duration-150",
     tHover:  "hover:bg-hover",
     pinBtn:  "text-muted hover:text-secondary hover:bg-hover",
     helpBox: "bg-muted border",
@@ -2896,7 +3135,6 @@ function Sidebar({ onSettings, user, mobileOpen = false, onMobileClose }) {
       className={`flex flex-col flex-shrink-0 border-r overflow-hidden ${s.panel} fixed inset-y-0 left-0 z-50 lg:static lg:z-auto ${mobileOpen ?"translate-x-0 shadow-2xl" :"-translate-x-full"} lg:translate-x-0`}
       style={{ width, transition: "transform 300ms ease, width 200ms ease" }}
     >
-      {/* Header */}
       <div className={`flex items-center border-b flex-shrink-0 ${s.div} ${expanded ?"px-4 py-4 justify-between" :"px-3 py-4 justify-center"}`}>
         {expanded ? (
           <>
@@ -3031,20 +3269,16 @@ function EditPage() {
   const item = deliverables.find(x => toSlug(x.title) === slug) || location.state?.item;
   const fromLabel = location.state?.fromLabel || null;
 
-  if (!item) return <div className="flex-1 flex items-center justify-center bg-page text-gray-400 text-gray-500">Research no encontrado.</div>;
+  if (!item) return <div className="flex-1 flex items-center justify-center bg-page text-gray-500">Research no encontrado.</div>;
 
   const today = new Date().toLocaleDateString("es-PE", { day: "2-digit", month: "short", year: "numeric" }).replace(".", "");
-  const [form, setForm] = useState({ ...item });
+  const [form, setForm] = useState({ contenido: "", ...item });
   const [personaTab, setPersonaTab] = useState(0);
-  const [personaPhotoUploading, setPersonaPhotoUploading] = useState(false);
-  const [showPersonaPhotoPicker, setShowPersonaPhotoPicker] = useState(false);
-  const personaPhotoInputRef = useRef(null);
+  const [personaImgUploading, setPersonaImgUploading] = useState(false);
   const [jiraLoading, setJiraLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [jiraError, setJiraError] = useState("");
   const [imageUploading, setImageUploading] = useState(false);
-  const [showImagePicker, setShowImagePicker] = useState(false);
-  const imageInputRef = useRef(null);
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
   const setType = (t) => {
@@ -3171,24 +3405,9 @@ function EditPage() {
   return (
     <div className="flex-1 overflow-y-auto bg-page">
 
-      {showPersonaPhotoPicker && (
-        <PersonaPhotoPickerModal
-         
-          onClose={() => setShowPersonaPhotoPicker(false)}
-          onSelect={(url) => { setPersonaField(personaTab, "foto", url); setShowPersonaPhotoPicker(false); }}
-          onUpload={() => { personaPhotoInputRef.current?.click(); setShowPersonaPhotoPicker(false); }}
-        />
-      )}
-      <input type="file" accept="image/*" ref={personaPhotoInputRef} className="hidden" onChange={async (e) => {
-        const file = e.target.files?.[0]; if (!file) return;
-        setPersonaPhotoUploading(true);
-        try { const url = await uploadPersonaPhoto(file); setPersonaField(personaTab, "foto", url); } catch (err) { console.error(err); }
-        setPersonaPhotoUploading(false); e.target.value = "";
-      }} />
-
       {/* Top bar */}
       <div className="border-b px-4 py-3 md:px-8 md:py-4 sticky top-0 z-10 bg-page border">
-        <button onClick={() => window.history.length > 1 ? navigate(-1) : navigate("/research")} className="flex items-center gap-2 text-sm font-semibold text-tertiary hover:text-primary">
+        <button onClick={() => window.history.length > 1 ? navigate(-1) : navigate("/research")} className="flex items-center gap-2 text-sm font-semibold text-tertiary hover:text-primary transition-colors duration-150 cursor-pointer">
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7"/></svg>
           <span className="hidden sm:inline">{fromLabel ? `Volver a ${fromLabel}` : "Volver"}</span>
           <span className="sm:hidden">Volver</span>
@@ -3197,18 +3416,17 @@ function EditPage() {
 
       <div className="w-full mx-auto px-4 md:px-8 py-6 md:py-8 pb-16" style={{ maxWidth: "1600px" }}>
 
-        {/* Header */}
         <div className="mb-6">
           <h1 className="text-2xl font-bold mb-1 text-primary">Editar research</h1>
           <div className="flex items-center gap-1.5">
-            <p className="text-base font-medium pr-2 text-tertiary">{window.location.origin}/research/{toSlug(item.title)}</p>
+            <a href={`/research/${toSlug(item.title)}`} target="_blank" rel="noreferrer" className="text-base font-medium pr-2 truncate min-w-0 hover:opacity-80 transition-opacity" style={{ color: "#00B369" }}>{window.location.origin}/research/{toSlug(item.title)}</a>
             <button type="button" title="Copiar enlace" onClick={() => navigator.clipboard.writeText(`${window.location.origin}/research/${toSlug(item.title)}`)} style={{ width: 38, height: 38 }} className="flex items-center justify-center rounded-lg border flex-shrink-0 bg-surface text-tertiary hover:bg-hover hover:text-secondary">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
             </button>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-start">
           {/* Columna principal */}
           <div className="md:col-span-3 space-y-4">
 
@@ -3227,9 +3445,7 @@ function EditPage() {
             {/* Contenido */}
             <div className="rounded-2xl p-5 space-y-4 bg-surface border shadow-xs">
               <SectionTitle>Contenido</SectionTitle>
-              <div><label className={lbl}>Objetivo del research</label><RichEditor value={form.objetivo} onChange={v => set("objetivo", v)} placeholder="¿Qué se busca lograr con este entregable?" /></div>
-              <div><label className={lbl}>Usuario</label><RichEditor value={form.usuario} onChange={v => set("usuario", v)} placeholder="Perfil de los usuarios involucrados" /></div>
-              <div><label className={lbl}>Hallazgos y conclusiones</label><RichEditor value={form.hallazgos} onChange={v => set("hallazgos", v)} placeholder="Principales hallazgos o estado actual" /></div>
+              <RichEditor value={form.contenido} onChange={v => set("contenido", v)} placeholder="" />
             </div>
 
             {/* Referencias */}
@@ -3260,96 +3476,40 @@ function EditPage() {
               </div>
             </div>
 
-            {/* Imágenes adjuntas */}
-            {!PERSONA_TYPES.includes(form.type) && (
-              <div className="rounded-2xl p-5 space-y-4 bg-surface border shadow-xs">
-                <SectionTitle>Imágenes adjuntas</SectionTitle>
-                {(form.imagenes || []).length > 0 && (
-                  <div className="grid grid-cols-4 gap-2">
-                    {(form.imagenes || []).map((url, i) => (
-                      <div key={i} className="relative group aspect-square rounded-lg overflow-hidden cursor-pointer" onClick={() => setShowImagePicker(true)}>
-                        <img src={url} alt="" className="w-full h-full object-cover" />
-                        <button type="button" onClick={e => { e.stopPropagation(); set("imagenes", (form.imagenes || []).filter((_, j) => j !== i)); }}
-                          className="absolute top-1 right-1 w-6 h-6 flex items-center justify-center rounded-lg bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity">
-                          <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/></svg>
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                <Button type="button" color="secondary" disabled={imageUploading} className="flex items-center gap-2" onClick={() => setShowImagePicker(true)}>
-                  {imageUploading
-                    ? <div className="w-4 h-4 rounded-full -2 -gray-300 border-t-green-500 animate-spin" />
-                    : <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                  }
-                  Añadir imágenes
-                </Button>
-                {showImagePicker && (
-                  <ImagePickerModal deliverables={deliverables}
-                    onSelect={(url) => { if (!(form.imagenes || []).includes(url)) set("imagenes", [...(form.imagenes || []), url]); setShowImagePicker(false); }}
-                    onUpload={() => { setShowImagePicker(false); setTimeout(() => imageInputRef.current?.click(), 100); }}
-                    onDelete={async (url) => {
-                      const affected = deliverables.filter(x => (x.imagenes || []).includes(url));
-                      await Promise.all(affected.map(x => supabase.from("deliverables").update({ data: { ...x, imagenes: x.imagenes.filter(u => u !== url) } }).eq("id", x.id)));
-                      if ((form.imagenes || []).includes(url)) set("imagenes", (form.imagenes || []).filter(u => u !== url));
+            {/* Personas */}
+            {PERSONA_TYPES.includes(form.type) && form.personas && form.personas.length > 0 && (
+              <div className="rounded-2xl bg-surface border shadow-xs">
+                <div className="flex items-center justify-between px-5 pt-5 pb-4">
+                  <SectionTitle>{form.type === "Buyer Persona" ? "Buyer Personas" : "User Personas"}</SectionTitle>
+                  {form.personas.length < 3 && <Button type="button" size="xs" color="secondary" onClick={addPersona} className="flex items-center gap-1"><svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/></svg>Añadir persona</Button>}
+                </div>
+                <div className="flex border-b px-5">
+                  {form.personas.map((_, i) => (
+                    <div key={i} className="flex items-center">
+                      <button type="button" onClick={() => setPersonaTab(i)} className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${personaTab === i ? "border-green-500 text-green-600" : "border-transparent text-tertiary hover:text-primary"}`}>Persona {i + 1}</button>
+                      {form.personas.length > 1 && <button type="button" onClick={() => removePersona(i)} className="-ml-1 mb-px w-4 h-4 flex items-center justify-center text-sm text-muted hover:text-secondary">✕</button>}
+                    </div>
+                  ))}
+                </div>
+                <div className="p-5">
+                  <PersonaImageUploader
+                    key={personaTab}
+                    images={(form.personas[personaTab]?.images) || []}
+                    uploading={personaImgUploading}
+                    onChange={urls => setPersonaField(personaTab, "images", urls)}
+                    onUpload={async (files) => {
+                      setPersonaImgUploading(true);
+                      try {
+                        const url = await uploadToCloudinary(files[0]);
+                        setPersonaField(personaTab, "images", [url]);
+                      } catch (err) { showToast({ title: "Error al subir imagen", subtitle: err?.message }, "error"); }
+                      setPersonaImgUploading(false);
                     }}
-                    onClose={() => setShowImagePicker(false)} />
-                )}
-                <input ref={imageInputRef} type="file" accept="image/*" multiple className="hidden"
-                  onChange={async (e) => {
-                    const files = Array.from(e.target.files || []);
-                    if (!files.length) return;
-                    setImageUploading(true);
-                    try {
-                      const urls = await Promise.all(files.map(uploadToCloudinary));
-                      set("imagenes", [...(form.imagenes || []), ...urls]);
-                    } catch (err) {
-                      showToast({ title: "Error al subir imagen", subtitle: err?.message || "Inténtalo de nuevo." }, "error");
-                    }
-                    setImageUploading(false);
-                    e.target.value = "";
-                  }} />
+                  />
+                </div>
               </div>
             )}
 
-            {/* Personas */}
-            {PERSONA_TYPES.includes(form.type) && form.personas && form.personas.length > 0 && (
-              <div className="rounded-2xl p-5 bg-surface border shadow-xs">
-                <div className="flex items-center justify-between mb-4">
-                  <SectionTitle>Personas</SectionTitle>
-                  {form.personas.length < 3 && <Button type="button" size="xs" color="secondary" onClick={addPersona} className="flex items-center gap-1"><svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/></svg>Añadir</Button>}
-                </div>
-                <div className="flex border-b mb-4">
-                  {form.personas.map((p, i) => <div key={i} className="flex items-center"><button type="button" onClick={() => setPersonaTab(i)} className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${personaTab === i ? "border-green-500 text-green-600" : "border-transparent text-tertiary hover:text-primary"}`}>{p.nombre || `Persona ${i+1}`}</button>{form.personas.length > 1 && <button type="button" onClick={() => removePersona(i)} className="-ml-1 mb-px w-4 h-4 flex items-center justify-center text-sm text-muted hover:text-secondary">✕</button>}</div>)}
-                </div>
-                {(() => {
-                  const p = form.personas[personaTab];
-                  const fi = (field, placeholder) => <input className={inp} placeholder={placeholder} value={p[field] || ""} onChange={e => setPersonaField(personaTab, field, e.target.value)} />;
-                  const group = (title, children) => <div><p className="text-sm font-bold uppercase tracking-wider mb-3 text-muted">{title}</p><div className="space-y-3">{children}</div></div>;
-                  return (
-                    <div key={personaTab} className="space-y-4">
-                      <div className="flex items-center gap-4">
-                        <div className={`w-20 h-20 rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center border-2 ${p.foto ? "border-green-500" : "border"}`}>
-                          {p.foto ? <img src={p.foto} alt="Foto" className="w-full h-full object-cover" /> : <svg className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>}
-                        </div>
-                        <div className="space-y-1">
-                          <p className="text-sm font-semibold text-tertiary">Imagen de perfil</p>
-                          <p className="text-sm text-muted">500×500 px · JPG</p>
-                          <Button type="button" size="xs" color="secondary" onClick={() => setShowPersonaPhotoPicker(true)} isDisabled={personaPhotoUploading} className="flex items-center gap-2">
-                            {personaPhotoUploading ? "Subiendo..." : (p.foto ? "Cambiar foto" : "Subir foto")}
-                          </Button>
-                        </div>
-                      </div>
-                      <div><label className={lbl}>Nombre</label>{fi("nombre","Nombre de la persona")}</div>
-                      {group("Información personal", <><div className="grid grid-cols-2 gap-3"><div><label className={lbl}>Cargo</label>{fi("cargo","Cargo o rol")}</div><div><label className={lbl}>Edad</label>{fi("edad","Ej: 35 años")}</div></div><div><label className={lbl}>Ubicación</label>{fi("ubicacion","Distrito, departamento")}</div><div><label className={lbl}>Nivel tecnológico</label><CustomSelect dark={d} fullWidth value={p.nivelTec||""} onChange={v => setPersonaField(personaTab,"nivelTec",v)} options={[{value:"",label:"Sin especificar"},...NIVEL_TEC.map(n => ({value:n.label,label:`${n.label} — ${n.pct}%`}))]} /></div><div><label className={lbl}>Herramientas usadas</label>{fi("herramientas","Excel, Slack, etc.")}</div></>)}
-                      {group("Sobre el negocio", form.type === "Buyer Persona" ? <><div><label className={lbl}>Rubro</label>{fi("rubro","Sector o industria")}</div><div className="grid grid-cols-2 gap-3"><div><label className={lbl}>Personal</label>{fi("personal","Ej: 10-50 empleados")}</div><div><label className={lbl}>Tiempo de apertura</label>{fi("tiempoApertura","Ej: 5 años")}</div></div><div><label className={lbl}>Metas a futuro</label><RichEditor value={p.metas||""} onChange={v => setPersonaField(personaTab,"metas",v)} placeholder="Metas y objetivos a futuro..." /></div></> : <><div><label className={lbl}>Rubro</label>{fi("rubro","Sector o industria")}</div><div><label className={lbl}>Tiempo en el negocio</label>{fi("tiempoNegocio","Ej: 3 años")}</div></>)}
-                      {form.type === "Buyer Persona" && <>{group("Adquisición del producto", <RichEditor value={p.adquisicion||""} onChange={v => setPersonaField(personaTab,"adquisicion",v)} placeholder="Razones de adquisición..." />)}{group("Comunicaciones", <RichEditor value={p.comunicaciones||""} onChange={v => setPersonaField(personaTab,"comunicaciones",v)} placeholder="Canales de comunicación..." />)}</>}
-                      {form.type === "User Persona" && <>{group("Objetivos y metas", <RichEditor value={p.objetivos||""} onChange={v => setPersonaField(personaTab,"objetivos",v)} placeholder="Objetivos y metas del usuario..." />)}{group("Frustraciones y dolores", <RichEditor value={p.dolores||""} onChange={v => setPersonaField(personaTab,"dolores",v)} placeholder="Frustraciones y dolores..." />)}</>}
-                    </div>
-                  );
-                })()}
-              </div>
-            )}
           </div>
 
           {/* Sidebar */}
@@ -3402,6 +3562,24 @@ function EditPage() {
                 <label className={lbl}>Persona asignada</label>
                 <CustomSelect dark={d} fullWidth value={form.team[0] || ""} onChange={v => set("team", v ? [v] : [])} options={[{value:"",label:"Seleccione"}, ...editors.map(n => ({value:n,label:n}))]} />
               </div>
+            </div>
+
+            {/* Imágenes adjuntas */}
+            <div className="rounded-2xl p-5 space-y-4 bg-surface border shadow-xs">
+              <SectionTitle>Imágenes adjuntas</SectionTitle>
+              <AttachedImagesUploader
+                images={form.imagenes || []}
+                onChange={urls => set("imagenes", urls)}
+                uploading={imageUploading}
+                onUploadFile={async (file) => {
+                  setImageUploading(true);
+                  try {
+                    const url = await uploadToCloudinary(file);
+                    setForm(f => ({ ...f, imagenes: [...(f.imagenes || []), url] }));
+                  } catch (err) { showToast({ title: "Error al subir imagen", subtitle: err?.message }, "error"); }
+                  setImageUploading(false);
+                }}
+              />
             </div>
 
           </div>
