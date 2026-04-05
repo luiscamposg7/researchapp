@@ -3179,15 +3179,16 @@ function Sidebar({ onSettings, user, mobileOpen = false, onMobileClose }) {
         {/* Productos */}
         <div className={expanded ? "pt-3" : "pt-3"}>
           {expanded && <p className={`px-3 pb-2 text-sm font-semibold uppercase tracking-wider whitespace-nowrap ${s.muted}`}>Productos</p>}
-          {PRODUCTS.map(product => {
+          {PRODUCTS.map((product) => {
             const isActive = location.pathname === `/producto/${toSlug(product)}`;
             const pc = PRODUCT_COLORS[product] || "#00B369";
+            const initials = product.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
             return (
               <button key={product} title={!expanded ? product : undefined}
                 onClick={() => navigate(`/producto/${toSlug(product)}`)}
                 className={`w-full flex items-center rounded-lg font-medium ${expanded ?"gap-3 px-3 py-2.5 text-base" :"justify-center py-2.5"} ${isActive ? s.navOn : s.navOff}`}>
-                <div className="w-5 h-5 flex-shrink-0 flex items-center justify-center">
-                  <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: pc }} />
+                <div className="w-6 h-6 rounded-full flex-shrink-0 flex items-center justify-center text-[9px] font-bold" style={{ backgroundColor: pc + "28", color: pc }}>
+                  {initials}
                 </div>
                 {expanded && <span className="whitespace-nowrap overflow-hidden">{product}</span>}
               </button>
