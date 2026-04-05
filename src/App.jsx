@@ -171,27 +171,31 @@ function getProductCoverUrl(fileName) {
   return data?.publicUrl || null;
 }
 async function loadProductCovers() {
-  const { data } = await supabase.from("config").select("value").eq("key", "product_covers").single();
-  return (data?.value) || {};
+  const res = await fetch('/api/config?key=product_covers');
+  if (!res.ok) return {};
+  const { value } = await res.json();
+  return value || {};
 }
 async function loadAllProductCoverUrls() {
-  const [map, { data: files }] = await Promise.all([
-    loadProductCovers(),
-    supabase.storage.from('product-covers').list('', { limit: 200 }),
-  ]);
-  const existing = new Set((files || []).filter(f => !f.name.startsWith('.')).map(f => f.name));
+  const map = await loadProductCovers();
   return Object.fromEntries(
     PRODUCTS.map(p => {
-      const fileName = map[toSlug(p)] || toSlug(p);
-      const url = existing.has(fileName) ? getProductCoverUrl(fileName) : null;
+      const val = map[toSlug(p)];
+      if (!val) return [p, null];
+      const url = val.startsWith('http') ? val : getProductCoverUrl(val);
       return [p, url];
     })
   );
 }
-async function saveProductCoverRef(product, fileName) {
+async function saveProductCoverRef(product, url) {
   const current = await loadProductCovers();
-  const updated = { ...current, [toSlug(product)]: fileName };
-  await supabase.from("config").upsert({ key: "product_covers", value: updated });
+  const updated = { ...current, [toSlug(product)]: url };
+  const res = await fetch('/api/config', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ key: 'product_covers', value: updated }),
+  });
+  if (!res.ok) console.error("[saveProductCoverRef] Error:", await res.text());
   return updated;
 }
 async function uploadProductCover(product, file) {
@@ -2450,7 +2454,6 @@ function ProductPage() {
   const [coverUploading, setCoverUploading] = useState(false);
   const [showCoverPicker, setShowCoverPicker] = useState(false);
   const [allCovers, setAllCovers] = useState({});
-  const coverInputRef = useRef(null);
 
   useEffect(() => {
     loadAllProductCoverUrls().then(urls => {
@@ -2459,28 +2462,12 @@ function ProductPage() {
     });
   }, [product]);
 
-  const handleCoverChange = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    e.target.value = "";
+  const handleCoverSelect = async (url) => {
     setShowCoverPicker(false);
+    setCoverUrl(url);
     setCoverUploading(true);
     try {
-      const url = await uploadProductCover(product, file);
-      setCoverUrl(url);
-    } catch (err) {
-      console.error("Error uploading cover:", err?.message || err);
-    } finally {
-      setCoverUploading(false);
-    }
-  };
-
-  const handleSelectExisting = async (fileName) => {
-    setShowCoverPicker(false);
-    setCoverUploading(true);
-    try {
-      await saveProductCoverRef(product, fileName);
-      setCoverUrl(getProductCoverUrl(fileName));
+      await saveProductCoverRef(product, url);
     } catch (err) {
       console.error("Error setting cover:", err?.message || err);
     } finally {
@@ -2546,11 +2533,9 @@ function ProductPage() {
     <>
     <div className="flex-1 overflow-y-auto">
       {showCoverPicker && (
-        <CoverPickerModal
-         
+        <CloudinaryPickerModal
           onClose={() => setShowCoverPicker(false)}
-          onUpload={() => { setShowCoverPicker(false); coverInputRef.current.click(); }}
-          onSelect={handleSelectExisting}
+          onSelect={handleCoverSelect}
         />
       )}
       {/* Banner */}
@@ -2572,7 +2557,6 @@ function ProductPage() {
               )}
               {coverUploading ? "Subiendo..." : "Cambiar portada"}
             </button>
-            <input ref={coverInputRef} type="file" accept="image/*" className="hidden" onChange={handleCoverChange} />
           </>
         )}
       </div>

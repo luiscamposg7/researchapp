@@ -160,6 +160,30 @@ function localDb() {
           return;
         }
 
+        // Cloudinary list
+        if (req.url === '/api/cloudinary/list' && req.method === 'GET') {
+          res.setHeader('Content-Type', 'application/json');
+          const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
+          const apiKey    = process.env.CLOUDINARY_API_KEY;
+          const apiSecret = process.env.CLOUDINARY_API_SECRET;
+          const basicAuth = Buffer.from(`${apiKey}:${apiSecret}`).toString('base64');
+          const { status, body: data } = await httpsRequest({
+            hostname: 'api.cloudinary.com',
+            path: `/v1_1/${cloudName}/resources/image?max_results=200`,
+            method: 'GET',
+            headers: { Authorization: `Basic ${basicAuth}` },
+          });
+          if (status >= 300) { res.writeHead(status); return res.end(JSON.stringify({ error: data?.error?.message || 'Error' })); }
+          const resources = (data.resources || []).map(img => ({
+            public_id: img.public_id,
+            url: img.secure_url,
+            width: img.width,
+            height: img.height,
+            created_at: img.created_at,
+          }));
+          return res.end(JSON.stringify({ resources }));
+        }
+
         // Cloudinary delete
         if (req.url === '/api/cloudinary/delete' && req.method === 'POST') {
           res.setHeader('Content-Type', 'application/json');
@@ -181,6 +205,37 @@ function localDb() {
           }, formBody);
           if (result.result !== 'ok') { res.writeHead(400); return res.end(JSON.stringify({ error: result.result })); }
           return res.end(JSON.stringify({ ok: true }));
+        }
+
+        // Config read/write (service role key needed for RLS)
+        if (req.url.startsWith('/api/config') && req.method === 'GET') {
+          res.setHeader('Content-Type', 'application/json');
+          const qs = new URL(req.url, 'http://localhost').searchParams;
+          const key = qs.get('key');
+          const r = await sbRequest('GET', `/rest/v1/config?select=value&key=eq.${encodeURIComponent(key)}`);
+          if (r.status >= 300) { res.writeHead(500); return res.end(JSON.stringify({ error: r.body })); }
+          const row = Array.isArray(r.body) ? r.body[0] : null;
+          return res.end(JSON.stringify({ value: row?.value || null }));
+        }
+
+        if (req.url === '/api/config' && req.method === 'POST') {
+          res.setHeader('Content-Type', 'application/json');
+          const { key, value } = JSON.parse(await getBody(req));
+          const payload = JSON.stringify({ key, value });
+          const url = new URL(SUPABASE_URL + '/rest/v1/config');
+          const r = await httpsRequest({
+            hostname: url.hostname,
+            path: url.pathname + url.search,
+            method: 'POST',
+            headers: {
+              'apikey': SUPABASE_KEY,
+              'Authorization': `Bearer ${SUPABASE_KEY}`,
+              'Content-Type': 'application/json',
+              'Prefer': 'resolution=merge-duplicates,return=minimal',
+            },
+          }, payload);
+          if (r.status >= 300) { res.writeHead(500); return res.end(JSON.stringify({ error: r.body })); }
+          return res.end('{}');
         }
 
         if (!req.url.startsWith('/api/deliverables')) return next();
