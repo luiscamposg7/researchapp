@@ -1,12 +1,54 @@
-import { createContext, useContext, useState, useEffect } from "react";
-import { INITIAL_DELIVERABLES } from "../constants";
+/* eslint-disable react-refresh/only-export-components */
+import { useState, useEffect, useRef, createContext, useContext } from "react";
+import { flushSync } from "react-dom";
+import { supabase } from "../supabase";
 
-const AppContext = createContext(null);
+export const AppCtx = createContext(null);
+export const useApp = () => useContext(AppCtx);
 
-export function AppProvider({ children }) {
-  const [dark, setDark] = useState(() => window.matchMedia("(prefers-color-scheme: dark)").matches);
-  const [deliverables, setDeliverables] = useState(INITIAL_DELIVERABLES);
-  const [activeFilter, setActiveFilter] = useState({ type: "Tipo de entregable", team: null });
+export function AppProvider({ children, setToast }) {
+  const [dark, setDark] = useState(() => {
+    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    document.documentElement.classList.toggle("dark-mode", prefersDark);
+    return prefersDark;
+  });
+
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark-mode", dark);
+  }, [dark]);
+
+  const [session, setSession] = useState(undefined);
+  const [role, setRole] = useState(null);
+  const [roleLoaded, setRoleLoaded] = useState(false);
+  const [editors, setEditors] = useState([]);
+  const [deliverables, setDeliverables] = useState([]);
+  const [loadingDeliverables, setLoadingDeliverables] = useState(true);
+  const [activeFilter, setActiveFilter] = useState({ type: "", team: null });
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session ?? null);
+      if (window.location.hash || window.location.search.includes('code=')) {
+        window.history.replaceState(null, '', window.location.pathname);
+      }
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
+      setSession(session ?? null);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
+  /* eslint-disable react-hooks/set-state-in-effect */
+  useEffect(() => {
+    if (!session) { setRole(null); setRoleLoaded(false); return; }
+    supabase.from("user_roles").select("role").eq("user_id", session.user.id).maybeSingle()
+      .then(({ data }) => { setRole(data?.role || "visitor"); setRoleLoaded(true); });
+    supabase.rpc("get_users_with_roles").then(({ data }) => {
+      const editorList = (data || []).filter(u => u.role === "editor" || u.role === "super_admin");
+      setEditors(editorList.map(u => u.full_name || u.email || u.user_id));
+    });
+  }, [session]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   useEffect(() => {
     const mq = window.matchMedia("(prefers-color-scheme: dark)");
@@ -16,20 +58,19 @@ export function AppProvider({ children }) {
   }, []);
 
   useEffect(() => {
+    if (!session) return;
     fetch("/api/deliverables")
       .then(r => r.json())
-      .then(saved => {
-        if (saved.length > 0) {
-          const marked = saved.map(d => ({ ...d, isCustom: true }));
-          setDeliverables(prev => {
-            const existingIds = new Set(prev.map(d => d.id));
-            const newItems = marked.filter(d => !existingIds.has(d.id));
-            return newItems.length > 0 ? [...newItems, ...prev] : prev;
-          });
-        }
-      })
-      .catch(() => {});
-  }, []);
+      .then(saved => { setDeliverables(saved); setLoadingDeliverables(false); })
+      .catch(() => setLoadingDeliverables(false));
+  }, [session]);
+
+  const toastTimerRef = useRef(null);
+  const showToast = (msg, type = "success") => {
+    clearTimeout(toastTimerRef.current);
+    setToast({ msg, type });
+    toastTimerRef.current = setTimeout(() => setToast(null), 4000);
+  };
 
   const handleAdd = (item) => {
     setDeliverables(prev => prev.some(d => d.id === item.id) ? prev : [item, ...prev]);
@@ -45,11 +86,29 @@ export function AppProvider({ children }) {
     fetch(`/api/deliverables/${id}`, { method: "DELETE" }).catch(() => {});
   };
 
-  return (
-    <AppContext.Provider value={{ dark, setDark, deliverables, activeFilter, setActiveFilter, handleAdd, handleDelete }}>
-      {children}
-    </AppContext.Provider>
-  );
-}
+  const handleUpdate = (item) => {
+    flushSync(() => setDeliverables(prev => prev.map(d => d.id === item.id ? item : d)));
+    fetch(`/api/deliverables/${item.id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(item),
+    }).catch(() => {});
+  };
 
-export const useApp = () => useContext(AppContext);
+  const isSuperAdmin = role === "super_admin";
+  const isEditor = role === "editor" || isSuperAdmin;
+
+  const value = {
+    dark, setDark,
+    session,
+    role, roleLoaded,
+    editors,
+    deliverables, loadingDeliverables,
+    activeFilter, setActiveFilter,
+    showToast,
+    handleAdd, handleDelete, handleUpdate,
+    isEditor, isSuperAdmin,
+  };
+
+  return <AppCtx.Provider value={value}>{children}</AppCtx.Provider>;
+}

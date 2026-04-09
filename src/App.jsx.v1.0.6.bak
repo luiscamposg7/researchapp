@@ -59,7 +59,7 @@ function CustomSelect({ value, onChange, options, dark, fullWidth }) {
     <div ref={ref} className="relative" style={fullWidth ? {} : { width: 180, flexShrink: 0 }}>
       <button
         onClick={() => setOpen(!open)}
-        className={`w-full flex items-center justify-between text-sm font-medium rounded-lg cursor-pointer focus:outline-none focus:ring-2 focus:ring-green-400 ${dark ?"bg-surface border text-primary" :"text-secondary"}`}
+        className={`w-full flex items-center justify-between text-sm font-normal rounded-lg cursor-pointer focus:outline-none focus:ring-2 focus:ring-green-400 ${dark ?"bg-surface border text-primary" :"text-secondary"}`}
         style={!dark ? { height:"40px", borderRadius:"8px", border:"1px solid #D5D7DA", background:"#FFF", boxShadow:"0 1px 2px 0 rgba(10,13,18,0.05)", paddingLeft:"14px", paddingRight:"14px" } : { height:"40px", borderRadius:"8px", boxShadow:"0 1px 2px 0 rgba(10,13,18,0.05)", paddingLeft:"14px", paddingRight:"14px" }}
       >
         <span className={`truncate ${selected.value === "" ? "text-muted" : ""}`}>{selected.label}</span>
@@ -76,7 +76,7 @@ function CustomSelect({ value, onChange, options, dark, fullWidth }) {
             <li
               key={o.value}
               onClick={() => { onChange(o.value); setOpen(false); }}
-              className={`px-3.5 py-2 cursor-pointer ${value === o.value ? (dark ?"bg-green-900/30 text-green-400" :"bg-green-50 text-green-700 font-medium") :"hover:bg-hover" }`}
+              className={`px-3.5 py-2 cursor-pointer ${o.value === "" ? "text-muted hover:bg-hover" : value === o.value ? (dark ?"bg-green-900/30 text-green-400" :"bg-green-50 text-green-700 font-medium") :"hover:bg-hover"}`}
             >
               {o.label}
             </li>
@@ -2331,7 +2331,7 @@ function ProductPage() {
   };
 
   return (
-    <div className="flex-1 overflow-y-auto bg-page">
+    <div className="flex-1 overflow-y-auto">
       {showCoverPicker && (
         <CoverPickerModal
          
@@ -2470,7 +2470,7 @@ function ProductPage() {
                   ))}
                 </div>
               ) : (
-                <div className="rounded-xl -2 -dashed p-10 flex flex-col items-center justify-center text-center border">
+                <div className="rounded-xl p-10 flex flex-col items-center justify-center text-center border bg-surface">
                   <svg className="w-8 h-8 mb-3 text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg>
                   <p className="text-sm font-medium mb-1 text-tertiary">No hay research de {type} para {product}</p>
                   <p className="text-sm text-muted">Añade la primera para este producto</p>
@@ -2564,12 +2564,12 @@ function HomePage() {
   const recent = [...deliverables].slice(0, 6);
 
   return (
-    <div className="flex-1 overflow-y-auto bg-page">
+    <div className="flex-1 overflow-y-auto">
 
       {/* Hero — centered */}
       <div className="relative overflow-hidden" style={{
         background: d
-          ? "linear-gradient(160deg,#0a1628 0%,#071a0e 30%,#0d1f12 60%,#0a1628 100%)"
+          ? "linear-gradient(160deg,#040C16 0%,#040C16 40%,#061410 70%,#040C16 100%)"
           : "linear-gradient(160deg,#e8f5ee 0%,#f0fdf4 35%,#d6f5e8 65%,#e8f5ee 100%)",
         borderBottom: `1px solid ${d ? "#1a2535" : "#b6e8cc"}`
       }}>
@@ -2593,8 +2593,7 @@ function HomePage() {
               onChange={e => setSearch(e.target.value)}
               onKeyDown={handleSearch}
               placeholder="Busca un research o producto..."
-              className="w-full pl-12 pr-4 sm:pr-28 py-4 text-sm rounded-2xl focus:outline-none focus:ring-2 focus:ring-green-400 bg-surface text-primary placeholder:text-muted"
-              style={{ boxShadow: d ? "0 4px 24px rgba(0,0,0,0.3)" : "0 4px 24px rgba(0,0,0,0.08)" }}
+              className={`w-full pl-12 pr-4 sm:pr-28 py-4 text-sm rounded-2xl border focus:outline-none focus:ring-1 focus:ring-green-400 focus:border-green-400 bg-surface text-primary placeholder:text-muted ${d ? "shadow-[0_4px_24px_rgba(0,0,0,0.3)]" : "shadow-[0_4px_24px_rgba(0,0,0,0.08)]"}`}
             />
             <button
               onClick={doSearch}
@@ -2698,9 +2697,9 @@ function ListPage() {
   const [visible, setVisible] = useState(PAGE_SIZE);
   const sentinelRef = useRef(null);
   const [search, setSearch] = useState("");
-  const [filterType, setFilterType] = useState("Tipo de entregable");
-  const [filterProduct, setFilterProduct] = useState("Todos los productos");
-  const [filterEstado, setFilterEstado] = useState("Persona asignada");
+  const [filterType, setFilterType] = useState("");
+  const [filterProduct, setFilterProduct] = useState("");
+  const [filterEstado, setFilterEstado] = useState("");
   const [filtersOpen, setFiltersOpen] = useState(false);
 
   // Sync from sidebar activeFilter
@@ -2714,10 +2713,10 @@ function ListPage() {
   const activeTeam = activeFilter?.team || null;
 
   const filtered = deliverables.filter(d => {
-    const typeMatch = filterType === "Tipo de entregable" || d.type === filterType;
+    const typeMatch = !filterType || d.type === filterType;
     const teamMatch = !activeTeam || d.team.includes(activeTeam);
-    const productMatch = filterProduct === "Todos los productos" || d.tags.includes(filterProduct);
-    const estadoMatch = filterEstado === "Persona asignada" || d.team.includes(filterEstado);
+    const productMatch = !filterProduct || d.tags.includes(filterProduct);
+    const estadoMatch = !filterEstado || d.team.includes(filterEstado);
     const searchMatch = !search || d.title.toLowerCase().includes(search.toLowerCase());
     return typeMatch && teamMatch && productMatch && estadoMatch && searchMatch;
   });
@@ -2773,13 +2772,13 @@ function ListPage() {
               </svg>
               <input type="text" placeholder="Buscar research..." value={search}
                 onChange={e => setSearch(e.target.value)}
-                className={`w-full pl-10 pr-4 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent bg-surface text-primary placeholder:text-muted`}
+                className={`w-full pl-10 pr-4 text-sm rounded-lg border focus:outline-none focus:ring-1 focus:ring-green-400 focus:border-green-400 bg-surface text-primary placeholder:text-muted`}
                 style={{height:"40px"}} />
             </div>
             <div className="flex items-center gap-3 flex-1">
-              <div className="flex-1"><CustomSelect dark={dk} value={filterType} onChange={v => setFilterType(v)} options={TYPES.map(f => ({ value: f, label: f }))} fullWidth /></div>
-              <div className="flex-1"><CustomSelect dark={dk} value={filterProduct} onChange={v => setFilterProduct(v)} options={[{ value: "Todos los productos", label: "Todos los productos" }, ...PRODUCTS.map(p => ({ value: p, label: p }))]} fullWidth /></div>
-              <div className="flex-1"><CustomSelect dark={dk} value={filterEstado} onChange={v => setFilterEstado(v)} options={[{ value: "Persona asignada", label: "Persona asignada" }, ...editors.map(e => ({ value: e, label: e }))]} fullWidth /></div>
+              <div className="flex-1"><CustomSelect dark={dk} value={filterType} onChange={v => setFilterType(v)} options={[{value:"",label:"Tipo de entregable"}, ...TYPES.slice(1).map(f => ({ value: f, label: f }))]} fullWidth /></div>
+              <div className="flex-1"><CustomSelect dark={dk} value={filterProduct} onChange={v => setFilterProduct(v)} options={[{ value: "", label: "Todos los productos" }, ...PRODUCTS.map(p => ({ value: p, label: p }))]} fullWidth /></div>
+              <div className="flex-1"><CustomSelect dark={dk} value={filterEstado} onChange={v => setFilterEstado(v)} options={[{ value: "", label: "Persona asignada" }, ...editors.map(e => ({ value: e, label: e }))]} fullWidth /></div>
             </div>
           </div>
 
@@ -2792,7 +2791,7 @@ function ListPage() {
                 </svg>
                 <input type="text" placeholder="Buscar research..." value={search}
                   onChange={e => setSearch(e.target.value)}
-                  className={`w-full pl-10 pr-4 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent bg-surface text-primary placeholder:text-muted`}
+                  className={`w-full pl-10 pr-4 text-sm rounded-lg border focus:outline-none focus:ring-1 focus:ring-green-400 focus:border-green-400 bg-surface text-primary placeholder:text-muted`}
                   style={{height:"40px"}} />
               </div>
               <button
@@ -2807,9 +2806,9 @@ function ListPage() {
             </div>
             {filtersOpen && (
               <div className="flex flex-col gap-2 pt-1">
-                <CustomSelect dark={dk} value={filterType} onChange={v => setFilterType(v)} options={TYPES.map(f => ({ value: f, label: f }))} fullWidth />
-                <CustomSelect dark={dk} value={filterProduct} onChange={v => setFilterProduct(v)} options={[{ value: "Todos los productos", label: "Todos los productos" }, ...PRODUCTS.map(p => ({ value: p, label: p }))]} fullWidth />
-                <CustomSelect dark={dk} value={filterEstado} onChange={v => setFilterEstado(v)} options={[{ value: "Persona asignada", label: "Persona asignada" }, ...editors.map(e => ({ value: e, label: e }))]} fullWidth />
+                <CustomSelect dark={dk} value={filterType} onChange={v => setFilterType(v)} options={[{value:"",label:"Tipo de entregable"}, ...TYPES.slice(1).map(f => ({ value: f, label: f }))]} fullWidth />
+                <CustomSelect dark={dk} value={filterProduct} onChange={v => setFilterProduct(v)} options={[{ value: "", label: "Todos los productos" }, ...PRODUCTS.map(p => ({ value: p, label: p }))]} fullWidth />
+                <CustomSelect dark={dk} value={filterEstado} onChange={v => setFilterEstado(v)} options={[{ value: "", label: "Persona asignada" }, ...editors.map(e => ({ value: e, label: e }))]} fullWidth />
               </div>
             )}
           </div>
@@ -3425,8 +3424,10 @@ function Layout({ toast, user }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   return (
     <div className="min-h-screen bg-page" style={{ fontFamily: "'Inter', sans-serif" }}>
+      <div className="animated-bg animated-bg-1" />
+      <div className="animated-bg animated-bg-2" />
       <Toast toast={toast} />
-      <div className="flex h-screen overflow-hidden">
+      <div className="flex h-screen overflow-hidden" style={{position:"relative", zIndex:1}}>
         {showSettings && <SettingsModal dark={dark} onClose={() => setShowSettings(false)} />}
         {mobileOpen && <div className="fixed inset-0 z-40 lg:hidden" onClick={() => setMobileOpen(false)} style={{ backgroundColor: "rgba(0,0,0,0.5)" }} />}
         <Sidebar onSettings={() => setShowSettings(true)} user={user} mobileOpen={mobileOpen} onMobileClose={() => setMobileOpen(false)} />
@@ -3498,7 +3499,7 @@ export default function App() {
   const [editors, setEditors] = useState([]);
   const [deliverables, setDeliverables] = useState([]);
   const [loadingDeliverables, setLoadingDeliverables] = useState(true);
-  const [activeFilter, setActiveFilter] = useState({ type: "Tipo de entregable", team: null });
+  const [activeFilter, setActiveFilter] = useState({ type: "", team: null });
   const [toast, setToast] = useState(null);
 
   useEffect(() => {

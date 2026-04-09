@@ -6,8 +6,13 @@
 - Desplegado en Vercel
 
 ## Estructura
-- **Todo el código principal está en `src/App.jsx`** (~2400+ líneas) — monolítico por decisión
-- `RichEditor` está definido INLINE en App.jsx — NO usar `components/RichEditor.jsx`
+- Arquitectura modular desde v1.0.7 — `src/App.jsx` es un shell de ~83 líneas
+- `src/lib/constants.js` — constantes y datos estáticos (PRODUCTS, TYPES, PRODUCT_COLORS, etc.)
+- `src/lib/utils.js` — helpers puros (toSlug, formatDate, getProductCoverUrl, etc.)
+- `src/context/AppContext.jsx` — AppCtx, useApp, AppProvider con todo el estado global
+- `src/components/` — componentes reutilizables (Card, RichEditor, CustomSelect, Toast, etc.)
+- `src/layout/` — Layout, Sidebar, MobileTopBar, EditorOnly
+- `src/pages/` — HomePage, ListPage, DetailPage, AddPage, EditPage, LoginPage, ProductPage/
 - `src/index.css` — design tokens CSS, animated background, sel-arrow, scrollbar, rich-content
 
 ## Base de datos
@@ -17,29 +22,18 @@
 - Producción (Vercel): `api/deliverables/*.js` usan `@supabase/supabase-js` (requiere Node 20)
 - Credenciales en `.env.local` (SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
 
-## Versión actual: 1.0.6
-Backup en `src/App.jsx.v1.0.6.bak`
+## Versión actual: 1.0.7
+Backup en `src/App.jsx.v1.0.7.bak`
 
-### Qué incluye v1.0.6
-- `CustomSelect` — componente propio que reemplaza todos los `<select>` nativos para controlar posición del dropdown
-- Fondo degradado animado — `animated-bg-1/2` en index.css, keyframes `bg-drift-1/2`
-- Focus ring verde en search bars — `ring-1 ring-green-400 focus:border-green-400`
-- Dark mode hero: `#040C16`
-- Filtros en "Todos los research": estado base muestra todo (`filterType/filterProduct/filterEstado` inicializan en `""`)
-- 'Otros productos' en ProductPage: dot con color + nombre + count (sin cover)
-- Ocultar badge Jira si no hay ticket vinculado
-- ProductPage: 3 research más recientes publicados como cards en 'Todos los research'
-- `sel-arrow` CSS class para selects nativos restantes
-- Miniaturas Google Slides, foto de perfil Google, versión en configuración
-- Todo lo de v1.0.5: borders + shadow-xs en cards, nivel tec select, text-sm global
-- Todo lo de v1.0.4: Figma img proxy, persona fixes
-- Todo lo de v1.0.3: canvas grid animado en hero, botón "Volver a [contexto]" dinámico, sidebar colapsa al desfijar
-- Todo lo de v1.0.2: URLs con slug, editores dinámicos desde Supabase, restricción @prestamype.com
-- Todo lo de v1.0.1: Supabase BD, RichEditor con heading dropdown, Buyer/User Persona forms
+### Qué incluye v1.0.7
+- **Refactoring arquitectural completo** — App.jsx monolítico (3771 líneas) separado en módulos
+- Sidebar siempre abierto por defecto (pinned=true), colapsa solo si el usuario lo cierra
+- Iconos del sidebar alineados correctamente (h-10 fijo, header min-h-[76px])
+- Todo lo de v1.0.6
 
 ## Advertencias importantes
 - **NUNCA** hacer `git checkout src/App.jsx` — los cambios no están commiteados
-- Si se necesita revertir, usar `src/App.jsx.v1.0.6.bak`
+- Si se necesita revertir, usar `src/App.jsx.v1.0.7.bak`
 - Node 16 en local: `@supabase/supabase-js` no funciona en vite.config.js ni en scripts — usar `https` nativo
 
 ## Colores
