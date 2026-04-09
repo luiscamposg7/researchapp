@@ -103,7 +103,7 @@ export default function Sidebar({ onSettings, user, mobileOpen = false, onMobile
         })}
 
         {/* Productos */}
-        <div className={expanded ? "pt-3" : "pt-3"}>
+        <div className={expanded ? "pt-5" : "pt-5"}>
           {expanded && <p className={`px-3 pb-2 text-sm font-semibold uppercase tracking-wider whitespace-nowrap ${s.muted}`}>Productos</p>}
           {PRODUCTS.map((product) => {
             const isActive = location.pathname === `/producto/${toSlug(product)}`;
