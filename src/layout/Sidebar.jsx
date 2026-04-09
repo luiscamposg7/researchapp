@@ -113,7 +113,7 @@ export default function Sidebar({ onSettings, user, mobileOpen = false, onMobile
               <button key={product} title={!expanded ? product : undefined}
                 onClick={() => navigate(`/producto/${toSlug(product)}`)}
                 className={`w-full flex items-center rounded-lg font-medium ${expanded ?"gap-3 px-3 h-10" :"justify-center h-10"} ${isActive ? s.navOn : s.navOff}`}>
-                <div className="w-6 h-6 rounded-full flex-shrink-0 flex items-center justify-center text-[9px] font-bold" style={{ backgroundColor: pc + "28", color: pc }}>
+                <div className="w-6 h-6 rounded-full flex-shrink-0 flex items-center justify-center text-[11px] font-bold" style={{ backgroundColor: pc + "28", color: pc }}>
                   {initials}
                 </div>
                 {expanded && <span className="whitespace-nowrap overflow-hidden">{product}</span>}
