@@ -30,7 +30,7 @@ export default function PersonaDetailTabs({ personas, type }) {
           {personas.map((_, i) => (
             <button key={i} onClick={() => setTab(i)}
               className={`px-5 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors ${tab === i ? (isBuyer ? "border-blue-500 text-blue-600" : "border-green-500 text-green-600") : "border-transparent text-tertiary hover:text-primary"}`}>
-              {isBuyer ? `B${i + 1}` : `U${i + 1}`}
+              Persona {i + 1}
             </button>
           ))}
         </div>

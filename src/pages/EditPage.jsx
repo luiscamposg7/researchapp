@@ -192,7 +192,7 @@ function EditPageForm({ item }) {
                     {form.buyers.map((_, i) => (
                       <div key={i} className="flex items-center">
                         <button type="button" onClick={() => setBuyerTab(i)} className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${buyerTab === i ? "border-blue-500 text-blue-600" : "border-transparent text-tertiary hover:text-primary"}`}>
-                          B{i + 1}
+                          Persona {i + 1}
                         </button>
                         {form.buyers.length > 1 && (
                           <button type="button" onClick={() => setConfirmRemove({ group: "buyers", idx: i })} className="-ml-1 mb-px w-4 h-4 flex items-center justify-center text-sm text-muted hover:text-secondary">✕</button>
@@ -233,7 +233,7 @@ function EditPageForm({ item }) {
                         {form.users.map((_, i) => (
                           <div key={i} className="flex items-center">
                             <button type="button" onClick={() => setUserTab(i)} className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${userTab === i ? "border-green-500 text-green-600" : "border-transparent text-tertiary hover:text-primary"}`}>
-                              U{i + 1}
+                              Persona {i + 1}
                             </button>
                             <button type="button" onClick={() => setConfirmRemove({ group: "users", idx: i })} className="-ml-1 mb-px w-4 h-4 flex items-center justify-center text-sm text-muted hover:text-secondary">✕</button>
                           </div>
