@@ -72,27 +72,23 @@ export default function ProductPage() {
         />
       )}
       {/* Banner */}
-      <div
-        className="relative flex-shrink-0 group/cover"
-        style={{ height: 200, backgroundColor: color, backgroundImage: coverUrl ? `url(${coverUrl})` : undefined, backgroundSize: "cover", backgroundPosition: "center" }}
-      >
-        {isEditor && (
-          <>
+      {(coverUrl || isEditor) && (
+        <div className="relative flex-shrink-0 group/cover overflow-hidden" style={{ height: 200, backgroundColor: "var(--color-bg-muted)" }}>
+          {coverUrl && <img src={coverUrl} alt="" className="w-full h-full object-cover" />}
+          {isEditor && (
             <button
               onClick={() => !coverUploading && setShowCoverPicker(true)}
               className="absolute top-3 right-3 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold bg-black/40 text-white opacity-0 group-hover/cover:opacity-100 transition-opacity hover:bg-black/60 disabled:cursor-not-allowed"
               disabled={coverUploading}
             >
-              {coverUploading ? (
-                <Spinner size="xs" />
-              ) : (
+              {coverUploading ? <Spinner size="xs" /> : (
                 <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
               )}
               {coverUploading ? "Subiendo..." : "Cambiar portada"}
             </button>
-          </>
-        )}
-      </div>
+          )}
+        </div>
+      )}
 
       {/* Nav bar */}
       <div className="border-b px-8 py-4 sticky top-0 z-10 flex items-center border bg-surface">
@@ -103,9 +99,6 @@ export default function ProductPage() {
       </div>
 
       <div className="w-full mx-auto px-4 md:px-8 py-6 md:py-8 pb-16" style={{ maxWidth: "1600px" }}>
-        <h1 className="text-2xl md:text-3xl font-semibold mb-1 text-primary">{product}</h1>
-        <p className="text-sm mb-10 text-muted">{productDeliverables.length} entregable{productDeliverables.length !== 1 ? "s" : ""}</p>
-
         {/* Persona sections */}
         {PERSONA_TYPES.map(type => {
           const items = personaByType[type];

@@ -200,25 +200,25 @@ export default function DetailPage() {
           {/* RIGHT */}
           <div className="flex-1 min-w-0 space-y-6">
             {item.contenido ? (
-              <div className="rich-content text-base leading-relaxed text-secondary pb-4" dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.contenido) }} />
+              <div className="rich-content text-base leading-relaxed text-primary pb-4" dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.contenido) }} />
             ) : (
               <>
                 {item.objetivo && (
                   <div>
                     <h3 className="text-xl font-semibold mb-2 text-primary">Objetivo del research</h3>
-                    <div className="rich-content text-base leading-relaxed text-secondary" dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.objetivo) }} />
+                    <div className="rich-content text-base leading-relaxed text-primary" dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.objetivo) }} />
                   </div>
                 )}
                 {item.usuario && (
                   <div>
                     <h3 className="text-xl font-semibold mb-2 text-primary">Usuario</h3>
-                    <div className="rich-content text-base leading-relaxed text-secondary" dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.usuario) }} />
+                    <div className="rich-content text-base leading-relaxed text-primary" dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.usuario) }} />
                   </div>
                 )}
                 {item.hallazgos && (
                   <div className="pb-4">
                     <h3 className="text-xl font-semibold mb-2 text-primary">Hallazgos y conclusiones</h3>
-                    <div className="rich-content text-base leading-relaxed text-secondary" dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.hallazgos) }} />
+                    <div className="rich-content text-base leading-relaxed text-primary" dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.hallazgos) }} />
                   </div>
                 )}
               </>
