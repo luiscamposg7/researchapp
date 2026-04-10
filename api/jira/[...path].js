@@ -36,7 +36,7 @@ module.exports = async function handler(req, res) {
       body: JSON.stringify({ jql: `key = "${key}"`, fields: ['summary', 'status'], maxResults: 1 }),
     });
     const d2 = await r2.json();
-    console.log('[jira jql]', r2.status, JSON.stringify(d2).slice(0, 300));
+    console.log('[jira jql]', r2.status, r2.url, JSON.stringify(d2).slice(0, 300));
     if (r2.ok && d2.issues?.length > 0) return res.status(200).json(d2.issues[0]);
 
     return res.status(r1.status).json(d1);
