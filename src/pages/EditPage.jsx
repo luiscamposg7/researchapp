@@ -78,7 +78,6 @@ function EditPageForm({ item }) {
           <span className="hidden sm:inline">{fromLabel ? `Volver a ${fromLabel}` : "Volver"}</span>
           <span className="sm:hidden">Volver</span>
         </button>
-        <Button color="primary" onClick={() => handleSave(form.status)} disabled={!form.title.trim() || saving} className="disabled:opacity-40">Guardar cambios</Button>
       </div>
 
       <div className="w-full mx-auto px-4 md:px-8 py-6 md:py-8 pb-16" style={{ maxWidth: "1600px" }}>
@@ -197,6 +196,7 @@ function EditPageForm({ item }) {
                 <label className={lbl}>Fecha de publicación</label>
                 <DateInput value={toIsoDate(form.date)} onChange={v => set("date", v)} dark={d} />
               </div>
+              <Button color="primary" onClick={() => handleSave(form.status)} disabled={!form.title.trim() || saving} className="w-full disabled:opacity-40">Guardar cambios</Button>
             </div>
 
             {/* Clasificación */}

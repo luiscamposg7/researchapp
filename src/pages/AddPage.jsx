@@ -122,10 +122,7 @@ export default function AddPage() {
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7"/></svg>
           Volver
         </button>
-        <div className="flex items-center gap-2">
-          <Button color="secondary" onClick={() => handleSave("Borrador")} disabled={!form.title.trim() || !form.type || !form.tags.length || saving} className="disabled:opacity-40">Guardar</Button>
-          <Button color="primary" onClick={() => handleSave("Publicado")} disabled={!form.title.trim() || !form.type || !form.tags.length || saving} className="disabled:opacity-40">Publicar</Button>
-        </div>
+        <Button color="primary" onClick={() => handleSave("Publicado")} disabled={!form.title.trim() || !form.type || !form.tags.length || saving} className="disabled:opacity-40">Publicar</Button>
       </div>
 
       <div className="w-full mx-auto px-4 md:px-8 py-6 md:py-8" style={{ maxWidth: "1600px" }}>
@@ -272,6 +269,7 @@ export default function AddPage() {
                 <label className={lbl}>Fecha de publicación</label>
                 <DateInput value={form.date} onChange={v => set("date", v)} dark={d} />
               </div>
+              <Button color="secondary" onClick={() => handleSave("Borrador")} disabled={!form.title.trim() || !form.type || !form.tags.length || saving} className="w-full disabled:opacity-40">Guardar</Button>
             </div>
 
             {/* Clasificación */}
