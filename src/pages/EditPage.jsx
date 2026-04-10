@@ -12,6 +12,7 @@ import { toSlug, getDriveId, uploadToCloudinary } from "../lib/utils";
 import { useJiraUrl } from "../hooks/useJiraUrl";
 import SectionTitle from "../components/SectionTitle";
 import ConfirmModal from "../components/ConfirmModal";
+import MultiSelectInput from "../components/MultiSelectInput";
 
 export default function EditPage() {
   const location = useLocation();
@@ -88,15 +89,14 @@ function EditPageForm({ item }) {
       <div className="border-b px-4 py-3 md:px-8 md:py-4 sticky top-0 z-10 bg-page border flex items-center justify-between gap-4">
         <button onClick={() => window.history.length > 1 ? navigate(-1) : navigate("/research")} className="flex items-center gap-2 text-sm font-semibold text-tertiary hover:text-primary transition-colors duration-150 cursor-pointer">
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7"/></svg>
-          <span className="hidden sm:inline">{fromLabel ? `Volver a ${fromLabel}` : "Volver"}</span>
-          <span className="sm:hidden">Volver</span>
+          <span>Volver</span>
         </button>
       </div>
 
       <div className="w-full mx-auto px-4 md:px-8 py-6 md:py-8 pb-16" style={{ maxWidth: "1600px" }}>
 
         <div className="mb-6">
-          <h1 className="text-2xl font-bold mb-1 text-primary">Editar research</h1>
+          <h1 className="text-2xl font-semibold mb-1 text-primary">Editar research</h1>
           <div className="flex items-center gap-1.5">
             <a href={`/research/${toSlug(item.title)}`} target="_blank" rel="noreferrer" className="text-base font-medium pr-2 truncate min-w-0 hover:opacity-80 transition-opacity" style={{ color: "#00B369" }}>{window.location.origin}/research/{toSlug(item.title)}</a>
             <button type="button" title="Copiar enlace" onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/research/${toSlug(item.title)}`); setCopied(true); setTimeout(() => setCopied(false), 2000); }} style={{ height: 38 }} className={`flex items-center gap-1.5 px-2 rounded-lg border flex-shrink-0 bg-surface hover:bg-hover transition-colors text-sm font-medium ${copied ? "text-green-500 border-green-300" : "text-tertiary hover:text-secondary"}`}>
@@ -222,27 +222,21 @@ function EditPageForm({ item }) {
                 <CustomSelect dark={d} fullWidth value={form.type} onChange={setType} options={[{value:"",label:"Seleccione"}, ...TYPES.slice(1).map(t => ({value:t,label:t}))]} />
               </div>
               <div>
-                <label className={lbl}>Metodología</label>
-                <CustomSelect dark={d} fullWidth value={form.metodologia || ""} onChange={v => set("metodologia", v)} options={[{value:"",label:"Seleccione"},{value:"Sin especificar",label:"Sin especificar"}, ...METODOLOGIAS.map(m => ({value:m,label:m}))]} />
-              </div>
-              <div>
                 <label className={lbl}>Producto <span className="text-green-500">*</span></label>
                 <CustomSelect dark={d} fullWidth value={form.tags[0] || ""} onChange={v => set("tags", v ? [v] : [])} options={[{value:"",label:"Seleccione"}, ...PRODUCTS.map(p => ({value:p,label:p}))]} />
               </div>
               <div>
-                <label className={lbl}>Personas asignadas</label>
-                <div className="flex flex-wrap gap-2">
-                  {editors.map(name => {
-                    const selected = form.team.includes(name);
-                    return (
-                      <button key={name} type="button"
-                        onClick={() => set("team", selected ? form.team.filter(t => t !== name) : [...form.team, name])}
-                        className={`px-3 py-1.5 rounded-lg text-sm font-semibold border transition-colors ${selected ? "bg-green-500 text-white border-green-500" : "bg-surface text-secondary border hover:border-green-400"}`}>
-                        {name}
-                      </button>
-                    );
-                  })}
-                </div>
+                <label className={lbl}>Metodología</label>
+                <CustomSelect dark={d} fullWidth value={form.metodologia || ""} onChange={v => set("metodologia", v)} options={[{value:"",label:"Seleccione"},{value:"Sin especificar",label:"Sin especificar"}, ...METODOLOGIAS.map(m => ({value:m,label:m}))]} />
+              </div>
+              <div>
+                <label className={lbl}>Personas asignadas <span className="text-green-500">*</span></label>
+                <MultiSelectInput
+                  value={form.team}
+                  onChange={v => set("team", v)}
+                  options={editors}
+                  placeholder="Asignar persona..."
+                />
               </div>
             </div>
 

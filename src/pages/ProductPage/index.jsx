@@ -102,7 +102,7 @@ export default function ProductPage() {
       </div>
 
       <div className="w-full mx-auto px-4 md:px-8 py-6 md:py-8 pb-16" style={{ maxWidth: "1600px" }}>
-        <h1 className="text-2xl md:text-3xl font-bold mb-1 text-primary">{product}</h1>
+        <h1 className="text-2xl md:text-3xl font-semibold mb-1 text-primary">{product}</h1>
         <p className="text-sm mb-10 text-muted">{productDeliverables.length} entregable{productDeliverables.length !== 1 ? "s" : ""}</p>
 
         {/* Persona sections */}
@@ -111,7 +111,7 @@ export default function ProductPage() {
           return (
             <div key={type} className="mb-10 pb-10 border-b border-subtle">
               <div className="flex items-center justify-between mb-5">
-                <h2 className="text-xl font-bold text-primary">{type}</h2>
+                <h2 className="text-xl font-semibold text-primary">{type}</h2>
                 <Button
                   color="secondary"
                   onClick={() => { setActiveFilter({ type, product }); navigate("/research"); }}
@@ -183,7 +183,7 @@ export default function ProductPage() {
           return (
             <div className="mb-10">
               <div className="flex items-center justify-between mb-5">
-                <h2 className="text-xl font-bold text-primary">Todos los research</h2>
+                <h2 className="text-xl font-semibold text-primary">Todos los research</h2>
                 <Button color="secondary" onClick={() => navigate("/research")}>Ver todos</Button>
               </div>
               {recentResearch.length > 0 ? (

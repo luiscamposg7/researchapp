@@ -1,4 +1,5 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
+import { useClickOutside } from "../hooks/useClickOutside";
 
 export default function DateInput({ value, onChange, dark: d }) {
   const [open, setOpen] = useState(false);
@@ -9,11 +10,7 @@ export default function DateInput({ value, onChange, dark: d }) {
   const DAYS = ["Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sa"];
   const MONTHS = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
 
-  useEffect(() => {
-    const handler = e => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
+  useClickOutside(ref, () => setOpen(false));
 
   const cells = () => {
     const first = new Date(cursor.y, cursor.m, 1).getDay();

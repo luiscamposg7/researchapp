@@ -3,7 +3,10 @@
     "allow": [
       "Bash(git add:*)",
       "Read(//Users/luiscg/Downloads/react-main 2/components/**)",
-      "Read(//Users/luiscg/Downloads/react-main 2/**)"
+      "Read(//Users/luiscg/Downloads/react-main 2/**)",
+      "Bash(pkill -f \"vite\")",
+      "Bash(npm run:*)",
+      "Bash(npx eslint:*)"
     ]
   }
 }

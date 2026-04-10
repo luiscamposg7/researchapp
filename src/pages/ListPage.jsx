@@ -72,7 +72,7 @@ export default function ListPage() {
         <div className="w-full mx-auto px-4 md:px-8" style={{maxWidth:"1600px"}}>
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h1 className={`text-xl md:text-2xl font-bold ${s.p1}`}>Todos los research</h1>
+              <h1 className={`text-xl md:text-2xl font-semibold ${s.p1}`}>Todos los research</h1>
               <p className={`text-sm md:text-base ${s.p2}`}>{filtered.length} research encontrados</p>
             </div>
             {isEditor && (

@@ -61,6 +61,10 @@ export default function PersonaImageUploader({ images = [], onChange, uploading,
         </div>
       ) : (
         <div className="space-y-2">
+          <Button type="button" color="secondary" size="sm" onClick={() => setShowPicker(true)} className="w-full flex items-center justify-center gap-1.5">
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+            Seleccionar de la librería
+          </Button>
           <label
             className={`flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed p-8 cursor-pointer transition-colors ${uploading ? "opacity-50 pointer-events-none" : dragging ? "border-green-400 bg-green-50/10" : "hover:border-green-400"}`}
             onDragOver={e => { e.preventDefault(); setDragging(true); }}
@@ -74,10 +78,6 @@ export default function PersonaImageUploader({ images = [], onChange, uploading,
             <span className="text-xs text-muted">PNG, JPG, WebP · arrastra o haz clic</span>
             <input type="file" accept="image/*" className="hidden" onChange={e => handleFiles(e.target.files)} />
           </label>
-          <Button type="button" color="secondary" size="sm" onClick={() => setShowPicker(true)} className="w-full flex items-center justify-center gap-1.5">
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
-            Seleccionar de la librería
-          </Button>
         </div>
       )}
     </>

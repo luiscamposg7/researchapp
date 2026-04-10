@@ -80,8 +80,7 @@ export default function DetailPage() {
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
-          <span className="hidden sm:inline">{fromLabel ? `Volver a ${fromLabel}` : "Volver"}</span>
-          <span className="sm:hidden">Volver</span>
+          <span>Volver</span>
         </button>
         <div className="flex gap-2">
           {isEditor && (
@@ -123,7 +122,7 @@ export default function DetailPage() {
           </span>
         </div>
         <div className="flex items-center gap-3 mb-3">
-          <h1 className="text-3xl font-bold text-primary">{item.title}</h1>
+          <h1 className="text-3xl font-semibold text-primary">{item.title}</h1>
           <button
             onClick={() => { navigator.clipboard.writeText(window.location.href); setCopied(true); setTimeout(() => setCopied(false), 2000); }}
             title="Copiar enlace"
@@ -197,19 +196,19 @@ export default function DetailPage() {
               <>
                 {item.objetivo && (
                   <div>
-                    <h3 className="text-xl font-bold mb-2 text-primary">Objetivo del research</h3>
+                    <h3 className="text-xl font-semibold mb-2 text-primary">Objetivo del research</h3>
                     <div className="rich-content text-base leading-relaxed text-secondary" dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.objetivo) }} />
                   </div>
                 )}
                 {item.usuario && (
                   <div>
-                    <h3 className="text-xl font-bold mb-2 text-primary">Usuario</h3>
+                    <h3 className="text-xl font-semibold mb-2 text-primary">Usuario</h3>
                     <div className="rich-content text-base leading-relaxed text-secondary" dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.usuario) }} />
                   </div>
                 )}
                 {item.hallazgos && (
                   <div>
-                    <h3 className="text-xl font-bold mb-2 text-primary">Hallazgos y conclusiones</h3>
+                    <h3 className="text-xl font-semibold mb-2 text-primary">Hallazgos y conclusiones</h3>
                     <div className="rich-content text-base leading-relaxed text-secondary" dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.hallazgos) }} />
                   </div>
                 )}
@@ -222,7 +221,7 @@ export default function DetailPage() {
             )}
             {item.imagenes && item.imagenes.length > 0 && (
               <div>
-                <h3 className="text-xl font-bold mb-3 text-primary">Imágenes adjuntas</h3>
+                <h3 className="text-xl font-semibold mb-3 text-primary">Imágenes adjuntas</h3>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                   {item.imagenes.map((url, i) => (
                     <button key={i} onClick={() => setLightbox(i)} className="block rounded-xl overflow-hidden aspect-video group cursor-zoom-in">
@@ -264,7 +263,7 @@ export default function DetailPage() {
         {/* Related */}
         {related.length > 0 && (
           <div className="mt-16 pt-10 border-t">
-            <h2 className="text-xl font-bold mb-5 text-primary">Research relacionados</h2>
+            <h2 className="text-xl font-semibold mb-5 text-primary">Research relacionados</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
               {related.map(r => (
                 <Card key={r.id} item={r} fromLabel={item.title} />

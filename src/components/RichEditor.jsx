@@ -103,7 +103,7 @@ export default function RichEditor({ onChange, placeholder, value }) {
             <>
               <div className="fixed inset-0 z-10" onMouseDown={() => setHeadingOpen(false)} />
               <div className="absolute left-0 top-full mt-1 z-20 rounded-lg shadow-lg border overflow-hidden min-w-[120px] bg-surface">
-                {[["h1","text-2xl font-black","Encabezado 1"],["h2","text-xl font-bold","Encabezado 2"],["h3","text-lg font-bold","Encabezado 3"],["h4","text-base font-semibold","Encabezado 4"],["h5","text-sm font-medium","Encabezado 5"],["h6","text-xs font-medium text-muted","Encabezado 6"]].map(([tag, cls, name]) => (
+                {[["h1","text-2xl font-semibold","Encabezado 1"],["h2","text-xl font-semibold","Encabezado 2"],["h3","text-lg font-semibold","Encabezado 3"],["h4","text-base font-semibold","Encabezado 4"],["h5","text-sm font-medium","Encabezado 5"],["h6","text-xs font-medium text-muted","Encabezado 6"]].map(([tag, cls, name]) => (
                   <button key={tag} type="button"
                     onMouseDown={e => { e.preventDefault(); exec("formatBlock", `<${tag}>`); setHeadingOpen(false); }}
                     className={`w-full text-left px-3 py-1.5 transition-colors hover:bg-active text-primary whitespace-nowrap ${cls}`}>

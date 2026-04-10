@@ -12,6 +12,7 @@ import { toSlug, getDriveId, uploadToCloudinary } from "../lib/utils";
 import { useJiraUrl } from "../hooks/useJiraUrl";
 import SectionTitle from "../components/SectionTitle";
 import ConfirmModal from "../components/ConfirmModal";
+import MultiSelectInput from "../components/MultiSelectInput";
 
 export default function AddPage() {
   const navigate = useNavigate();
@@ -140,7 +141,7 @@ export default function AddPage() {
 
       <div className="w-full mx-auto px-4 md:px-8 py-6 md:py-8" style={{ maxWidth: "1600px" }}>
         <div className="mb-6">
-          <h1 className="text-2xl font-bold mb-1 text-primary">Añadir research</h1>
+          <h1 className="text-2xl font-semibold mb-1 text-primary">Añadir research</h1>
           {form.title.trim() && (
             <div className="flex items-center gap-2 min-w-0">
               <p className="text-sm font-medium truncate min-w-0 text-tertiary">{window.location.origin}/research/{toSlug(form.title)}</p>
@@ -293,27 +294,21 @@ export default function AddPage() {
                 <CustomSelect dark={d} fullWidth value={form.type} onChange={setType} options={[{value:"",label:"Seleccione"}, ...TYPES.slice(1).map(t => ({value:t,label:t}))]} />
               </div>
               <div>
-                <label className={lbl}>Metodología</label>
-                <CustomSelect dark={d} fullWidth value={form.metodologia || ""} onChange={v => set("metodologia", v)} options={[{value:"",label:"Seleccione"},{value:"Sin especificar",label:"Sin especificar"}, ...METODOLOGIAS.map(m => ({value:m,label:m}))]} />
-              </div>
-              <div>
                 <label className={lbl}>Producto <span className="text-green-500">*</span></label>
                 <CustomSelect dark={d} fullWidth value={form.tags[0] || ""} onChange={v => set("tags", v ? [v] : [])} options={[{value:"",label:"Seleccione"}, ...PRODUCTS.map(p => ({value:p,label:p}))]} />
               </div>
               <div>
-                <label className={lbl}>Personas asignadas</label>
-                <div className="flex flex-wrap gap-2">
-                  {editors.map(name => {
-                    const selected = form.team.includes(name);
-                    return (
-                      <button key={name} type="button"
-                        onClick={() => set("team", selected ? form.team.filter(t => t !== name) : [...form.team, name])}
-                        className={`px-3 py-1.5 rounded-lg text-sm font-semibold border transition-colors ${selected ? "bg-green-500 text-white border-green-500" : "bg-surface text-secondary border hover:border-green-400"}`}>
-                        {name}
-                      </button>
-                    );
-                  })}
-                </div>
+                <label className={lbl}>Metodología</label>
+                <CustomSelect dark={d} fullWidth value={form.metodologia || ""} onChange={v => set("metodologia", v)} options={[{value:"",label:"Seleccione"},{value:"Sin especificar",label:"Sin especificar"}, ...METODOLOGIAS.map(m => ({value:m,label:m}))]} />
+              </div>
+              <div>
+                <label className={lbl}>Personas asignadas <span className="text-green-500">*</span></label>
+                <MultiSelectInput
+                  value={form.team}
+                  onChange={v => set("team", v)}
+                  options={editors}
+                  placeholder="Asignar persona..."
+                />
               </div>
             </div>
 

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { getPresentationInfo } from "../lib/utils";
 
 function DriveIcon() {
@@ -30,22 +30,40 @@ export default function PresentationCard({ item, dark: d }) {
   const pres = getPresentationInfo(item.archivoUrl || "");
   const isFigma = pres?.type === "figma";
   const isSlides = pres?.type === "slides";
-  const label = isFigma ? "Figma" : isSlides ? "Google Slides" : "Google Drive";
+  const isFigmaSlides = isFigma && /figma\.com\/(slides|deck)\//.test(item.archivoUrl || "");
+  const label = isFigmaSlides ? "Presentación en Figma" : isFigma ? "Figma" : isSlides ? "Presentación en Drive" : "En Drive";
   const [figmaMeta, setFigmaMeta] = useState(null);
   const [thumbFailed, setThumbFailed] = useState(false);
+  const [iframeVisible, setIframeVisible] = useState(false);
+  const containerRef = useRef(null);
+
+  // Lazy-load iframe only when card enters viewport
+  useEffect(() => {
+    if (!isFigmaSlides) return;
+    const el = containerRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) { setIframeVisible(true); observer.disconnect(); } },
+      { rootMargin: "100px" }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [isFigmaSlides]);
 
   useEffect(() => {
-    if (!isFigma || !item.archivoUrl) return;
+    if (!isFigma || isFigmaSlides || !item.archivoUrl) return;
     fetch(`/api/figma-thumb?url=${encodeURIComponent(item.archivoUrl)}`)
       .then(r => r.json())
       .then(data => setFigmaMeta(data))
       .catch(() => {});
-  }, [item.archivoUrl, isFigma]);
+  }, [item.archivoUrl, isFigma, isFigmaSlides]);
 
-  const thumbUrl = isFigma
+  const thumbUrl = isFigma && !isFigmaSlides
     ? (item.archivoUrl ? `/api/figma-img?url=${encodeURIComponent(item.archivoUrl)}` : null)
-    : (pres?.thumbUrl || null);
-  const displayName = isFigma ? (figmaMeta?.title || label) : (item.archivo || label);
+    : (!isFigma ? (pres?.thumbUrl || null) : null);
+  const displayName = isFigma
+    ? (figmaMeta?.title || label)
+    : (item.archivo || label);
 
   if (!pres) return null;
 
@@ -55,6 +73,23 @@ export default function PresentationCard({ item, dark: d }) {
         <div className="w-full overflow-hidden" style={{height:180}}>
           <img src={thumbUrl} alt="" className="w-full h-full object-cover object-top"
             onError={() => setThumbFailed(true)} />
+        </div>
+      ) : isFigmaSlides && pres?.embedUrl ? (
+        <div ref={containerRef} className="w-full overflow-hidden" style={{height:180, background:"#1e1e1e", position:"relative"}}>
+          {iframeVisible && (
+            <iframe
+              src={pres.embedUrl}
+              title="Figma Slides preview"
+              loading="lazy"
+              style={{
+                position:"absolute", top:0, left:0,
+                width:"200%", height:"200%",
+                border:"none",
+                transform:"scale(0.5)", transformOrigin:"top left",
+                pointerEvents:"none",
+              }}
+            />
+          )}
         </div>
       ) : isFigma ? (
         <div className="w-full flex items-center justify-center" style={{height:180, background:"linear-gradient(135deg,#1e1e2e 0%,#2d2b55 100%)"}}>
@@ -69,7 +104,7 @@ export default function PresentationCard({ item, dark: d }) {
       ) : (
         <div className="w-full flex items-center justify-center gap-3" style={{height:120, background: isSlides ? "linear-gradient(135deg,#fbf3e8 0%,#fde9d3 100%)" : "linear-gradient(135deg,#e8f0fe 0%,#d2e3fc 100%)"}}>
           <DriveIcon />
-          <span className="text-sm font-semibold text-gray-500">{isSlides ? "Google Slides" : "Google Drive"}</span>
+          <span className="text-sm font-semibold text-gray-500">{isSlides ? "Google" : "Google Drive"}</span>
         </div>
       )}
 

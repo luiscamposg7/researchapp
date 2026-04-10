@@ -49,7 +49,7 @@ export default function HomePage() {
           <div className="inline-flex items-center text-sm font-semibold mb-4" style={{ color: "#00B369" }}>
             Strategic Design
           </div>
-          <h1 className="text-3xl md:text-5xl font-bold mb-4 leading-tight text-primary">
+          <h1 className="text-3xl md:text-5xl font-semibold mb-4 leading-tight text-primary">
             Repositorio de <span style={{ color: "#00B369" }}>research</span>
           </h1>
           <p className="text-lg mb-8 text-tertiary">
@@ -95,7 +95,7 @@ export default function HomePage() {
 
         {/* Por producto */}
         <div className="mb-10">
-          <h2 className="text-lg font-bold mb-4 text-primary">Productos</h2>
+          <h2 className="text-lg font-semibold mb-4 text-primary">Productos</h2>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
             {loadingDeliverables
               ? Array.from({ length: 6 }).map((_, i) => <ProductCardSkeleton key={i} />)
@@ -109,7 +109,7 @@ export default function HomePage() {
 
         {/* Recientes */}
         <div>
-          <h2 className="text-lg font-bold mb-4 text-primary">Recientes</h2>
+          <h2 className="text-lg font-semibold mb-4 text-primary">Recientes</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {loadingDeliverables
               ? Array.from({ length: 4 }).map((_, i) => (
