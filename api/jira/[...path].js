@@ -12,21 +12,38 @@ module.exports = async function handler(req, res) {
   }
 
   const auth = Buffer.from(`${email}:${token}`).toString('base64');
+  const headers = { Authorization: `Basic ${auth}`, Accept: 'application/json', 'Content-Type': 'application/json' };
   const pathParts = req.query.path || [];
   const key = pathParts[0];
-  const isTest = key === '_test';
-  const apiPath = isTest ? '/rest/api/2/myself' : `/rest/api/2/issue/${key}?fields=summary,status`;
+
+  if (key === '_test') {
+    try {
+      const r = await fetch(`${base}/rest/api/2/myself`, { headers });
+      const d = await r.json();
+      return res.status(r.status).json(d);
+    } catch (err) {
+      return res.status(502).json({ error: err.message });
+    }
+  }
 
   try {
-    const response = await fetch(`${base}${apiPath}`, {
-      headers: {
-        Authorization: `Basic ${auth}`,
-        Accept: 'application/json',
-      },
-    });
-    const data = await response.json();
-    console.log('[jira]', response.status, JSON.stringify(data).slice(0, 500));
-    return res.status(response.status).json(data);
+    // Try direct issue fetch first
+    const r1 = await fetch(`${base}/rest/api/2/issue/${key}?fields=summary,status`, { headers });
+    if (r1.ok) {
+      const d = await r1.json();
+      return res.status(200).json(d);
+    }
+
+    // Fallback: JQL search
+    const r2 = await fetch(`${base}/rest/api/2/search?jql=issue="${key}"&fields=summary,status&maxResults=1`, { headers });
+    const d2 = await r2.json();
+    console.log('[jira search]', r2.status, JSON.stringify(d2).slice(0, 300));
+    if (r2.ok && d2.issues?.length > 0) {
+      return res.status(200).json(d2.issues[0]);
+    }
+
+    const d1 = await r1.json();
+    return res.status(r1.status).json(d1);
   } catch (err) {
     return res.status(502).json({ error: err.message });
   }
