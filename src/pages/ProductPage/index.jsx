@@ -54,8 +54,7 @@ export default function ProductPage() {
       return sorted.length ? [sorted[0]] : [];
     };
     return {
-      "Buyer Persona": latestPersona("Buyer Persona"),
-      "User Persona":  latestPersona("User Persona"),
+      "Buyer y User Persona": latestPersona("Buyer y User Persona"),
     };
   }, [productDeliverables]);
 
@@ -139,7 +138,7 @@ export default function ProductPage() {
                         <div className="p-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                           {inv.personas.map((p, i) => (
                             <div key={i} className="rounded-xl overflow-hidden border">
-                              <div className="px-4 py-2.5 flex items-center gap-2" style={{ backgroundColor: type === "Buyer Persona" ? "#2563EB" : "#00B369" }}>
+                              <div className="px-4 py-2.5 flex items-center gap-2" style={{ backgroundColor: "#00B369" }}>
                                 <p className="text-white/70 text-sm">{type}</p>
                                 <span className="text-white/40 text-sm">·</span>
                                 <p className="text-white text-sm font-bold">Persona {i + 1}</p>
