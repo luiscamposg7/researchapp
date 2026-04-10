@@ -1,14 +1,14 @@
 const { supabase } = require('../lib/supabase');
 
 module.exports = async function handler(req, res) {
-  const { data } = await supabase.from('config').select('value').eq('key', 'jira').maybeSingle();
+  const { data, error: sbError } = await supabase.from('config').select('value').eq('key', 'jira').maybeSingle();
   const cfg = data?.value || {};
   const base  = (cfg.baseUrl || '').replace(/\/$/, '');
   const email = cfg.email || '';
   const token = cfg.token || '';
 
   if (!base || !email || !token) {
-    return res.status(500).json({ error: 'Jira credentials not configured' });
+    return res.status(500).json({ error: 'Jira credentials not configured', sbError: sbError?.message, hasData: !!data });
   }
 
   const pathRaw = req.query.path || [];
@@ -24,6 +24,9 @@ module.exports = async function handler(req, res) {
   try {
     const response = await fetch(`${base}${apiPath}`, { headers });
     const data = await response.json();
+    if (!response.ok) {
+      return res.status(response.status).json({ ...data, _debug: { email, tokenEnd: token.slice(-8), key } });
+    }
     return res.status(response.status).json(data);
   } catch (err) {
     return res.status(502).json({ error: err.message });
