@@ -17,9 +17,13 @@ module.exports = async function handler(req, res) {
   const key = pathParts[0];
 
   if (key === '_test') {
-    const r = await fetch(`${base}/rest/api/2/myself`, { headers });
-    const d = await r.json();
-    return res.status(r.status).json(d);
+    const [rMe, rProj] = await Promise.all([
+      fetch(`${base}/rest/api/3/myself`, { headers }),
+      fetch(`${base}/rest/api/3/project/search?maxResults=10`, { headers }),
+    ]);
+    const me = await rMe.json();
+    const proj = await rProj.json();
+    return res.json({ me, projects: proj.values?.map(p => p.key) || proj });
   }
 
   try {
