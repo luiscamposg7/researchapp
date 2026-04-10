@@ -11,8 +11,9 @@ module.exports = async function handler(req, res) {
     return res.status(500).json({ error: 'Jira credentials not configured' });
   }
 
-  const auth = Buffer.from(`${email}:${token}`).toString('base64');
-  const headers = { Authorization: `Basic ${auth}`, Accept: 'application/json', 'Content-Type': 'application/json' };
+  const basicAuth = Buffer.from(`${email}:${token}`).toString('base64');
+  const makeHeaders = (authValue) => ({ Authorization: authValue, Accept: 'application/json', 'Content-Type': 'application/json' });
+  const headers = makeHeaders(`Basic ${basicAuth}`);
   const pathParts = req.query.path || [];
   const key = pathParts[0];
 
@@ -34,8 +35,8 @@ module.exports = async function handler(req, res) {
       return res.status(200).json(d);
     }
 
-    // Fallback: JQL search
-    const r2 = await fetch(`${base}/rest/api/2/search?jql=issue="${key}"&fields=summary,status&maxResults=1`, { headers });
+    // Fallback: JQL search with Bearer token
+    const r2 = await fetch(`${base}/rest/api/2/search?jql=issue="${key}"&fields=summary,status&maxResults=1`, { headers: makeHeaders(`Bearer ${token}`) });
     const d2 = await r2.json();
     console.log('[jira search]', r2.status, JSON.stringify(d2).slice(0, 300));
     if (r2.ok && d2.issues?.length > 0) {
