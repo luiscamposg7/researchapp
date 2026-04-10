@@ -12,7 +12,7 @@ export default function ProductPage() {
   const navigate = useNavigate();
   const { slug } = useParams();
   const product = PRODUCTS.find(p => toSlug(p) === slug) || slug;
-  const { dark: d, deliverables, isEditor } = useApp();
+  const { dark: d, deliverables, isEditor, setActiveFilter } = useApp();
   const [coverUrl, setCoverUrl] = useState(null);
   const [coverUploading, setCoverUploading] = useState(false);
   const [showCoverPicker, setShowCoverPicker] = useState(false);
@@ -110,16 +110,12 @@ export default function ProductPage() {
             <div key={type} className="mb-10 pb-10 border-b border-subtle">
               <div className="flex items-center justify-between mb-5">
                 <h2 className="text-xl font-bold text-primary">{type}</h2>
-                {isEditor && (
-                  <Button
-                    color="primary"
-                    onClick={() => navigate("/añadir-research", { state: { type, product } })}
-                    className="flex items-center gap-1.5"
-                  >
-                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
-                    Añadir nueva
-                  </Button>
-                )}
+                <Button
+                  color="secondary"
+                  onClick={() => { setActiveFilter({ type, product }); navigate("/research"); }}
+                >
+                  Ver todos
+                </Button>
               </div>
 
               {items.length > 0 ? (
