@@ -76,7 +76,7 @@ function EditPageForm({ item }) {
       {confirmRemovePersona !== null && (
         <ConfirmModal
           title="¿Eliminar persona?"
-          message={`Se eliminará "Persona ${confirmRemovePersona + 1}" y todas sus imágenes.`}
+          message={`Se eliminará "Persona ${confirmRemovePersona + 1}" y su imagen.`}
           confirmLabel="Sí, eliminar"
           danger
           onConfirm={() => { removePersona(confirmRemovePersona); setConfirmRemovePersona(null); }}
