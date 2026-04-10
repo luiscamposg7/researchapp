@@ -223,11 +223,16 @@ export default function DetailPage() {
                 )}
               </>
             )}
-            {PERSONA_TYPES.includes(item.type) && item.personas && item.personas.length > 0 && (
-              <div className="space-y-4">
-                <PersonaDetailTabs personas={item.personas} type={item.type} />
-              </div>
-            )}
+            {PERSONA_TYPES.includes(item.type) && (() => {
+              const buyers = item.buyers?.length ? item.buyers : (item.personas?.length ? item.personas : []);
+              const users = item.users || [];
+              return (buyers.length > 0 || users.length > 0) && (
+                <div className="space-y-4">
+                  {buyers.length > 0 && <PersonaDetailTabs personas={buyers} type="Buyer Persona" />}
+                  {users.length > 0 && <PersonaDetailTabs personas={users} type="User Persona" />}
+                </div>
+              );
+            })()}
             {item.imagenes && item.imagenes.length > 0 && (
               <div>
                 <h3 className="text-xl font-semibold mb-3 text-primary">Imágenes adjuntas</h3>

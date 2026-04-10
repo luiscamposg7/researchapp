@@ -31,27 +31,41 @@ function EditPageForm({ item }) {
   const { dark: d, handleUpdate, showToast, editors } = useApp();
   const fromLabel = location.state?.fromLabel || null;
 
-  const [form, setForm] = useState({ contenido: "", ...item });
-  const [personaTab, setPersonaTab] = useState(0);
-  const [personaImgUploading, setPersonaImgUploading] = useState(false);
+  const [form, setForm] = useState(() => {
+    const f = { contenido: "", ...item };
+    // Migrate old personas[] → buyers
+    if (!f.buyers) { f.buyers = f.personas?.length ? f.personas : (PERSONA_TYPES.includes(f.type) ? [EMPTY_PERSONA()] : []); }
+    if (!f.users) { f.users = []; }
+    return f;
+  });
+  const [buyerTab, setBuyerTab] = useState(0);
+  const [userTab, setUserTab] = useState(0);
+  const [buyerImgUploading, setBuyerImgUploading] = useState(false);
+  const [userImgUploading, setUserImgUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [imageUploading, setImageUploading] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [confirmRemove, setConfirmRemove] = useState(null); // { group, idx }
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
   const { handleJiraUrl, jiraLoading, jiraError } = useJiraUrl(set);
   const setType = (t) => {
     if (PERSONA_TYPES.includes(t)) {
-      setForm(f => ({ ...f, type: t, personas: f.personas?.length ? f.personas : [EMPTY_PERSONA()] }));
-      setPersonaTab(0);
+      setForm(f => ({ ...f, type: t, buyers: f.buyers?.length ? f.buyers : [EMPTY_PERSONA()], users: f.users || [] }));
+      setBuyerTab(0); setUserTab(0);
     } else {
-      setForm(f => ({ ...f, type: t, personas: [] }));
+      setForm(f => ({ ...f, type: t, buyers: [], users: [] }));
     }
   };
-  const setPersonaField = (idx, field, val) => setForm(f => ({ ...f, personas: f.personas.map((p, i) => i === idx ? { ...p, [field]: val } : p) }));
-  const addPersona = () => { setForm(f => ({ ...f, personas: [...f.personas, EMPTY_PERSONA()] })); setPersonaTab(form.personas.length); };
-  const [confirmRemovePersona, setConfirmRemovePersona] = useState(null);
-  const removePersona = (idx) => { setForm(f => ({ ...f, personas: f.personas.filter((_, i) => i !== idx) })); setPersonaTab(t => Math.max(0, t - (idx <= t ? 1 : 0))); };
+  const setGroupField = (group, idx, field, val) => setForm(f => ({
+    ...f, [group]: f[group].map((p, i) => i === idx ? { ...p, [field]: val } : p)
+  }));
+  const addBuyer = () => { setForm(f => ({ ...f, buyers: [...f.buyers, EMPTY_PERSONA()] })); setBuyerTab(form.buyers.length); };
+  const addUser  = () => { setForm(f => ({ ...f, users:  [...f.users,  EMPTY_PERSONA()] })); setUserTab(form.users.length); };
+  const removeFromGroup = (group, idx, tab, setTab) => {
+    setForm(f => ({ ...f, [group]: f[group].filter((_, i) => i !== idx) }));
+    setTab(t => Math.max(0, t - (idx <= t ? 1 : 0)));
+  };
 
   const handleSave = (status) => {
     if (saving || !form.title.trim()) return;
@@ -75,14 +89,14 @@ function EditPageForm({ item }) {
   return (
     <div className="flex-1 overflow-y-auto bg-page">
 
-      {confirmRemovePersona !== null && (
+      {confirmRemove !== null && (
         <ConfirmModal
           title="¿Eliminar persona?"
-          message={`Se eliminará "Persona ${confirmRemovePersona + 1}" y su imagen.`}
+          message="Se eliminará esta persona y su imagen."
           confirmLabel="Sí, eliminar"
           danger
-          onConfirm={() => { removePersona(confirmRemovePersona); setConfirmRemovePersona(null); }}
-          onCancel={() => setConfirmRemovePersona(null)}
+          onConfirm={() => { removeFromGroup(confirmRemove.group, confirmRemove.idx, confirmRemove.group === "buyers" ? buyerTab : userTab, confirmRemove.group === "buyers" ? setBuyerTab : setUserTab); setConfirmRemove(null); }}
+          onCancel={() => setConfirmRemove(null)}
         />
       )}
 
@@ -159,35 +173,88 @@ function EditPageForm({ item }) {
             </div>
 
             {/* Personas */}
-            {PERSONA_TYPES.includes(form.type) && form.personas && form.personas.length > 0 && (
-              <div className="rounded-2xl bg-surface border shadow-xs">
-                <div className="flex items-center justify-between px-5 pt-5 pb-4">
-                  <SectionTitle>Buyer y User Personas</SectionTitle>
-                  {form.personas.length < 3 && <Button type="button" size="xs" color="secondary" onClick={addPersona} className="flex items-center gap-1"><svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/></svg>Añadir persona</Button>}
+            {PERSONA_TYPES.includes(form.type) && (
+              <div className="rounded-2xl border bg-surface overflow-hidden">
+                <div className="px-5 pt-5 pb-4"><SectionTitle>Buyer y User Personas</SectionTitle></div>
+
+                {/* Buyer group */}
+                <div className="border-t">
+                  <div className="flex items-center justify-between px-5 py-3">
+                    <span className="text-sm font-semibold" style={{ color: "#2563EB" }}>Buyer</span>
+                    {form.buyers.length < 3 && (
+                      <Button type="button" size="xs" color="secondary" onClick={addBuyer}>
+                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/></svg>
+                        Añadir buyer
+                      </Button>
+                    )}
+                  </div>
+                  <div className="flex border-b px-5">
+                    {form.buyers.map((_, i) => (
+                      <div key={i} className="flex items-center">
+                        <button type="button" onClick={() => setBuyerTab(i)} className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${buyerTab === i ? "border-blue-500 text-blue-600" : "border-transparent text-tertiary hover:text-primary"}`}>
+                          B{i + 1}
+                        </button>
+                        {form.buyers.length > 1 && (
+                          <button type="button" onClick={() => setConfirmRemove({ group: "buyers", idx: i })} className="-ml-1 mb-px w-4 h-4 flex items-center justify-center text-sm text-muted hover:text-secondary">✕</button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  <div className="p-5">
+                    <PersonaImageUploader
+                      key={`buyer-${buyerTab}`}
+                      images={form.buyers[buyerTab]?.images || []}
+                      uploading={buyerImgUploading}
+                      onChange={urls => setGroupField("buyers", buyerTab, "images", urls)}
+                      onUpload={async (files) => {
+                        setBuyerImgUploading(true);
+                        try { const url = await uploadToCloudinary(files[0]); setGroupField("buyers", buyerTab, "images", [url]); }
+                        catch (err) { showToast({ title: "Error al subir imagen", subtitle: err?.message }, "error"); }
+                        setBuyerImgUploading(false);
+                      }}
+                    />
+                  </div>
                 </div>
-                <div className="flex border-b px-5">
-                  {form.personas.map((_, i) => (
-                    <div key={i} className="flex items-center">
-                      <button type="button" onClick={() => setPersonaTab(i)} className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${personaTab === i ? "border-green-500 text-green-600" : "border-transparent text-tertiary hover:text-primary"}`}>Persona {i + 1}</button>
-                      {form.personas.length > 1 && <button type="button" onClick={() => setConfirmRemovePersona(i)} className="-ml-1 mb-px w-4 h-4 flex items-center justify-center text-sm text-muted hover:text-secondary">✕</button>}
-                    </div>
-                  ))}
-                </div>
-                <div className="p-5">
-                  <PersonaImageUploader
-                    key={personaTab}
-                    images={(form.personas[personaTab]?.images) || []}
-                    uploading={personaImgUploading}
-                    onChange={urls => setPersonaField(personaTab, "images", urls)}
-                    onUpload={async (files) => {
-                      setPersonaImgUploading(true);
-                      try {
-                        const url = await uploadToCloudinary(files[0]);
-                        setPersonaField(personaTab, "images", [url]);
-                      } catch (err) { showToast({ title: "Error al subir imagen", subtitle: err?.message }, "error"); }
-                      setPersonaImgUploading(false);
-                    }}
-                  />
+
+                {/* User group */}
+                <div className="border-t">
+                  <div className="flex items-center justify-between px-5 py-3">
+                    <span className="text-sm font-semibold" style={{ color: "#00B369" }}>User</span>
+                    {form.users.length < 3 && (
+                      <Button type="button" size="xs" color="secondary" onClick={addUser}>
+                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/></svg>
+                        Añadir user
+                      </Button>
+                    )}
+                  </div>
+                  {form.users.length > 0 && (
+                    <>
+                      <div className="flex border-b px-5">
+                        {form.users.map((_, i) => (
+                          <div key={i} className="flex items-center">
+                            <button type="button" onClick={() => setUserTab(i)} className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${userTab === i ? "border-green-500 text-green-600" : "border-transparent text-tertiary hover:text-primary"}`}>
+                              U{i + 1}
+                            </button>
+                            <button type="button" onClick={() => setConfirmRemove({ group: "users", idx: i })} className="-ml-1 mb-px w-4 h-4 flex items-center justify-center text-sm text-muted hover:text-secondary">✕</button>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="p-5">
+                        <PersonaImageUploader
+                          key={`user-${userTab}`}
+                          images={form.users[userTab]?.images || []}
+                          uploading={userImgUploading}
+                          onChange={urls => setGroupField("users", userTab, "images", urls)}
+                          onUpload={async (files) => {
+                            setUserImgUploading(true);
+                            try { const url = await uploadToCloudinary(files[0]); setGroupField("users", userTab, "images", [url]); }
+                            catch (err) { showToast({ title: "Error al subir imagen", subtitle: err?.message }, "error"); }
+                            setUserImgUploading(false);
+                          }}
+                        />
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
             )}

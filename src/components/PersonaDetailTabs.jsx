@@ -5,7 +5,7 @@ export default function PersonaDetailTabs({ personas, type }) {
   const [tab, setTab] = useState(0);
   const [lightbox, setLightbox] = useState(null); // { images, index }
   const p = personas[tab] || {};
-  const isBuyer = type === "Buyer Persona";
+  const isBuyer = type === "Buyer Persona" || type === "Buyer y User Persona";
   const bannerColor = isBuyer ? "#2563EB" : "#00B369";
   const sectionTitle = isBuyer ? "Buyer Personas" : "User Personas";
 
@@ -29,8 +29,8 @@ export default function PersonaDetailTabs({ personas, type }) {
         <div className="flex border-b">
           {personas.map((_, i) => (
             <button key={i} onClick={() => setTab(i)}
-              className={`px-5 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors ${tab === i ? "border-green-500 text-green-600" : "border-transparent text-tertiary hover:text-primary"}`}>
-              Persona {i + 1}
+              className={`px-5 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors ${tab === i ? (isBuyer ? "border-blue-500 text-blue-600" : "border-green-500 text-green-600") : "border-transparent text-tertiary hover:text-primary"}`}>
+              {isBuyer ? `B${i + 1}` : `U${i + 1}`}
             </button>
           ))}
         </div>
