@@ -39,7 +39,7 @@ export default function AddPage() {
       status: "Borrador", archivo: "", archivoUrl: "", reunionUrl: "",
       date: new Date().toISOString().slice(0, 10),
       imagenes: [],
-      buyers: PERSONA_TYPES.includes(type) ? [EMPTY_PERSONA()] : [],
+      buyers: [],
       users: [],
     };
   });
@@ -55,7 +55,7 @@ export default function AddPage() {
   const { handleJiraUrl, jiraLoading, jiraError } = useJiraUrl(set);
   const setType = (t) => {
     if (PERSONA_TYPES.includes(t)) {
-      setForm(f => ({ ...f, type: t, buyers: [EMPTY_PERSONA()], users: [] }));
+      setForm(f => ({ ...f, type: t, buyers: [], users: [] }));
       setBuyerTab(0); setUserTab(0);
     } else {
       setForm(f => ({ ...f, type: t, buyers: [], users: [] }));
@@ -237,32 +237,36 @@ export default function AddPage() {
                       </Button>
                     )}
                   </div>
-                  <div className="flex border-b px-5">
-                    {form.buyers.map((_, i) => (
-                      <div key={i} className="flex items-center">
-                        <button type="button" onClick={() => setBuyerTab(i)} className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${buyerTab === i ? "border-blue-500 text-blue-600" : "border-transparent text-tertiary hover:text-primary"}`}>
-                          Persona {i + 1}
-                        </button>
-                        {form.buyers.length > 1 && (
-                          <button type="button" onClick={() => setConfirmRemove({ group: "buyers", idx: i })} className="-ml-1 mb-px w-4 h-4 flex items-center justify-center text-sm text-muted hover:text-secondary">✕</button>
-                        )}
+                  {form.buyers.length > 0 && (
+                    <>
+                      <div className="flex border-b px-5">
+                        {form.buyers.map((_, i) => (
+                          <div key={i} className="flex items-center">
+                            <button type="button" onClick={() => setBuyerTab(i)} className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${buyerTab === i ? "border-blue-500 text-blue-600" : "border-transparent text-tertiary hover:text-primary"}`}>
+                              Persona {i + 1}
+                            </button>
+                            {form.buyers.length > 1 && (
+                              <button type="button" onClick={() => setConfirmRemove({ group: "buyers", idx: i })} className="-ml-1 mb-px w-4 h-4 flex items-center justify-center text-sm text-muted hover:text-secondary">✕</button>
+                            )}
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
-                  <div className="p-5">
-                    <PersonaImageUploader
-                      key={`buyer-${buyerTab}`}
-                      images={form.buyers[buyerTab]?.images || []}
-                      uploading={buyerImgUploading}
-                      onChange={urls => setGroupField("buyers", buyerTab, "images", urls)}
-                      onUpload={async (files) => {
-                        setBuyerImgUploading(true);
-                        try { const url = await uploadToCloudinary(files[0]); setGroupField("buyers", buyerTab, "images", [url]); }
-                        catch (err) { showToast({ title: "Error al subir imagen", subtitle: err?.message }, "error"); }
-                        setBuyerImgUploading(false);
-                      }}
-                    />
-                  </div>
+                      <div className="p-5">
+                        <PersonaImageUploader
+                          key={`buyer-${buyerTab}`}
+                          images={form.buyers[buyerTab]?.images || []}
+                          uploading={buyerImgUploading}
+                          onChange={urls => setGroupField("buyers", buyerTab, "images", urls)}
+                          onUpload={async (files) => {
+                            setBuyerImgUploading(true);
+                            try { const url = await uploadToCloudinary(files[0]); setGroupField("buyers", buyerTab, "images", [url]); }
+                            catch (err) { showToast({ title: "Error al subir imagen", subtitle: err?.message }, "error"); }
+                            setBuyerImgUploading(false);
+                          }}
+                        />
+                      </div>
+                    </>
+                  )}
                 </div>
 
                 {/* User group */}
