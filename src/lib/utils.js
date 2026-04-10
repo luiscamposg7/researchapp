@@ -32,7 +32,7 @@ export const getPresentationInfo = (url = "") => {
   if (url.includes("google.com")) {
     const id = getDriveId(url);
     const isSlides = url.includes("/presentation/");
-    const thumbUrl = id ? `https://drive.google.com/thumbnail?id=${id}&sz=w800&authuser=0` : null;
+    const thumbUrl = id ? `https://drive.google.com/thumbnail?id=${id}&sz=w800` : null;
     return { type: isSlides ? "slides" : "drive", id, thumbUrl };
   }
   return { type: "other" };
