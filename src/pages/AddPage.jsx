@@ -301,8 +301,19 @@ export default function AddPage() {
                 <CustomSelect dark={d} fullWidth value={form.tags[0] || ""} onChange={v => set("tags", v ? [v] : [])} options={[{value:"",label:"Seleccione"}, ...PRODUCTS.map(p => ({value:p,label:p}))]} />
               </div>
               <div>
-                <label className={lbl}>Persona asignada</label>
-                <CustomSelect dark={d} fullWidth value={form.team[0] || ""} onChange={v => set("team", v ? [v] : [])} options={[{value:"",label:"Seleccione"}, ...editors.map(n => ({value:n,label:n}))]} />
+                <label className={lbl}>Personas asignadas</label>
+                <div className="flex flex-wrap gap-2">
+                  {editors.map(name => {
+                    const selected = form.team.includes(name);
+                    return (
+                      <button key={name} type="button"
+                        onClick={() => set("team", selected ? form.team.filter(t => t !== name) : [...form.team, name])}
+                        className={`px-3 py-1.5 rounded-lg text-sm font-semibold border transition-colors ${selected ? "bg-green-500 text-white border-green-500" : "bg-surface text-secondary border hover:border-green-400"}`}>
+                        {name}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             </div>
 
