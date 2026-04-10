@@ -25,6 +25,7 @@ module.exports = async function handler(req, res) {
       },
     });
     const data = await response.json();
+    console.log('[jira]', response.status, JSON.stringify(data).slice(0, 500));
     return res.status(response.status).json(data);
   } catch (err) {
     return res.status(502).json({ error: err.message });
