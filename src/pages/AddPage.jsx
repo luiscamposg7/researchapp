@@ -229,7 +229,7 @@ export default function AddPage() {
                 {/* Buyer group */}
                 <div className="border-t">
                   <div className="flex items-center justify-between px-5 py-3">
-                    <span className="text-sm font-semibold" style={{ color: "#2563EB" }}>Buyer</span>
+                    <span className="text-sm font-semibold" style={{ color: "#2563EB" }}>Buyer Persona</span>
                     {form.buyers.length < 3 && (
                       <Button type="button" size="xs" color="secondary" onClick={addBuyer}>
                         <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/></svg>
@@ -268,7 +268,7 @@ export default function AddPage() {
                 {/* User group */}
                 <div className="border-t">
                   <div className="flex items-center justify-between px-5 py-3">
-                    <span className="text-sm font-semibold" style={{ color: "#00B369" }}>User</span>
+                    <span className="text-sm font-semibold" style={{ color: "#00B369" }}>User Persona</span>
                     {form.users.length < 3 && (
                       <Button type="button" size="xs" color="secondary" onClick={addUser}>
                         <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/></svg>
