@@ -8,6 +8,7 @@ import DateInput from "../components/DateInput";
 import AttachedImagesUploader from "../components/AttachedImagesUploader";
 import PersonaImageUploader from "../components/PersonaImageUploader";
 import { PRODUCTS, TYPES, PERSONA_TYPES, METODOLOGIAS, TYPE_COLORS, EMPTY_PERSONA } from "../lib/constants";
+import { Spinner } from "../components/Spinner";
 import { toSlug, getDriveId, uploadToCloudinary } from "../lib/utils";
 import { useJiraUrl } from "../hooks/useJiraUrl";
 import SectionTitle from "../components/SectionTitle";
@@ -207,7 +208,7 @@ export default function AddPage() {
                 <div className="relative">
                   <input className={inp} type="url" placeholder="https://empresa.atlassian.net/browse/UX-0000"
                     value={form.jiraUrl} onChange={e => handleJiraUrl(e.target.value)} />
-                  {jiraLoading && <div className="absolute right-3 top-1/2 -translate-y-1/2"><svg className="w-4 h-4 animate-spin text-green-500" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg></div>}
+                  {jiraLoading && <div className="absolute right-3 top-1/2 -translate-y-1/2"><Spinner size="sm" /></div>}
                 </div>
                 {jiraError && <p className="mt-1 text-sm text-amber-500">{jiraError}</p>}
                 {form.jira && !jiraLoading && (

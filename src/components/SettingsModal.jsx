@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../supabase";
 import { Button } from "./ui/button";
+import { Spinner } from "./Spinner";
 import { version as APP_VERSION } from "../../package.json";
 
 export default function SettingsModal({ onClose, dark }) {
@@ -53,7 +54,7 @@ export default function SettingsModal({ onClose, dark }) {
           <p className="text-sm font-bold mb-4 text-primary">Roles de usuario</p>
           {usersLoading ? (
             <div className="flex items-center justify-center py-12">
-              <div className="w-10 h-10 rounded-full border-4 border-gray-300 border-t-green-500 animate-spin" />
+              <Spinner size="lg" />
             </div>
           ) : (
             <div className="space-y-2 max-h-[280px] overflow-y-auto pr-1">

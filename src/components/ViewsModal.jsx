@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../supabase";
 import { Button } from "./ui/button";
+import { Spinner } from "./Spinner";
 
 export default function ViewsModal({ researchId, onClose }) {
   const [views, setViews] = useState([]);
@@ -27,7 +28,7 @@ export default function ViewsModal({ researchId, onClose }) {
         </div>
         <div className="px-6 py-5">
           {loading ? (
-            <div className="flex justify-center py-8"><div className="w-8 h-8 rounded-full border-4 border-gray-300 border-t-green-500 animate-spin" /></div>
+            <div className="flex justify-center py-8"><Spinner size="lg" /></div>
           ) : views.length === 0 ? (
             <p className="text-sm text-center py-8 text-muted">Nadie ha visto este research aún.</p>
           ) : (

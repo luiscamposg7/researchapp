@@ -4,6 +4,7 @@ import { useApp } from "../context/AppContext";
 import { Button } from "../components/ui/button";
 import Card from "../components/Card";
 import CardSkeleton from "../components/CardSkeleton";
+import { Spinner } from "../components/Spinner";
 import CustomSelect from "../components/CustomSelect";
 import { PRODUCTS, TYPES } from "../lib/constants";
 
@@ -147,7 +148,7 @@ export default function ListPage() {
               {shown.map(item => <Card key={item.id} item={item} dark={dk} fromLabel="Todos los research" />)}
             </div>
             <div ref={sentinelRef} className="h-10 flex items-center justify-center mt-4">
-              {hasMore && <div className="w-6 h-6 rounded-full border-2 border-gray-300 border-t-green-500 animate-spin" />}
+              {hasMore && <Spinner size="md" />}
             </div>
           </>
         ) : (

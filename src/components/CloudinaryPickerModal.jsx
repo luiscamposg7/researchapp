@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "./ui/button";
 import ConfirmModal from "./ConfirmModal";
+import { Spinner } from "./Spinner";
 import { uploadToCloudinary, deleteFromCloudinary } from "../lib/utils";
 
 export default function CloudinaryPickerModal({ onSelect, onClose }) {
@@ -63,7 +64,7 @@ export default function CloudinaryPickerModal({ onSelect, onClose }) {
           </div>
           <div className="flex-1 overflow-y-auto p-5">
             {loading ? (
-              <div className="flex justify-center py-12"><div className="w-8 h-8 rounded-full border-4 border-gray-200 border-t-green-500 animate-spin" /></div>
+              <div className="flex justify-center py-12"><Spinner size="lg" /></div>
             ) : error ? (
               <p className="text-sm text-center py-12 text-red-500">{error}</p>
             ) : resources.length === 0 ? (

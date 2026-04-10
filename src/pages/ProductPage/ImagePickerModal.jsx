@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Button } from "../../components/ui/button";
 import ConfirmModal from "../../components/ConfirmModal";
+import { Spinner } from "../../components/Spinner";
 import { deleteFromCloudinary } from "../../lib/utils";
 
 export default function ImagePickerModal({ deliverables, onSelect, onUpload, onDelete, onClose }) {
@@ -53,7 +54,7 @@ export default function ImagePickerModal({ deliverables, onSelect, onUpload, onD
                   <button onClick={() => onSelect(url)}
                     className={`w-full rounded-xl overflow-hidden transition-all hover:border-green-500 aspect-video border ${deleting === url ?"opacity-40" :""}`}>
                     {deleting === url
-                      ? <div className="w-full h-full flex items-center justify-center"><div className="w-6 h-6 rounded-full border-2 border-gray-300 border-t-green-500 animate-spin" /></div>
+                      ? <div className="w-full h-full flex items-center justify-center"><Spinner size="md" /></div>
                       : <img src={url} alt="" className="w-full h-full object-cover" />}
                   </button>
                   {deleting !== url && (

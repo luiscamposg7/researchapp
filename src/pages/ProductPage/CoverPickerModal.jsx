@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "../../supabase";
 import { Button } from "../../components/ui/button";
 import ConfirmModal from "../../components/ConfirmModal";
+import { Spinner } from "../../components/Spinner";
 
 export default function CoverPickerModal({ onSelect, onUpload, onClose }) {
   const [files, setFiles] = useState([]);
@@ -38,7 +39,7 @@ export default function CoverPickerModal({ onSelect, onUpload, onClose }) {
 
         <div className="flex-1 overflow-y-auto p-6">
           {loading ? (
-            <div className="flex justify-center py-8"><div className="w-8 h-8 rounded-full border-4 border-gray-300 border-t-green-500 animate-spin" /></div>
+            <div className="flex justify-center py-8"><Spinner size="lg" /></div>
           ) : files.length === 0 ? (
             <p className="text-sm text-center py-8 text-muted">No hay imágenes subidas aún.</p>
           ) : (
