@@ -11,9 +11,7 @@ module.exports = async function handler(req, res) {
     return res.status(500).json({ error: 'Jira credentials not configured', sbError: sbError?.message, hasData: !!data });
   }
 
-  const pathRaw = req.query.path || [];
-  const pathParts = Array.isArray(pathRaw) ? pathRaw : [pathRaw];
-  const key = pathParts[0];
+  const key = (req.url || '').split('?')[0].split('/').filter(Boolean).pop();
 
   const auth = Buffer.from(`${email}:${token}`).toString('base64');
   const headers = { Authorization: `Basic ${auth}`, Accept: 'application/json' };
