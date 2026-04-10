@@ -43,7 +43,7 @@ export default function PresentationCard({ item, dark: d }) {
 
   const thumbUrl = isFigma
     ? (item.archivoUrl ? `/api/figma-img?url=${encodeURIComponent(item.archivoUrl)}` : null)
-    : (pres?.thumbUrl || null);
+    : null;
   const displayName = isFigma ? (figmaMeta?.title || label) : (item.archivo || label);
 
   if (!pres) return null;
@@ -65,7 +65,12 @@ export default function PresentationCard({ item, dark: d }) {
             <path d="M0 28.5A9.5 9.5 0 0 0 9.5 38H19V19H9.5A9.5 9.5 0 0 0 0 28.5z" fill="#A259FF"/>
           </svg>
         </div>
-      ) : null}
+      ) : (
+        <div className="w-full flex items-center justify-center gap-3" style={{height:120, background: isSlides ? "linear-gradient(135deg,#fbf3e8 0%,#fde9d3 100%)" : "linear-gradient(135deg,#e8f0fe 0%,#d2e3fc 100%)"}}>
+          <DriveIcon />
+          <span className="text-sm font-semibold text-gray-500">{isSlides ? "Google Slides" : "Google Drive"}</span>
+        </div>
+      )}
 
       <div className="flex items-center justify-between px-3 py-2.5">
         <div className="flex items-center gap-2 min-w-0">
