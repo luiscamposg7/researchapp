@@ -44,5 +44,6 @@ Token:    ${token ? token.slice(0,10) + '...' + token.slice(-8) : '(vacío)'}
 Base URL: ${base}
 Jira /myself: ${jiraStatus}
 Jira UX-2592: ${issueStatus}
+req.query: ${JSON.stringify(req.query)}
 </pre>`);
 };
