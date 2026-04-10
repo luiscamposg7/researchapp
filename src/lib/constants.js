@@ -1,8 +1,8 @@
 // ── CONSTANTS ──
 
 export const PRODUCTS = ["Cambio Seguro", "Factoring", "Gestora", "PGH", "Recadia", "Tandia"];
-export const TYPES = ["Tipo de entregable", "Research", "Pruebas de usabilidad", "Buyer Persona", "User Persona"];
-export const PERSONA_TYPES = ["Buyer Persona", "User Persona"];
+export const TYPES = ["Tipo de entregable", "Research", "Prueba de usabilidad", "Buyer y User Persona"];
+export const PERSONA_TYPES = ["Buyer y User Persona"];
 export const NIVEL_TEC = [
   { label: "Básico",      pct: 20 },
   { label: "Elemental",   pct: 40 },
@@ -36,9 +36,8 @@ export const NAV = [
 export const TYPE_COLORS = {
   "Research": "warning",
   "Otros entregables": "indigo",
-  "Pruebas de usabilidad": "blue",
-  "Buyer Persona": "success",
-  "User Persona": "indigo",
+  "Prueba de usabilidad": "blue",
+  "Buyer y User Persona": "success",
 };
 
 export const OLD_TO_NEW_COLOR = { amber: "warning", violet: "indigo", green: "success" };

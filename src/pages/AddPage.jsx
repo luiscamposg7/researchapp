@@ -7,7 +7,7 @@ import CustomSelect from "../components/CustomSelect";
 import DateInput from "../components/DateInput";
 import AttachedImagesUploader from "../components/AttachedImagesUploader";
 import PersonaImageUploader from "../components/PersonaImageUploader";
-import { PRODUCTS, TYPES, PERSONA_TYPES, METODOLOGIAS, TYPE_COLORS, EMPTY_BUYER, EMPTY_USER } from "../lib/constants";
+import { PRODUCTS, TYPES, PERSONA_TYPES, METODOLOGIAS, TYPE_COLORS, EMPTY_PERSONA } from "../lib/constants";
 import { toSlug, getDriveId, uploadToCloudinary } from "../lib/utils";
 import { useJiraUrl } from "../hooks/useJiraUrl";
 import SectionTitle from "../components/SectionTitle";
@@ -27,9 +27,7 @@ export default function AddPage() {
   const [form, setForm] = useState(() => {
     const type = prefill.type || "";
     const tags = prefill.product ? [prefill.product] : [];
-    const personas = PERSONA_TYPES.includes(type)
-      ? [type === "Buyer Persona" ? EMPTY_BUYER() : EMPTY_USER()]
-      : [];
+    const personas = PERSONA_TYPES.includes(type) ? [EMPTY_PERSONA()] : [];
     return {
       title: "", type, metodologia: "",
       jira: "", jiraUrl: "", jiraStatus: "EN CURSO",
@@ -51,7 +49,7 @@ export default function AddPage() {
   const { handleJiraUrl, jiraLoading, jiraError } = useJiraUrl(set);
   const setType = (t) => {
     if (PERSONA_TYPES.includes(t)) {
-      setForm(f => ({ ...f, type: t, personas: [t === "Buyer Persona" ? EMPTY_BUYER() : EMPTY_USER()] }));
+      setForm(f => ({ ...f, type: t, personas: [EMPTY_PERSONA()] }));
       setPersonaTab(0);
     } else {
       setForm(f => ({ ...f, type: t, personas: [] }));
@@ -62,7 +60,7 @@ export default function AddPage() {
     return { ...f, personas };
   });
   const addPersona = () => {
-    const empty = form.type === "Buyer Persona" ? EMPTY_BUYER() : EMPTY_USER();
+    const empty = EMPTY_PERSONA();
     setForm(f => ({ ...f, personas: [...f.personas, empty] }));
     setPersonaTab(form.personas.length);
   };
@@ -213,7 +211,7 @@ export default function AddPage() {
             {PERSONA_TYPES.includes(form.type) && form.personas.length > 0 && (
               <div className="rounded-2xl border bg-surface">
                 <div className="flex items-center justify-between px-5 pt-5 pb-4">
-                  <SectionTitle>{form.type === "Buyer Persona" ? "Buyer Personas" : "User Personas"}</SectionTitle>
+                  <SectionTitle>Buyer y User Personas</SectionTitle>
                   {form.personas.length < 3 && (
                     <Button type="button" size="xs" color="secondary" onClick={addPersona}>
                       <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/></svg>

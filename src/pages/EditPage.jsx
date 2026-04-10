@@ -7,7 +7,7 @@ import CustomSelect from "../components/CustomSelect";
 import DateInput from "../components/DateInput";
 import AttachedImagesUploader from "../components/AttachedImagesUploader";
 import PersonaImageUploader from "../components/PersonaImageUploader";
-import { PRODUCTS, TYPES, PERSONA_TYPES, METODOLOGIAS, TYPE_COLORS, EMPTY_BUYER, EMPTY_USER } from "../lib/constants";
+import { PRODUCTS, TYPES, PERSONA_TYPES, METODOLOGIAS, TYPE_COLORS, EMPTY_PERSONA } from "../lib/constants";
 import { toSlug, getDriveId, uploadToCloudinary } from "../lib/utils";
 import { useJiraUrl } from "../hooks/useJiraUrl";
 import SectionTitle from "../components/SectionTitle";
@@ -39,14 +39,14 @@ function EditPageForm({ item }) {
   const { handleJiraUrl, jiraLoading, jiraError } = useJiraUrl(set);
   const setType = (t) => {
     if (PERSONA_TYPES.includes(t)) {
-      setForm(f => ({ ...f, type: t, personas: f.personas?.length ? f.personas : [t === "Buyer Persona" ? EMPTY_BUYER() : EMPTY_USER()] }));
+      setForm(f => ({ ...f, type: t, personas: f.personas?.length ? f.personas : [EMPTY_PERSONA()] }));
       setPersonaTab(0);
     } else {
       setForm(f => ({ ...f, type: t, personas: [] }));
     }
   };
   const setPersonaField = (idx, field, val) => setForm(f => ({ ...f, personas: f.personas.map((p, i) => i === idx ? { ...p, [field]: val } : p) }));
-  const addPersona = () => { const empty = form.type === "Buyer Persona" ? EMPTY_BUYER() : EMPTY_USER(); setForm(f => ({ ...f, personas: [...f.personas, empty] })); setPersonaTab(form.personas.length); };
+  const addPersona = () => { setForm(f => ({ ...f, personas: [...f.personas, EMPTY_PERSONA()] })); setPersonaTab(form.personas.length); };
   const removePersona = (idx) => { setForm(f => ({ ...f, personas: f.personas.filter((_, i) => i !== idx) })); setPersonaTab(t => Math.max(0, t - (idx <= t ? 1 : 0))); };
 
   const handleSave = (status) => {
@@ -72,12 +72,20 @@ function EditPageForm({ item }) {
     <div className="flex-1 overflow-y-auto bg-page">
 
       {/* Top bar */}
-      <div className="border-b px-4 py-3 md:px-8 md:py-4 sticky top-0 z-10 bg-page border">
+      <div className="border-b px-4 py-3 md:px-8 md:py-4 sticky top-0 z-10 bg-page border flex items-center justify-between gap-4">
         <button onClick={() => window.history.length > 1 ? navigate(-1) : navigate("/research")} className="flex items-center gap-2 text-sm font-semibold text-tertiary hover:text-primary transition-colors duration-150 cursor-pointer">
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7"/></svg>
           <span className="hidden sm:inline">{fromLabel ? `Volver a ${fromLabel}` : "Volver"}</span>
           <span className="sm:hidden">Volver</span>
         </button>
+        <div className="flex items-center gap-2">
+          {form.status !== "Publicado" && (
+            <Button color="secondary" onClick={() => handleSave(form.status)} disabled={!form.title.trim() || saving} className="disabled:opacity-40">Guardar</Button>
+          )}
+          <Button color="primary" onClick={() => handleSave("Publicado")} disabled={!form.title.trim() || saving} className="disabled:opacity-40">
+            {form.status === "Publicado" ? "Guardar cambios" : "Publicar"}
+          </Button>
+        </div>
       </div>
 
       <div className="w-full mx-auto px-4 md:px-8 py-6 md:py-8 pb-16" style={{ maxWidth: "1600px" }}>
@@ -148,7 +156,7 @@ function EditPageForm({ item }) {
             {PERSONA_TYPES.includes(form.type) && form.personas && form.personas.length > 0 && (
               <div className="rounded-2xl bg-surface border shadow-xs">
                 <div className="flex items-center justify-between px-5 pt-5 pb-4">
-                  <SectionTitle>{form.type === "Buyer Persona" ? "Buyer Personas" : "User Personas"}</SectionTitle>
+                  <SectionTitle>Buyer y User Personas</SectionTitle>
                   {form.personas.length < 3 && <Button type="button" size="xs" color="secondary" onClick={addPersona} className="flex items-center gap-1"><svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/></svg>Añadir persona</Button>}
                 </div>
                 <div className="flex border-b px-5">
