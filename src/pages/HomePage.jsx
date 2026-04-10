@@ -5,7 +5,8 @@ import HeroGrid from "../components/HeroGrid";
 import ProductCard from "../components/ProductCard";
 import ProductCardSkeleton from "../components/ProductCardSkeleton";
 import { PRODUCTS, PRODUCT_COLORS } from "../lib/constants";
-import { toSlug, formatDate, loadAllProductCoverUrls } from "../lib/utils";
+import { toSlug, formatDate, loadAllProductCoverUrls, getBadgeColor } from "../lib/utils";
+import { Badge as UIBadge } from "../components/ui/badges";
 
 export default function HomePage() {
   const navigate = useNavigate();
@@ -74,11 +75,11 @@ export default function HomePage() {
         </div>
       </div>
 
-      <div className="w-full mx-auto px-4 md:px-8 py-8 md:py-10 pb-16" style={{ maxWidth: 1200 }}>
+      <div className="w-full mx-auto px-4 md:px-8 py-8 md:py-10 pb-16" style={{ maxWidth: 1200, backgroundColor: d ? "var(--color-bg-page)" : undefined }}>
 
         {/* Crear solicitud banner */}
-        <div className="rounded-2xl p-4 md:p-6 mb-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 md:gap-6 bg-surface border shadow-xs"
-          style={{ boxShadow: d ? "0 2px 12px rgba(0,0,0,0.3)" : "0 2px 12px rgba(0,0,0,0.06)" }}>
+        <div className={`rounded-2xl p-4 md:p-6 mb-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 md:gap-6 border shadow-xs ${d ? "bg-[#111827] border-[#1f2937]" : "bg-surface"}`}
+          style={{ boxShadow: d ? "0 2px 16px rgba(0,0,0,0.4)" : "0 2px 12px rgba(0,0,0,0.06)" }}>
           <div className="flex items-center gap-4">
             <div>
               <p className="font-bold text-base text-primary">¿Necesitas un research?</p>
@@ -100,7 +101,7 @@ export default function HomePage() {
             {loadingDeliverables
               ? Array.from({ length: 6 }).map((_, i) => <ProductCardSkeleton key={i} />)
               : PRODUCTS.map(p => (
-                  <ProductCard key={p} product={p} deliverables={deliverables} coverUrl={productCovers[p]}
+                  <ProductCard key={p} product={p} deliverables={deliverables} coverUrl={productCovers[p]} dark={d}
                     onClick={() => navigate(`/producto/${toSlug(p)}`)} />
                 ))
             }
@@ -122,17 +123,15 @@ export default function HomePage() {
                   </div>
                 ))
               : recent.map(item => {
-              const tc = { amber: d ? "bg-amber-900/40 text-amber-300 border-amber-700" : "bg-amber-50 text-amber-700 border-amber-200", blue: d ? "bg-blue-900/40 text-blue-300 border-blue-700" : "bg-blue-50 text-blue-700 border-blue-200" };
-              const color = tc[item.typeColor] || tc.amber;
               const productTag = item.tags && item.tags.find(t => PRODUCTS.includes(t));
               const pc = productTag ? (PRODUCT_COLORS[productTag] || "#00B369") : null;
               return (
                 <button key={item.id} onClick={() => navigate(`/research/${toSlug(item.title)}`, { state: { fromLabel: "Inicio" } })}
-                  className="text-left rounded-xl p-4 flex flex-col transition-all group bg-surface border hover:border-green-400 shadow-xs">
+                  className={`text-left rounded-xl p-4 flex flex-col transition-all group border hover:border-green-400 shadow-xs ${d ? "bg-[#111827] border-[#1f2937]" : "bg-surface"}`}>
                   <div className="min-w-0 w-full">
                     <p className="font-semibold text-sm leading-snug mb-1.5 truncate text-primary">{item.title}</p>
                     <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className={`text-sm px-2 py-0.5 rounded-full border ${color}`}>{item.type}</span>
+                      <UIBadge color={getBadgeColor(item.typeColor)}>{item.type}</UIBadge>
                       {productTag && pc && (
                         <span className="text-sm px-2 py-0.5 rounded-full flex items-center gap-1 border text-secondary">
                           <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: pc }} />

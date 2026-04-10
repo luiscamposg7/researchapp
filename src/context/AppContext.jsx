@@ -10,11 +10,13 @@ export function AppProvider({ children, setToast }) {
   const [dark, setDark] = useState(() => {
     const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
     document.documentElement.classList.toggle("dark-mode", prefersDark);
+    document.documentElement.classList.toggle("dark", prefersDark);
     return prefersDark;
   });
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark-mode", dark);
+    document.documentElement.classList.toggle("dark", dark);
   }, [dark]);
 
   const [session, setSession] = useState(undefined);
