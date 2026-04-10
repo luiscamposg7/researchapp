@@ -16,7 +16,9 @@ module.exports = async function handler(req, res) {
     : `/rest/api/3/issue/${key}?fields=summary,status`;
 
   try {
-    const response = await fetch(`${base}${apiPath}`, {
+    const url = `${base}${apiPath}`;
+    console.log('[jira] fetching', url, 'email:', email);
+    const response = await fetch(url, {
       headers: {
         Authorization: `Basic ${auth}`,
         Accept: 'application/json',
@@ -24,6 +26,7 @@ module.exports = async function handler(req, res) {
       },
     });
     const data = await response.json();
+    console.log('[jira] status', response.status, 'data', JSON.stringify(data).slice(0, 200));
     return res.status(response.status).json(data);
   } catch (err) {
     return res.status(502).json({ error: err.message });
