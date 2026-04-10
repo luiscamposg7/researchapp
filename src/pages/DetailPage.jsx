@@ -143,7 +143,7 @@ export default function DetailPage() {
             {item.archivoUrl && <PresentationCard item={item} dark={d} />}
             <div className="space-y-3">
               <div>
-                <p className="text-sm font-semibold mb-1 text-muted">Asignado</p>
+                <p className="text-sm font-semibold mb-1 text-muted">{(item.team && item.team.length > 1) ? "Asignados" : "Asignado"}</p>
                 <div className="flex items-center gap-2">
                   <div className="flex items-center -space-x-1.5">
                     {(item.team && item.team.length > 0)

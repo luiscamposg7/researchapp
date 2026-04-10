@@ -73,6 +73,8 @@
 .rich-content h5 { font-size: 1rem;    font-weight: 600; line-height: 1.5rem;  margin: 1.25rem 0 0.2rem; }
 .rich-content h6 { font-size: 0.875rem; font-weight: 600; line-height: 1.25rem; margin: 1rem 0 0.15rem; }
 .rich-content blockquote { border-left: 3px solid #00B369; padding-left: 0.75rem; color: #6b7280; margin: 0.3rem 0; font-style: italic; }
+[contenteditable] :is(h1,h2,h3,h4,h5,h6):first-child { margin-top: 0; }
+.rich-content :is(h1,h2,h3,h4,h5,h6):first-child { margin-top: 0; }
 
 /* Animated gradient background */
 @keyframes bg-drift-1 {

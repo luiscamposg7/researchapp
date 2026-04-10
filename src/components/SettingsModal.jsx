@@ -3,27 +3,12 @@ import { supabase } from "../supabase";
 import { Button } from "./ui/button";
 import { version as APP_VERSION } from "../../package.json";
 
-async function loadJiraConfig() {
-  try {
-    const { data } = await supabase.from("config").select("value").eq("key", "jira").maybeSingle();
-    return data?.value || {};
-  } catch { return {}; }
-}
-
-async function saveJiraConfig(cfg) {
-  await supabase.from("config").upsert({ key: "jira", value: cfg });
-}
-
 export default function SettingsModal({ onClose, dark }) {
   const d = dark;
   const [users, setUsers] = useState([]);
   const [usersLoading, setUsersLoading] = useState(true);
   const [pendingRoles, setPendingRoles] = useState({});
   const [rolesSaving, setRolesSaving] = useState({});
-  const [jiraCfg, setJiraCfg] = useState({ baseUrl: "", email: "", token: "" });
-  const [jiraSaved, setJiraSaved] = useState(false);
-  const [jiraTestStatus, setJiraTestStatus] = useState(null);
-  const [jiraTestMsg, setJiraTestMsg] = useState("");
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -35,7 +20,6 @@ export default function SettingsModal({ onClose, dark }) {
         setUsersLoading(false);
       });
     });
-    loadJiraConfig().then(cfg => { if (cfg.email || cfg.baseUrl) setJiraCfg(cfg); });
   }, []);
 
   const handleRoleChange = async (userId) => {
@@ -47,35 +31,6 @@ export default function SettingsModal({ onClose, dark }) {
     setPendingRoles(p => { const n = { ...p }; delete n[userId]; return n; });
     setRolesSaving(s => ({ ...s, [userId]: false }));
   };
-
-  const handleJiraSave = async () => {
-    await saveJiraConfig({
-      baseUrl: (jiraCfg.baseUrl || "").trim().replace(/\/$/, ""),
-      email: (jiraCfg.email || "").trim(),
-      token: (jiraCfg.token || "").trim(),
-    });
-    setJiraSaved(true);
-    setTimeout(() => setJiraSaved(false), 2000);
-  };
-
-  const handleJiraTest = async () => {
-    if (!jiraCfg.baseUrl || !jiraCfg.email || !jiraCfg.token) {
-      setJiraTestStatus("error"); setJiraTestMsg("Completa todos los campos."); return;
-    }
-    setJiraTestStatus("loading"); setJiraTestMsg("");
-    try {
-      const res = await fetch("/api/jira/_test");
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.errorMessages?.[0] || data.error || `HTTP ${res.status}`);
-      setJiraTestStatus("ok");
-      setJiraTestMsg(`Conectado como ${data.displayName || data.emailAddress || "OK"}`);
-    } catch (e) {
-      setJiraTestStatus("error"); setJiraTestMsg(e.message);
-    }
-  };
-
-  const inp = "w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 bg-surface border text-primary placeholder-muted";
-  const lbl = "block text-sm font-semibold mb-1 text-tertiary";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
@@ -89,40 +44,6 @@ export default function SettingsModal({ onClose, dark }) {
             <span className="text-sm font-medium text-muted">v{APP_VERSION}</span>
             <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-lg text-tertiary hover:bg-hover">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/></svg>
-            </button>
-          </div>
-        </div>
-
-        {/* Jira */}
-        <div className="px-6 py-5 border-b border-subtle">
-          <div className="flex items-center gap-2 mb-4">
-            <svg className="w-4 h-4 text-blue-500" viewBox="0 0 24 24" fill="currentColor"><path d="M11.571 11.513H0a5.218 5.218 0 005.232 5.215h2.13v2.057A5.215 5.215 0 0012.575 24V12.518a1.005 1.005 0 00-1.004-1.005zm5.723-5.756H5.736a5.215 5.215 0 005.215 5.214h2.129v2.058a5.218 5.218 0 005.215 5.214V6.758a1.001 1.001 0 00-1.001-1.001zM23.013 0H11.459a5.215 5.215 0 005.215 5.215h2.129v2.057A5.215 5.215 0 0024 12.483V1.005A1.001 1.001 0 0023.013 0z"/></svg>
-            <p className="text-sm font-bold text-primary">Conexión Jira</p>
-          </div>
-          <div className="space-y-3">
-            <div>
-              <label className={lbl}>URL base de Jira</label>
-              <input className={inp} placeholder="https://empresa.atlassian.net" value={jiraCfg.baseUrl || ""} onChange={e => setJiraCfg(c => ({ ...c, baseUrl: e.target.value }))} />
-            </div>
-            <div>
-              <label className={lbl}>Email</label>
-              <input className={inp} type="email" placeholder="tu@empresa.com" value={jiraCfg.email || ""} onChange={e => setJiraCfg(c => ({ ...c, email: e.target.value }))} />
-            </div>
-            <div>
-              <label className={lbl}>API Token</label>
-              <input className={inp} type="password" placeholder="••••••••••••••••" value={jiraCfg.token || ""} onChange={e => setJiraCfg(c => ({ ...c, token: e.target.value }))} />
-            </div>
-          </div>
-          {jiraTestStatus && (
-            <div className={`mt-3 px-3 py-2 rounded-lg text-sm flex items-center gap-2 ${jiraTestStatus === "loading" ? "bg-muted text-tertiary" : jiraTestStatus === "ok" ? (d ? "bg-green-900/40 text-green-400" : "bg-green-50 text-green-700") : (d ? "bg-red-900/40 text-red-400" : "bg-red-50 text-red-700")}`}>
-              {jiraTestStatus === "loading" && <svg className="w-4 h-4 animate-spin flex-shrink-0" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>}
-              <span>{jiraTestStatus === "loading" ? "Probando..." : jiraTestMsg}</span>
-            </div>
-          )}
-          <div className="flex gap-2 mt-4">
-            <button onClick={handleJiraTest} className="px-3 py-1.5 text-sm font-semibold rounded-lg border text-secondary hover:bg-hover transition-colors">Probar conexión</button>
-            <button onClick={handleJiraSave} className="px-3 py-1.5 text-sm font-semibold text-white rounded-lg transition-colors" style={{ backgroundColor: jiraSaved ? "#16a34a" : "#00B369" }}>
-              {jiraSaved ? "✓ Guardado" : "Guardar"}
             </button>
           </div>
         </div>
@@ -152,7 +73,7 @@ export default function SettingsModal({ onClose, dark }) {
                           {isSelf && <span className={`text-sm px-2 py-0.5 rounded-full font-semibold ${d ? "bg-green-900/50 text-green-400" : "bg-green-50 text-green-700"}`}>Tú</span>}
                         </div>
                         <p className="text-sm truncate text-tertiary">{u.email}</p>
-                        {u.last_sign_in_at && <p className="text-sm text-muted">Último acceso: {new Date(u.last_sign_in_at).toLocaleDateString("es-PE", { day: "numeric", month: "short", year: "numeric" })}</p>}
+                        {u.last_seen_at && <p className="text-sm text-muted">Último acceso: {new Date(u.last_seen_at).toLocaleDateString("es-PE", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}</p>}
                       </div>
                     </div>
                     {isSelf ? (

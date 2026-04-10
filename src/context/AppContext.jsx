@@ -47,6 +47,7 @@ export function AppProvider({ children, setToast }) {
       const editorList = (data || []).filter(u => u.role === "editor" || u.role === "super_admin");
       setEditors(editorList.map(u => u.full_name || u.email || u.user_id));
     });
+    supabase.auth.updateUser({ data: { last_seen_at: new Date().toISOString() } });
   }, [session]);
   /* eslint-enable react-hooks/set-state-in-effect */
 
