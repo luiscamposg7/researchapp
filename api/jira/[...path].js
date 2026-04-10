@@ -4,7 +4,7 @@ module.exports = async function handler(req, res) {
   const token = process.env.JIRA_TOKEN || '';
 
   if (!base || !email || !token) {
-    return res.status(500).json({ error: 'Jira credentials not configured in environment variables' });
+    return res.status(500).json({ error: 'Jira credentials not configured in environment variables', debug: { hasBase: !!base, hasEmail: !!email, hasToken: !!token } });
   }
 
   const auth = Buffer.from(`${email}:${token}`).toString('base64');
