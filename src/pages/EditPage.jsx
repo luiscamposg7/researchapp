@@ -78,14 +78,7 @@ function EditPageForm({ item }) {
           <span className="hidden sm:inline">{fromLabel ? `Volver a ${fromLabel}` : "Volver"}</span>
           <span className="sm:hidden">Volver</span>
         </button>
-        <div className="flex items-center gap-2">
-          {form.status !== "Publicado" && (
-            <Button color="secondary" onClick={() => handleSave(form.status)} disabled={!form.title.trim() || saving} className="disabled:opacity-40">Guardar</Button>
-          )}
-          <Button color="primary" onClick={() => handleSave("Publicado")} disabled={!form.title.trim() || saving} className="disabled:opacity-40">
-            {form.status === "Publicado" ? "Guardar cambios" : "Publicar"}
-          </Button>
-        </div>
+        <Button color="primary" onClick={() => handleSave(form.status)} disabled={!form.title.trim() || saving} className="disabled:opacity-40">Guardar cambios</Button>
       </div>
 
       <div className="w-full mx-auto px-4 md:px-8 py-6 md:py-8 pb-16" style={{ maxWidth: "1600px" }}>
@@ -203,19 +196,6 @@ function EditPageForm({ item }) {
               <div>
                 <label className={lbl}>Fecha de publicación</label>
                 <DateInput value={toIsoDate(form.date)} onChange={v => set("date", v)} dark={d} />
-              </div>
-              <div className="flex gap-2 pt-1">
-                {form.status !== "Publicado" && (
-                  <Button color="secondary" onClick={() => handleSave(form.status)} disabled={!form.title.trim() || saving} className="flex-1 disabled:opacity-40">Guardar</Button>
-                )}
-                <Button
-                  color="primary"
-                  onClick={() => handleSave("Publicado")}
-                  disabled={!form.title.trim() || saving}
-                  className="flex-1 disabled:opacity-40"
-                >
-                  {form.status === "Publicado" ? "Guardar cambios" : "Publicar"}
-                </Button>
               </div>
             </div>
 
