@@ -29,9 +29,12 @@ module.exports = async function handler(req, res) {
     console.log('[jira direct]', r1.status, JSON.stringify(d1).slice(0, 300));
     if (r1.ok) return res.status(200).json(d1);
 
-    // JQL search fallback
-    const jql = encodeURIComponent(`key = "${key}"`);
-    const r2 = await fetch(`${base}/rest/api/2/search?jql=${jql}&fields=summary,status&maxResults=1`, { headers });
+    // JQL search fallback (v3)
+    const r2 = await fetch(`${base}/rest/api/3/search/jql`, {
+      method: 'POST',
+      headers: { ...headers, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ jql: `key = "${key}"`, fields: ['summary', 'status'], maxResults: 1 }),
+    });
     const d2 = await r2.json();
     console.log('[jira jql]', r2.status, JSON.stringify(d2).slice(0, 300));
     if (r2.ok && d2.issues?.length > 0) return res.status(200).json(d2.issues[0]);
