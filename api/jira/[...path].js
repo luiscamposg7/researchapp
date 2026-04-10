@@ -16,6 +16,7 @@ module.exports = async function handler(req, res) {
   const pathRaw = req.query.path || [];
   const pathParts = Array.isArray(pathRaw) ? pathRaw : [pathRaw];
   const key = pathParts[0];
+  console.log('[jira] query:', JSON.stringify(req.query), 'key:', key);
 
   if (key === '_test') {
     const [rMe, rProj] = await Promise.all([
