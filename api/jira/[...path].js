@@ -22,9 +22,6 @@ module.exports = async function handler(req, res) {
   try {
     const response = await fetch(`${base}${apiPath}`, { headers });
     const data = await response.json();
-    if (!response.ok) {
-      return res.status(response.status).json({ ...data, _debug: { email, tokenEnd: token.slice(-8), key } });
-    }
     return res.status(response.status).json(data);
   } catch (err) {
     return res.status(502).json({ error: err.message });
