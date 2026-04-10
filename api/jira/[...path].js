@@ -1,12 +1,14 @@
 module.exports = async function handler(req, res) {
-  const pathParts = req.query.path || [];
-  const base = (req.headers['x-jira-base'] || '').replace(/\/$/, '');
-  const auth = req.headers['x-jira-auth'];
+  const base = (process.env.JIRA_BASE_URL || '').replace(/\/$/, '');
+  const email = process.env.JIRA_EMAIL || '';
+  const token = process.env.JIRA_TOKEN || '';
 
-  if (!base || !auth) {
-    return res.status(400).json({ error: 'Missing credentials' });
+  if (!base || !email || !token) {
+    return res.status(500).json({ error: 'Jira credentials not configured in environment variables' });
   }
 
+  const auth = Buffer.from(`${email}:${token}`).toString('base64');
+  const pathParts = req.query.path || [];
   const key = pathParts[0];
   const isTest = key === '_test';
   const apiPath = isTest
@@ -19,7 +21,6 @@ module.exports = async function handler(req, res) {
         Authorization: `Basic ${auth}`,
         Accept: 'application/json',
         'User-Agent': 'Mozilla/5.0 (compatible; JiraClient/1.0)',
-        Host: base.replace(/^https?:\/\//, ''),
       },
     });
     const data = await response.json();

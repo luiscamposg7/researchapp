@@ -156,19 +156,6 @@ export async function downloadImage(url, filename = "image.jpg") {
   }
 }
 
-export async function loadJiraConfig() {
-  try {
-    const m = await import("../supabase");
-    const { data, error } = await m.supabase.from("config").select("value").eq("key", "jira").maybeSingle();
-    console.log("[jiraConfig]", { data, error });
-    return data?.value || {};
-  } catch (e) { console.error("[jiraConfig] catch", e); return {}; }
-}
-
-export async function saveJiraConfig(cfg) {
-  const { supabase: sb } = await import("../supabase");
-  await sb.from("config").upsert({ key: "jira", value: cfg });
-}
 
 const ALLOWED = new Set(["B","STRONG","I","EM","U","UL","OL","LI","H1","H2","H3","H4","H5","H6","P","BR","BLOCKQUOTE"]);
 const BLOCK_TAGS = new Set(["P","H1","H2","H3","H4","H5","H6","LI","BLOCKQUOTE"]);
