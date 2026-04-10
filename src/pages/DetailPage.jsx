@@ -3,7 +3,7 @@ import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { useApp } from "../context/AppContext";
 import { supabase } from "../supabase";
 import { Button } from "../components/ui/button";
-import { BadgeWithDot } from "../components/ui/badges";
+import { BadgeWithDot, Badge as UIBadge } from "../components/ui/badges";
 import { Avatar as UIAvatar } from "../components/ui/avatar";
 import Card from "../components/Card";
 import ConfirmModal from "../components/ConfirmModal";
@@ -11,7 +11,7 @@ import ViewsModal from "../components/ViewsModal";
 import PresentationCard from "../components/PresentationCard";
 import PersonaDetailTabs from "../components/PersonaDetailTabs";
 import { PERSONA_TYPES } from "../lib/constants";
-import { toSlug, formatDate, sanitizeHtml } from "../lib/utils";
+import { toSlug, formatDate, sanitizeHtml, getBadgeColor } from "../lib/utils";
 
 export default function DetailPage() {
   const navigate = useNavigate();
@@ -108,20 +108,20 @@ export default function DetailPage() {
 
       <div className="w-full mx-auto px-4 md:px-8 py-6 md:py-8 pb-16 md:pb-24" style={{maxWidth:"1600px"}}>
         {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-sm mb-2 text-muted">
+        <div className="flex items-center gap-2 text-sm mb-6 text-muted">
           <button onClick={() => navigate("/")} className="hover:underline hover:text-secondary">Inicio</button><span>/</span>
           <button onClick={() => navigate(`/producto/${toSlug(item.tags[0])}`)} className="hover:underline hover:text-secondary">{item.tags[0]}</button><span>/</span>
           <span className="text-secondary">{item.title}</span>
         </div>
 
         {/* Page title */}
-        <div className="flex items-center gap-3 mb-2">
-          <UIAvatar name={assigned} index={0} />
-          <span className="text-sm text-tertiary">
-            {assigned || "Sin asignar"} · {formatDate(item.date)}
-          </span>
+        <div className="flex items-center gap-3 mb-1 flex-wrap">
+          <span className="text-sm text-tertiary">{formatDate(item.date)}</span>
+          <BadgeWithDot type="modern" color={item.status === "Publicado" ? "success" : "gray"} className="gap-1.5">
+            {item.status === "Publicado" ? "Publicado" : "Borrador"}
+          </BadgeWithDot>
         </div>
-        <div className="flex items-center gap-3 mb-3">
+        <div className="flex items-center gap-3 mb-3 mt-3">
           <h1 className="text-3xl font-semibold text-primary">{item.title}</h1>
           <button
             onClick={() => { navigator.clipboard.writeText(window.location.href); setCopied(true); setTimeout(() => setCopied(false), 2000); }}
@@ -135,7 +135,7 @@ export default function DetailPage() {
             }
           </button>
         </div>
-        <div className="mb-8"><BadgeWithDot color={item.status === "Publicado" ? "success" : "gray"}>{item.status}</BadgeWithDot></div>
+        {item.type && <div className="mb-8"><UIBadge color={getBadgeColor(item.typeColor)}>{item.type}</UIBadge></div>}
 
         <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
           {/* LEFT */}
@@ -143,8 +143,17 @@ export default function DetailPage() {
             {item.archivoUrl && <PresentationCard item={item} dark={d} />}
             <div className="space-y-3">
               <div>
-                <p className="text-sm font-semibold mb-0.5 text-muted">Fecha</p>
-                <p className="text-sm text-secondary">{formatDate(item.date)}</p>
+                <p className="text-sm font-semibold mb-1 text-muted">Asignado</p>
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center -space-x-1.5">
+                    {(item.team && item.team.length > 0)
+                      ? item.team.map((name, i) => <UIAvatar key={i} name={name} index={i} size="xs" />)
+                      : <UIAvatar name={null} index={0} size="xs" />}
+                  </div>
+                  <span className="text-sm text-secondary">
+                    {(item.team && item.team.length > 0) ? item.team.join(", ") : "Sin asignar"}
+                  </span>
+                </div>
               </div>
               <div>
                 <p className="text-sm font-semibold mb-0.5 text-muted">Metodología</p>
@@ -191,7 +200,7 @@ export default function DetailPage() {
           {/* RIGHT */}
           <div className="flex-1 min-w-0 space-y-6">
             {item.contenido ? (
-              <div className="rich-content text-base leading-relaxed text-secondary" dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.contenido) }} />
+              <div className="rich-content text-base leading-relaxed text-secondary pb-4" dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.contenido) }} />
             ) : (
               <>
                 {item.objetivo && (
@@ -207,7 +216,7 @@ export default function DetailPage() {
                   </div>
                 )}
                 {item.hallazgos && (
-                  <div>
+                  <div className="pb-4">
                     <h3 className="text-xl font-semibold mb-2 text-primary">Hallazgos y conclusiones</h3>
                     <div className="rich-content text-base leading-relaxed text-secondary" dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.hallazgos) }} />
                   </div>
