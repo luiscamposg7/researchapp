@@ -158,7 +158,7 @@ export async function downloadImage(url, filename = "image.jpg") {
 
 export async function loadJiraConfig() {
   try {
-    const { data } = await import("../supabase").then(m => m.supabase.from("config").select("value").eq("key", "jira").single());
+    const { data } = await import("../supabase").then(m => m.supabase.from("config").select("value").eq("key", "jira").maybeSingle());
     return data?.value || {};
   } catch { return {}; }
 }
