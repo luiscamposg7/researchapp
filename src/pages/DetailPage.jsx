@@ -123,12 +123,12 @@ export default function DetailPage() {
           <button
             onClick={() => { navigator.clipboard.writeText(window.location.href); setCopied(true); setTimeout(() => setCopied(false), 2000); }}
             title="Copiar enlace"
-            style={{ height: 38 }}
-            className={`flex items-center gap-1.5 px-2 rounded-lg border flex-shrink-0 bg-surface hover:bg-hover transition-colors text-sm font-medium ${copied ? "text-green-500 border-green-300" : "text-tertiary hover:text-secondary"}`}
+            style={{ width: 38, height: 38 }}
+            className={`flex items-center justify-center rounded-lg border flex-shrink-0 bg-surface hover:bg-hover transition-colors ${copied ? "text-green-500 border-green-300" : "text-tertiary hover:text-secondary"}`}
           >
             {copied
-              ? <><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7"/></svg><span>Copiado</span></>
-              : <><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg><span>Copiar enlace</span></>
+              ? <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7"/></svg>
+              : <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
             }
           </button>
         </div>
