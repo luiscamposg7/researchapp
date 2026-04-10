@@ -196,7 +196,9 @@ function EditPageForm({ item }) {
                 <label className={lbl}>Fecha de publicación</label>
                 <DateInput value={toIsoDate(form.date)} onChange={v => set("date", v)} dark={d} />
               </div>
-              <Button color="primary" onClick={() => handleSave(form.status)} disabled={!form.title.trim() || saving} className="w-full disabled:opacity-40">Guardar cambios</Button>
+              <Button color="primary" onClick={() => handleSave(form.status === "Publicado" ? "Publicado" : "Publicado")} disabled={!form.title.trim() || saving} className="w-full disabled:opacity-40">
+                {form.status === "Publicado" ? "Guardar cambios" : "Publicar"}
+              </Button>
             </div>
 
             {/* Clasificación */}
