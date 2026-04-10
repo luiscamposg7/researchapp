@@ -66,7 +66,11 @@ export default function DetailPage() {
           message={`"${item.title}" se eliminará permanentemente y no podrá recuperarse.`}
           confirmLabel="Sí, eliminar"
           danger
-          onConfirm={() => { handleDelete(item.id); navigate("/research"); }}
+          onConfirm={() => {
+            const product = item.tags?.[0];
+            handleDelete(item.id);
+            product ? navigate(`/producto/${toSlug(product)}`) : navigate("/research");
+          }}
           onCancel={() => setConfirmDelete(false)}
         />
       )}
