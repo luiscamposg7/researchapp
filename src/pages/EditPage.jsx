@@ -11,6 +11,7 @@ import { PRODUCTS, TYPES, PERSONA_TYPES, METODOLOGIAS, TYPE_COLORS, EMPTY_PERSON
 import { toSlug, getDriveId, uploadToCloudinary } from "../lib/utils";
 import { useJiraUrl } from "../hooks/useJiraUrl";
 import SectionTitle from "../components/SectionTitle";
+import ConfirmModal from "../components/ConfirmModal";
 
 export default function EditPage() {
   const location = useLocation();
@@ -47,6 +48,7 @@ function EditPageForm({ item }) {
   };
   const setPersonaField = (idx, field, val) => setForm(f => ({ ...f, personas: f.personas.map((p, i) => i === idx ? { ...p, [field]: val } : p) }));
   const addPersona = () => { setForm(f => ({ ...f, personas: [...f.personas, EMPTY_PERSONA()] })); setPersonaTab(form.personas.length); };
+  const [confirmRemovePersona, setConfirmRemovePersona] = useState(null);
   const removePersona = (idx) => { setForm(f => ({ ...f, personas: f.personas.filter((_, i) => i !== idx) })); setPersonaTab(t => Math.max(0, t - (idx <= t ? 1 : 0))); };
 
   const handleSave = (status) => {
@@ -70,6 +72,17 @@ function EditPageForm({ item }) {
 
   return (
     <div className="flex-1 overflow-y-auto bg-page">
+
+      {confirmRemovePersona !== null && (
+        <ConfirmModal
+          title="¿Eliminar persona?"
+          message={`Se eliminará "Persona ${confirmRemovePersona + 1}" y todas sus imágenes.`}
+          confirmLabel="Sí, eliminar"
+          danger
+          onConfirm={() => { removePersona(confirmRemovePersona); setConfirmRemovePersona(null); }}
+          onCancel={() => setConfirmRemovePersona(null)}
+        />
+      )}
 
       {/* Top bar */}
       <div className="border-b px-4 py-3 md:px-8 md:py-4 sticky top-0 z-10 bg-page border flex items-center justify-between gap-4">
@@ -155,7 +168,7 @@ function EditPageForm({ item }) {
                   {form.personas.map((_, i) => (
                     <div key={i} className="flex items-center">
                       <button type="button" onClick={() => setPersonaTab(i)} className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${personaTab === i ? "border-green-500 text-green-600" : "border-transparent text-tertiary hover:text-primary"}`}>Persona {i + 1}</button>
-                      {form.personas.length > 1 && <button type="button" onClick={() => removePersona(i)} className="-ml-1 mb-px w-4 h-4 flex items-center justify-center text-sm text-muted hover:text-secondary">✕</button>}
+                      {form.personas.length > 1 && <button type="button" onClick={() => setConfirmRemovePersona(i)} className="-ml-1 mb-px w-4 h-4 flex items-center justify-center text-sm text-muted hover:text-secondary">✕</button>}
                     </div>
                   ))}
                 </div>

@@ -11,6 +11,7 @@ import { PRODUCTS, TYPES, PERSONA_TYPES, METODOLOGIAS, TYPE_COLORS, EMPTY_PERSON
 import { toSlug, getDriveId, uploadToCloudinary } from "../lib/utils";
 import { useJiraUrl } from "../hooks/useJiraUrl";
 import SectionTitle from "../components/SectionTitle";
+import ConfirmModal from "../components/ConfirmModal";
 
 export default function AddPage() {
   const navigate = useNavigate();
@@ -45,6 +46,7 @@ export default function AddPage() {
   const [saving, setSaving] = useState(false);
   const [imageUploading, setImageUploading] = useState(false);
   const [showLeaveModal, setShowLeaveModal] = useState(false);
+  const [confirmRemovePersona, setConfirmRemovePersona] = useState(null);
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
   const { handleJiraUrl, jiraLoading, jiraError } = useJiraUrl(set);
   const setType = (t) => {
@@ -91,6 +93,17 @@ export default function AddPage() {
 
   return (
     <div className="flex-1 overflow-y-auto bg-page">
+
+      {confirmRemovePersona !== null && (
+        <ConfirmModal
+          title="¿Eliminar persona?"
+          message={`Se eliminará "Persona ${confirmRemovePersona + 1}" y todas sus imágenes.`}
+          confirmLabel="Sí, eliminar"
+          danger
+          onConfirm={() => { removePersona(confirmRemovePersona); setConfirmRemovePersona(null); }}
+          onCancel={() => setConfirmRemovePersona(null)}
+        />
+      )}
 
       {/* Modal de confirmación */}
       {showLeaveModal && (
@@ -227,7 +240,7 @@ export default function AddPage() {
                         Persona {i + 1}
                       </button>
                       {form.personas.length > 1 && (
-                        <button type="button" onClick={() => removePersona(i)} className="-ml-1 mb-px w-4 h-4 flex items-center justify-center text-sm text-muted hover:text-secondary">✕</button>
+                        <button type="button" onClick={() => setConfirmRemovePersona(i)} className="-ml-1 mb-px w-4 h-4 flex items-center justify-center text-sm text-muted hover:text-secondary">✕</button>
                       )}
                     </div>
                   ))}
