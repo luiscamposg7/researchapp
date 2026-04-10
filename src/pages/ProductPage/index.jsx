@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useApp } from "../../context/AppContext";
 import { Button } from "../../components/ui/button";
@@ -35,6 +35,9 @@ export default function ProductPage() {
     }
   };
 
+  const scrollRef = useRef(null);
+  useEffect(() => { scrollRef.current?.scrollTo({ top: 0 }); }, [slug]);
+
   const [ppLightbox, setPpLightbox] = useState(null); // { images, index }
   const openPpLightbox = (images, index) => setPpLightbox({ images, index });
   const closePpLightbox = () => setPpLightbox(null);
@@ -60,7 +63,7 @@ export default function ProductPage() {
 
   return (
     <>
-    <div className="flex-1 overflow-y-auto">
+    <div ref={scrollRef} className="flex-1 overflow-y-auto">
       {showCoverPicker && (
         <CloudinaryPickerModal
           onClose={() => setShowCoverPicker(false)}
