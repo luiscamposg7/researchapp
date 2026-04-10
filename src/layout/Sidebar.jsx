@@ -139,10 +139,10 @@ export default function Sidebar({ onSettings, user, mobileOpen = false, onMobile
           className={`w-full flex items-center rounded-lg ${expanded ?"gap-3 px-3 h-10 justify-between" :"justify-center h-10"} ${s.navOff}`}>
           <div className={`flex items-center ${expanded ?"gap-3" :""}`}>
             {dk
-              ? <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M12 3v1m0 16v1m8.66-9H21M3 12H2m15.36-6.36l-.71.71M7.05 16.95l-.71.71M18.36 18.36l-.71-.71M6.34 6.34l-.71-.71M17 12a5 5 0 11-10 0 5 5 0 0110 0z" /></svg>
-              : <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" /></svg>
+              ? <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" /></svg>
+              : <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M12 3v1m0 16v1m8.66-9H21M3 12H2m15.36-6.36l-.71.71M7.05 16.95l-.71.71M18.36 18.36l-.71-.71M6.34 6.34l-.71-.71M17 12a5 5 0 11-10 0 5 5 0 0110 0z" /></svg>
             }
-            {expanded && <span className="whitespace-nowrap">{dk ? "Modo oscuro" : "Modo claro"}</span>}
+            {expanded && <span className="whitespace-nowrap">Modo oscuro</span>}
           </div>
           {expanded && (
             <div className={`w-8 h-4 rounded-full flex items-center px-0.5 flex-shrink-0 ${dk ?"justify-end" :"justify-start"}`} style={{backgroundColor: dk ? "#00B369" : "#e5e7eb"}}>
