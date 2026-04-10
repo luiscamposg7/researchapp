@@ -2,7 +2,7 @@
   "name": "ux-research-app",
   "private": true,
 
-  "version": "1.0.7",
+  "version": "1.0.9",
   "type": "module",
   "scripts": {
     "dev": "vite",
