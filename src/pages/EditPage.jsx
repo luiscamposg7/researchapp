@@ -57,7 +57,7 @@ function EditPageForm({ item }) {
     const updated = { ...form, status, typeColor: TYPE_COLORS[form.type] || item.typeColor };
     handleUpdate(updated);
     showToast({ title: status === "Publicado" ? "Research publicado" : "Borrador guardado", subtitle: "Los cambios se han guardado correctamente." });
-    navigate(`/research/${toSlug(form.title)}`);
+    navigate(`/research/${toSlug(form.title)}`, { replace: true });
   };
 
   const inp = "w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 bg-surface border text-primary placeholder-muted";
