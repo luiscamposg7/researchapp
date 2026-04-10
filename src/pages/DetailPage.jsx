@@ -118,15 +118,16 @@ export default function DetailPage() {
             {assigned || "Sin asignar"} · {formatDate(item.date)}
           </span>
         </div>
-        <div className="flex items-center gap-3 mb-3 group">
+        <div className="flex items-center gap-3 mb-3">
           <h1 className="text-3xl font-bold text-primary">{item.title}</h1>
           <button
             onClick={() => { navigator.clipboard.writeText(window.location.href); setCopied(true); setTimeout(() => setCopied(false), 2000); }}
             title="Copiar enlace"
-            className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1.5 text-sm font-medium text-tertiary hover:text-primary px-2 py-1 rounded-lg hover:bg-hover flex-shrink-0"
+            style={{ height: 38 }}
+            className={`flex items-center gap-1.5 px-2 rounded-lg border flex-shrink-0 bg-surface hover:bg-hover transition-colors text-sm font-medium ${copied ? "text-green-500 border-green-300" : "text-tertiary hover:text-secondary"}`}
           >
             {copied
-              ? <><svg className="w-4 h-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7"/></svg><span className="text-green-500">Copiado</span></>
+              ? <><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7"/></svg><span>Copiado</span></>
               : <><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg><span>Copiar enlace</span></>
             }
           </button>

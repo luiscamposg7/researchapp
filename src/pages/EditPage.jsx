@@ -33,6 +33,7 @@ function EditPageForm({ item }) {
   const [personaImgUploading, setPersonaImgUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [imageUploading, setImageUploading] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
   const { handleJiraUrl, jiraLoading, jiraError } = useJiraUrl(set);
@@ -85,8 +86,11 @@ function EditPageForm({ item }) {
           <h1 className="text-2xl font-bold mb-1 text-primary">Editar research</h1>
           <div className="flex items-center gap-1.5">
             <a href={`/research/${toSlug(item.title)}`} target="_blank" rel="noreferrer" className="text-base font-medium pr-2 truncate min-w-0 hover:opacity-80 transition-opacity" style={{ color: "#00B369" }}>{window.location.origin}/research/{toSlug(item.title)}</a>
-            <button type="button" title="Copiar enlace" onClick={() => navigator.clipboard.writeText(`${window.location.origin}/research/${toSlug(item.title)}`)} style={{ width: 38, height: 38 }} className="flex items-center justify-center rounded-lg border flex-shrink-0 bg-surface text-tertiary hover:bg-hover hover:text-secondary">
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+            <button type="button" title="Copiar enlace" onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/research/${toSlug(item.title)}`); setCopied(true); setTimeout(() => setCopied(false), 2000); }} style={{ height: 38 }} className={`flex items-center gap-1.5 px-2 rounded-lg border flex-shrink-0 bg-surface hover:bg-hover transition-colors text-sm font-medium ${copied ? "text-green-500 border-green-300" : "text-tertiary hover:text-secondary"}`}>
+              {copied
+                ? <><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7"/></svg><span>Copiado</span></>
+                : <><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg><span>Copiar enlace</span></>
+              }
             </button>
           </div>
         </div>
