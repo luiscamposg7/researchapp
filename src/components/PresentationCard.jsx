@@ -32,6 +32,7 @@ export default function PresentationCard({ item, dark: d }) {
   const isSlides = pres?.type === "slides";
   const label = isFigma ? "Figma" : isSlides ? "Google Slides" : "Google Drive";
   const [figmaMeta, setFigmaMeta] = useState(null);
+  const [thumbFailed, setThumbFailed] = useState(false);
 
   useEffect(() => {
     if (!isFigma || !item.archivoUrl) return;
@@ -43,17 +44,17 @@ export default function PresentationCard({ item, dark: d }) {
 
   const thumbUrl = isFigma
     ? (item.archivoUrl ? `/api/figma-img?url=${encodeURIComponent(item.archivoUrl)}` : null)
-    : null;
+    : (pres?.thumbUrl || null);
   const displayName = isFigma ? (figmaMeta?.title || label) : (item.archivo || label);
 
   if (!pres) return null;
 
   return (
     <div className="rounded-xl overflow-hidden bg-surface border shadow-xs" style={{boxShadow:"0 1px 4px rgba(0,0,0,0.08)"}}>
-      {thumbUrl ? (
+      {thumbUrl && !thumbFailed ? (
         <div className="w-full overflow-hidden" style={{height:180}}>
           <img src={thumbUrl} alt="" className="w-full h-full object-cover object-top"
-            onError={e => { e.target.parentElement.style.display = "none"; }} />
+            onError={() => setThumbFailed(true)} />
         </div>
       ) : isFigma ? (
         <div className="w-full flex items-center justify-center" style={{height:180, background:"linear-gradient(135deg,#1e1e2e 0%,#2d2b55 100%)"}}>
