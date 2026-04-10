@@ -13,7 +13,8 @@ module.exports = async function handler(req, res) {
 
   const auth = Buffer.from(`${email}:${token}`).toString('base64');
   const headers = { Authorization: `Basic ${auth}`, Accept: 'application/json' };
-  const pathParts = req.query.path || [];
+  const pathRaw = req.query.path || [];
+  const pathParts = Array.isArray(pathRaw) ? pathRaw : [pathRaw];
   const key = pathParts[0];
 
   if (key === '_test') {
