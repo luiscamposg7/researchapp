@@ -197,7 +197,7 @@ function EditPageForm({ item }) {
                 <DateInput value={toIsoDate(form.date)} onChange={v => set("date", v)} dark={d} />
               </div>
               <Button color="primary" onClick={() => handleSave(form.status === "Publicado" ? "Publicado" : "Publicado")} disabled={!form.title.trim() || saving} className="w-full disabled:opacity-40">
-                {form.status === "Publicado" ? "Guardar cambios" : "Publicar"}
+                {form.status === "Publicado" ? "Guardar cambios" : "Publicar ahora"}
               </Button>
             </div>
 
