@@ -33,7 +33,7 @@ module.exports = async function handler(req, res) {
     const r2 = await fetch(`${base}/rest/api/3/search/jql`, {
       method: 'POST',
       headers: { ...headers, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ jql: `key = "${key}"`, fields: ['summary', 'status'], maxResults: 1 }),
+      body: JSON.stringify({ jql: `key = ${key}`, fields: ['summary', 'status'], maxResults: 1 }),
     });
     const d2 = await r2.json();
     console.log('[jira jql]', r2.status, r2.url, JSON.stringify(d2).slice(0, 300));
