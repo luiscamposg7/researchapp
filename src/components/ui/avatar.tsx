@@ -34,14 +34,14 @@ const sizeStyles: Record<AvatarSize, { root: string; text: string; icon: string 
 
 // Colorful palette for named avatars
 const palette = [
-    "bg-green-100  text-green-700  dark:bg-green-900  dark:text-green-300",
-    "bg-blue-100   text-blue-700   dark:bg-blue-900   dark:text-blue-300",
-    "bg-violet-100 text-violet-700 dark:bg-violet-900 dark:text-violet-300",
-    "bg-amber-100  text-amber-700  dark:bg-amber-900  dark:text-amber-300",
-    "bg-pink-100   text-pink-700   dark:bg-pink-900   dark:text-pink-300",
-    "bg-teal-100   text-teal-700   dark:bg-teal-900   dark:text-teal-300",
-    "bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300",
-    "bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300",
+    "avatar-green",
+    "avatar-blue",
+    "avatar-violet",
+    "avatar-amber",
+    "avatar-pink",
+    "avatar-teal",
+    "avatar-orange",
+    "avatar-indigo",
 ];
 
 function deriveInitials(name: string): string {

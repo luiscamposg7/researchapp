@@ -76,6 +76,52 @@
 [contenteditable] :is(h1,h2,h3,h4,h5,h6):first-child { margin-top: 0; }
 .rich-content :is(h1,h2,h3,h4,h5,h6):first-child { margin-top: 0; }
 
+/* ─── Badge colors ───────────────────────────────────────────── */
+.badge-gray        { background: #f3f4f6; color: #374151; --tw-ring-color: #e5e7eb; }
+.badge-brand       { background: #e6f7f0; color: #00693d; --tw-ring-color: #99dfc3; }
+.badge-error       { background: #fef2f2; color: #b91c1c; --tw-ring-color: #fecaca; }
+.badge-warning     { background: #fffbeb; color: #b45309; --tw-ring-color: #fde68a; }
+.badge-success     { background: #ecfdf5; color: #065f46; --tw-ring-color: #a7f3d0; }
+.badge-gray-blue   { background: #f8fafc; color: #334155; --tw-ring-color: #e2e8f0; }
+.badge-blue-light  { background: #f0f9ff; color: #0369a1; --tw-ring-color: #bae6fd; }
+.badge-blue        { background: #eff6ff; color: #1d4ed8; --tw-ring-color: #bfdbfe; }
+.badge-indigo      { background: #eef2ff; color: #4338ca; --tw-ring-color: #c7d2fe; }
+.badge-purple      { background: #faf5ff; color: #7e22ce; --tw-ring-color: #e9d5ff; }
+.badge-pink        { background: #fdf2f8; color: #be185d; --tw-ring-color: #fbcfe8; }
+.badge-orange      { background: #fff7ed; color: #c2410c; --tw-ring-color: #fed7aa; }
+
+.dark-mode .badge-gray        { background: #1f2937; color: #d1d5db; --tw-ring-color: #374151; }
+.dark-mode .badge-brand       { background: #052e16; color: #6ee7b7; --tw-ring-color: #065f46; }
+.dark-mode .badge-error       { background: #450a0a; color: #fca5a5; --tw-ring-color: #7f1d1d; }
+.dark-mode .badge-warning     { background: #451a03; color: #fcd34d; --tw-ring-color: #78350f; }
+.dark-mode .badge-success     { background: #022c22; color: #6ee7b7; --tw-ring-color: #065f46; }
+.dark-mode .badge-gray-blue   { background: #0f172a; color: #cbd5e1; --tw-ring-color: #1e293b; }
+.dark-mode .badge-blue-light  { background: #082f49; color: #7dd3fc; --tw-ring-color: #0c4a6e; }
+.dark-mode .badge-blue        { background: #1e3a8a; color: #93c5fd; --tw-ring-color: #1e40af; }
+.dark-mode .badge-indigo      { background: #1e1b4b; color: #a5b4fc; --tw-ring-color: #312e81; }
+.dark-mode .badge-purple      { background: #3b0764; color: #d8b4fe; --tw-ring-color: #581c87; }
+.dark-mode .badge-pink        { background: #500724; color: #f9a8d4; --tw-ring-color: #831843; }
+.dark-mode .badge-orange      { background: #431407; color: #fdba74; --tw-ring-color: #7c2d12; }
+
+/* ─── Avatar palette ─────────────────────────────────────────── */
+.avatar-green  { background: #ccefe1; color: #00693d; }
+.avatar-blue   { background: #dbeafe; color: #1d4ed8; }
+.avatar-violet { background: #ede9fe; color: #6d28d9; }
+.avatar-amber  { background: #fef3c7; color: #b45309; }
+.avatar-pink   { background: #fce7f3; color: #be185d; }
+.avatar-teal   { background: #ccfbf1; color: #0f766e; }
+.avatar-orange { background: #ffedd5; color: #c2410c; }
+.avatar-indigo { background: #e0e7ff; color: #4338ca; }
+
+.dark-mode .avatar-green  { background: #004126; color: #6ee7b7; }
+.dark-mode .avatar-blue   { background: #1e3a8a; color: #93c5fd; }
+.dark-mode .avatar-violet { background: #2e1065; color: #c4b5fd; }
+.dark-mode .avatar-amber  { background: #451a03; color: #fcd34d; }
+.dark-mode .avatar-pink   { background: #500724; color: #f9a8d4; }
+.dark-mode .avatar-teal   { background: #042f2e; color: #5eead4; }
+.dark-mode .avatar-orange { background: #431407; color: #fdba74; }
+.dark-mode .avatar-indigo { background: #1e1b4b; color: #a5b4fc; }
+
 /* Animated gradient background */
 @keyframes bg-drift-1 {
   0%   { transform: translate(0%, 0%)     rotate(0deg); }
