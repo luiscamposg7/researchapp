@@ -196,9 +196,7 @@ function EditPageForm({ item }) {
                             <button type="button" onClick={() => setBuyerTab(i)} className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${buyerTab === i ? "border-blue-500 text-blue-600" : "border-transparent text-tertiary hover:text-primary"}`}>
                               Persona {i + 1}
                             </button>
-                            {form.buyers.length > 1 && (
-                              <button type="button" onClick={() => setConfirmRemove({ group: "buyers", idx: i })} className="-ml-1 mb-px w-4 h-4 flex items-center justify-center text-sm text-muted hover:text-secondary">✕</button>
-                            )}
+                            <button type="button" onClick={() => setConfirmRemove({ group: "buyers", idx: i })} className="-ml-1 mb-px w-4 h-4 flex items-center justify-center text-sm text-muted hover:text-secondary">✕</button>
                           </div>
                         ))}
                       </div>
