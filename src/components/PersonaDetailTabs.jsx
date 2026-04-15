@@ -1,16 +1,14 @@
 import { useState } from "react";
 import Lightbox from "./Lightbox";
 
-export default function PersonaDetailTabs({ personas, type }) {
-  const [tab, setTab] = useState(0);
+export default function PersonaDetailTabs({ personas, type, dark: d }) {
   const [lightbox, setLightbox] = useState(null); // { images, index }
-  const p = personas[tab] || {};
   const isBuyer = type === "Buyer Persona" || type === "Buyer y User Persona";
   const bannerColor = isBuyer ? "#2563EB" : "#00B369";
   const sectionTitle = isBuyer ? "Buyer Personas" : "User Personas";
 
-  const openLightbox = (images, index) => setLightbox({ images, index });
-  const closeLightbox = () => setLightbox(null);
+  // Flatten all images with their persona index for lightbox
+  const allImages = personas.flatMap(p => p.images || []);
 
   return (
     <>
@@ -19,35 +17,44 @@ export default function PersonaDetailTabs({ personas, type }) {
         <div className="px-6 py-4 flex items-center gap-3" style={{ backgroundColor: bannerColor }}>
           <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: "rgba(255,255,255,0.2)" }}>
             {isBuyer
-              ? <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+              ? <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0z"/>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 20.25a8.25 8.25 0 0 1 10.5-7.93"/>
+                  <circle cx="18.5" cy="17.5" r="3.5" fill="rgba(255,255,255,0.25)" strokeWidth={1.5}/>
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M18.5 15.75v.5m0 2.5v.5m-1.25-2.75c0-.69.56-1.25 1.25-1.25s1.25.56 1.25 1.25-.56 1.25-1.25 1.25-1.25.56-1.25 1.25.56 1.25 1.25 1.25 1.25-.56 1.25-1.25"/>
+                </svg>
               : <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
             }
           </div>
           <p className="text-white text-base font-bold">{sectionTitle}</p>
         </div>
-        {/* Tabs */}
-        <div className="flex border-b">
-          {personas.map((_, i) => (
-            <button key={i} onClick={() => setTab(i)}
-              className={`px-5 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors ${tab === i ? (isBuyer ? "border-blue-500 text-blue-600" : "border-green-500 text-green-600") : "border-transparent text-tertiary hover:text-primary"}`}>
-              Persona {i + 1}
-            </button>
-          ))}
-        </div>
-        {/* Imagen */}
-        <div className="p-5">
-          {(p.images || []).length > 0 ? (
-            <div className="space-y-4">
-              {(p.images || []).map((url, i) => (
-                <button key={i} onClick={() => openLightbox(p.images, i)}
-                  className="w-full block rounded-xl overflow-hidden cursor-zoom-in border">
-                  <img src={url} alt={`Imagen ${i + 1}`} className="w-full" />
-                </button>
-              ))}
-            </div>
-          ) : (
-            <p className="text-sm text-center py-8 text-muted">No hay imagen para esta persona.</p>
-          )}
+
+        {/* Grid 2 por fila */}
+        <div className="p-5 grid grid-cols-3 gap-4">
+          {personas.map((p, i) => {
+            const img = (p.images || [])[0];
+            const globalIdx = allImages.indexOf(img);
+            return (
+              <div key={i} className="space-y-2">
+                <p className="text-xs font-semibold text-tertiary">Persona {i + 1}</p>
+                {img ? (
+                  <button onClick={() => setLightbox({ images: allImages, index: globalIdx })}
+                    className="relative w-full block rounded-xl overflow-hidden cursor-zoom-in border group" style={{ aspectRatio: "3/4" }}>
+                    <img src={img} alt={`Persona ${i + 1}`} className="w-full h-full object-cover object-top" />
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
+                      <div className={`w-10 h-10 flex items-center justify-center shadow-md ${d ? "bg-gray-800 text-gray-100" : "bg-white text-gray-800"}`} style={{ borderRadius: 12 }}>
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607zM10.5 7.5v6m3-3h-6"/></svg>
+                      </div>
+                    </div>
+                  </button>
+                ) : (
+                  <div className="w-full rounded-xl border flex items-center justify-center text-muted text-sm" style={{ aspectRatio: "3/4" }}>
+                    Sin imagen
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
 
@@ -55,7 +62,7 @@ export default function PersonaDetailTabs({ personas, type }) {
         <Lightbox
           images={lightbox.images}
           index={lightbox.index}
-          onClose={closeLightbox}
+          onClose={() => setLightbox(null)}
           onNavigate={i => setLightbox(lb => ({ ...lb, index: i }))}
           showDownload
         />

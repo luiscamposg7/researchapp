@@ -228,8 +228,8 @@ export default function DetailPage() {
               const users = item.users || [];
               return (buyers.length > 0 || users.length > 0) && (
                 <div className="space-y-4">
-                  {buyers.length > 0 && <PersonaDetailTabs personas={buyers} type="Buyer Persona" />}
-                  {users.length > 0 && <PersonaDetailTabs personas={users} type="User Persona" />}
+                  {buyers.length > 0 && <PersonaDetailTabs personas={buyers} type="Buyer Persona" dark={d} />}
+                  {users.length > 0 && <PersonaDetailTabs personas={users} type="User Persona" dark={d} />}
                 </div>
               );
             })()}
