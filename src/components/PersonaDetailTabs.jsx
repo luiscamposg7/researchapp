@@ -36,7 +36,7 @@ export default function PersonaDetailTabs({ personas, type, dark: d }) {
             const globalIdx = allImages.indexOf(img);
             return (
               <div key={i} className="space-y-2">
-                <p className="text-xs font-semibold text-tertiary">Persona {i + 1}</p>
+                <p className="text-sm font-semibold text-tertiary">Persona {i + 1}</p>
                 {img ? (
                   <button onClick={() => setLightbox({ images: allImages, index: globalIdx })}
                     className="relative w-full block rounded-xl overflow-hidden cursor-zoom-in border group" style={{ aspectRatio: "3/4" }}>

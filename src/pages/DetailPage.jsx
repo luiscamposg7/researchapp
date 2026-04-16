@@ -123,17 +123,25 @@ export default function DetailPage() {
         </div>
         <div className="flex items-center gap-3 mb-3 mt-3">
           <h1 className="text-3xl font-semibold text-primary">{item.title}</h1>
-          <button
-            onClick={() => { navigator.clipboard.writeText(window.location.href); setCopied(true); setTimeout(() => setCopied(false), 2000); }}
-            title="Copiar enlace"
-            style={{ width: 38, height: 38 }}
-            className={`flex items-center justify-center rounded-lg border flex-shrink-0 bg-surface hover:bg-hover transition-colors ${copied ? "text-green-500 border-green-300" : "text-tertiary hover:text-secondary"}`}
-          >
-            {copied
-              ? <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7"/></svg>
-              : <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
-            }
-          </button>
+          <div className="relative flex-shrink-0">
+            <button
+              onClick={() => { navigator.clipboard.writeText(window.location.href); setCopied(true); setTimeout(() => setCopied(false), 2000); }}
+              style={{ width: 38, height: 38 }}
+              className={`flex items-center justify-center rounded-lg border bg-surface hover:bg-hover transition-colors ${copied ? "text-green-500 border-green-300" : "text-tertiary hover:text-secondary"}`}
+            >
+              {copied
+                ? <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7"/></svg>
+                : <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+              }
+            </button>
+            {copied && (
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2.5 py-1 rounded-lg text-xs font-medium text-white whitespace-nowrap pointer-events-none"
+                style={{ backgroundColor: "#111827" }}>
+                Enlace copiado
+                <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent" style={{ borderTopColor: "#111827" }} />
+              </div>
+            )}
+          </div>
         </div>
         {item.type && <div className="mb-8"><UIBadge color={getBadgeColor(item.typeColor)}>{item.type}</UIBadge></div>}
 

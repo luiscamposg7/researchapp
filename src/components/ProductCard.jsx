@@ -8,9 +8,7 @@ export default function ProductCard({ product: p, deliverables, coverUrl, onClic
   return (
     <button onClick={onClick}
       className="text-left rounded-xl overflow-hidden transition-all group bg-surface border hover:border-green-500 hover:shadow-md shadow-xs">
-      <div className="h-20 w-full flex-shrink-0 relative" style={{ backgroundColor: pc, backgroundImage: coverUrl ? `url(${coverUrl})` : undefined, backgroundSize: "cover", backgroundPosition: "center" }}>
-        {d && <div className="absolute inset-0" style={{ background: "rgba(0,0,0,0.35)" }} />}
-      </div>
+      <div className="h-20 w-full flex-shrink-0" style={{ backgroundColor: pc, backgroundImage: coverUrl ? `url(${coverUrl})` : undefined, backgroundSize: "cover", backgroundPosition: "center" }} />
       <div className="p-5">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2.5">
