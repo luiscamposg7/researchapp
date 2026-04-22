@@ -75,6 +75,8 @@
 .rich-content blockquote { border-left: 3px solid #00B369; padding-left: 0.75rem; color: #6b7280; margin: 0.3rem 0; font-style: italic; }
 [contenteditable] :is(h1,h2,h3,h4,h5,h6):first-child { margin-top: 0; }
 .rich-content :is(h1,h2,h3,h4,h5,h6):first-child { margin-top: 0; }
+[contenteditable] :is(h1,h2,h3,h4,h5,h6) :is(strong,b) { font-weight: inherit; }
+.rich-content :is(h1,h2,h3,h4,h5,h6) :is(strong,b) { font-weight: inherit; }
 
 /* ─── Badge colors ───────────────────────────────────────────── */
 .badge-gray        { background: #f3f4f6; color: #374151; --tw-ring-color: #e5e7eb; }

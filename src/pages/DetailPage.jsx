@@ -24,6 +24,7 @@ export default function DetailPage() {
   const [lightbox, setLightbox] = useState(null);
   const [viewCount, setViewCount] = useState(null);
   const [copied, setCopied] = useState(false);
+  const [openPersona, setOpenPersona] = useState("buyer");
   const item = deliverables.find(x => toSlug(x.title) === slug);
 
   useEffect(() => {
@@ -238,8 +239,8 @@ export default function DetailPage() {
               const usersWithImages = users.filter(p => p.images?.length > 0);
               return (buyersWithImages.length > 0 || usersWithImages.length > 0) && (
                 <div className="space-y-4">
-                  {buyersWithImages.length > 0 && <PersonaDetailTabs personas={buyersWithImages} type="Buyer Persona" dark={d} />}
-                  {usersWithImages.length > 0 && <PersonaDetailTabs personas={usersWithImages} type="User Persona" dark={d} />}
+                  {buyersWithImages.length > 0 && <PersonaDetailTabs personas={buyersWithImages} type="Buyer Persona" dark={d} open={openPersona === "buyer"} onToggle={() => setOpenPersona(o => o === "buyer" ? null : "buyer")} />}
+                  {usersWithImages.length > 0 && <PersonaDetailTabs personas={usersWithImages} type="User Persona" dark={d} open={openPersona === "user"} onToggle={() => setOpenPersona(o => o === "user" ? null : "user")} />}
                 </div>
               );
             })()}
