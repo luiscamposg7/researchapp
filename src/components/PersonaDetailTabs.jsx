@@ -30,7 +30,7 @@ export default function PersonaDetailTabs({ personas, type, dark: d }) {
         </div>
 
         {/* Grid 2 por fila */}
-        <div className="p-5 grid grid-cols-3 gap-4">
+        <div className={`p-5 grid gap-4 ${personas.length === 1 ? "grid-cols-1 max-w-xs" : personas.length === 2 ? "grid-cols-2" : "grid-cols-3"}`}>
           {personas.map((p, i) => {
             const img = (p.images || [])[0];
             const globalIdx = allImages.indexOf(img);

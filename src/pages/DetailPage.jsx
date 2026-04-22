@@ -234,10 +234,12 @@ export default function DetailPage() {
             {PERSONA_TYPES.includes(item.type) && (() => {
               const buyers = item.buyers?.length ? item.buyers : (item.personas?.length ? item.personas : []);
               const users = item.users || [];
-              return (buyers.length > 0 || users.length > 0) && (
+              const buyersWithImages = buyers.filter(p => p.images?.length > 0);
+              const usersWithImages = users.filter(p => p.images?.length > 0);
+              return (buyersWithImages.length > 0 || usersWithImages.length > 0) && (
                 <div className="space-y-4">
-                  {buyers.length > 0 && <PersonaDetailTabs personas={buyers} type="Buyer Persona" dark={d} />}
-                  {users.length > 0 && <PersonaDetailTabs personas={users} type="User Persona" dark={d} />}
+                  {buyersWithImages.length > 0 && <PersonaDetailTabs personas={buyersWithImages} type="Buyer Persona" dark={d} />}
+                  {usersWithImages.length > 0 && <PersonaDetailTabs personas={usersWithImages} type="User Persona" dark={d} />}
                 </div>
               );
             })()}
