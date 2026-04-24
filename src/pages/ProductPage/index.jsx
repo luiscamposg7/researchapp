@@ -111,36 +111,13 @@ export default function ProductPage() {
             <p className="text-sm text-muted">{productDeliverables.filter(i => i.status === "Publicado").length} entregables publicados</p>
           </div>
         </div>
-        {/* Research */}
-        {(() => {
-          const recentResearch = [...productDeliverables]
-            .filter(i => i.status === "Publicado")
-            .sort((a, b) => new Date(b.date) - new Date(a.date))
-            .slice(0, 3);
-          return (
-            <div className="mb-12">
-              <div className="flex items-center justify-between mb-5">
-                <h2 className="text-xl font-semibold text-primary">Research de {product}</h2>
-                <Button color="secondary" onClick={() => navigate("/research")}>Ver todos</Button>
-              </div>
-              {recentResearch.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {recentResearch.map(item => <Card key={item.id} item={item} fromLabel={product} />)}
-                </div>
-              ) : (
-                <p className="text-sm text-muted">Sin research publicados aún.</p>
-              )}
-            </div>
-          );
-        })()}
-
         {/* Persona sections */}
         {(latestBuyerItem || latestUserItem) && (
           <div className="mb-10">
             <div className="space-y-8">
               {[
-                { item: latestBuyerItem, getPersonas: i => i.buyers?.length ? i.buyers : (i.personas?.length ? i.personas : []), label: "Buyer Persona", color: "#2563EB", isBuyer: true },
                 { item: latestUserItem,  getPersonas: i => i.users || [],                                                          label: "User Persona",  color: "#00B369", isBuyer: false },
+                { item: latestBuyerItem, getPersonas: i => i.buyers?.length ? i.buyers : (i.personas?.length ? i.personas : []), label: "Buyer Persona", color: "#2563EB", isBuyer: true },
               ].filter(({ item }) => item).map(({ item: inv, getPersonas, label, color: bc, isBuyer }) => {
                 const personas = getPersonas(inv).filter(p => p.images?.length > 0);
                 return (
@@ -191,6 +168,29 @@ export default function ProductPage() {
             </div>
           </div>
         )}
+
+        {/* Research */}
+        {(() => {
+          const recentResearch = [...productDeliverables]
+            .filter(i => i.status === "Publicado")
+            .sort((a, b) => new Date(b.date) - new Date(a.date))
+            .slice(0, 3);
+          return (
+            <div className="mb-12">
+              <div className="flex items-center justify-between mb-5">
+                <h2 className="text-xl font-semibold text-primary">Research de {product}</h2>
+                <Button color="secondary" onClick={() => navigate("/research")}>Ver todos</Button>
+              </div>
+              {recentResearch.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {recentResearch.map(item => <Card key={item.id} item={item} fromLabel={product} />)}
+                </div>
+              ) : (
+                <p className="text-sm text-muted">Sin research publicados aún.</p>
+              )}
+            </div>
+          );
+        })()}
 
         {/* Otros productos */}
         <div>
