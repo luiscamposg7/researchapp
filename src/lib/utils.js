@@ -7,14 +7,20 @@ const ES_MONTHS = { ene:0,feb:1,mar:2,abr:3,may:4,jun:5,jul:6,ago:7,sep:8,oct:9,
 export const toSlug = (title) =>
   title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 
-export const formatDate = (str) => {
-  if (!str) return "";
+export const parseDate = (str) => {
+  if (!str) return new Date(0);
   let d = new Date(str);
   if (isNaN(d)) {
     const m = str.toLowerCase().replace(/\./g, "").match(/(\d{1,2})\s+([a-z]+)\s+(\d{4})/);
     if (m && ES_MONTHS[m[2]] !== undefined) d = new Date(+m[3], ES_MONTHS[m[2]], +m[1]);
   }
-  if (isNaN(d)) return str;
+  return isNaN(d) ? new Date(0) : d;
+};
+
+export const formatDate = (str) => {
+  if (!str) return "";
+  const d = parseDate(str);
+  if (+d === 0) return str;
   return d.toLocaleDateString("es-PE", { day: "numeric", month: "short", year: "numeric" }).replace(/\./g, "");
 };
 
@@ -32,8 +38,14 @@ export const getPresentationInfo = (url = "") => {
   if (url.includes("google.com")) {
     const id = getDriveId(url);
     const isSlides = url.includes("/presentation/");
+    const isDocs = url.includes("/document/");
     const thumbUrl = id ? `/api/drive-thumb/${id}` : null;
-    return { type: isSlides ? "slides" : "drive", id, thumbUrl };
+    const embedUrl = isSlides && id
+      ? `https://docs.google.com/presentation/d/${id}/embed?start=false&loop=false&rm=minimal`
+      : isDocs && id
+        ? `https://docs.google.com/document/d/${id}/preview`
+        : null;
+    return { type: isSlides ? "slides" : isDocs ? "docs" : "drive", id, thumbUrl, embedUrl };
   }
   return { type: "other" };
 };

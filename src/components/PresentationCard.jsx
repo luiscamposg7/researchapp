@@ -30,8 +30,9 @@ export default function PresentationCard({ item, dark: d }) {
   const pres = getPresentationInfo(item.archivoUrl || "");
   const isFigma = pres?.type === "figma";
   const isSlides = pres?.type === "slides";
+  const isDocs = pres?.type === "docs";
   const isFigmaSlides = isFigma && /figma\.com\/(slides|deck)\//.test(item.archivoUrl || "");
-  const label = isFigmaSlides ? "Presentación en Figma" : isFigma ? "Figma" : isSlides ? "Presentación en Drive" : "En Drive";
+  const label = isFigmaSlides ? "Presentación en Figma" : isFigma ? "Figma" : isSlides ? "Presentación en Drive" : isDocs ? "Documento en Drive" : "En Drive";
   const [figmaMeta, setFigmaMeta] = useState(null);
   const [thumbFailed, setThumbFailed] = useState(false);
   const [iframeVisible, setIframeVisible] = useState(false);
@@ -39,7 +40,7 @@ export default function PresentationCard({ item, dark: d }) {
 
   // Lazy-load iframe only when card enters viewport
   useEffect(() => {
-    if (!isFigmaSlides) return;
+    if (!isFigmaSlides && !isDocs && !isSlides) return;
     const el = containerRef.current;
     if (!el) return;
     const observer = new IntersectionObserver(
@@ -48,7 +49,7 @@ export default function PresentationCard({ item, dark: d }) {
     );
     observer.observe(el);
     return () => observer.disconnect();
-  }, [isFigmaSlides]);
+  }, [isFigmaSlides, isDocs, isSlides]);
 
   useEffect(() => {
     if (!isFigma || isFigmaSlides || !item.archivoUrl) return;
@@ -60,9 +61,10 @@ export default function PresentationCard({ item, dark: d }) {
 
   const thumbUrl = isFigma && !isFigmaSlides
     ? (item.archivoUrl ? `/api/figma-img?url=${encodeURIComponent(item.archivoUrl)}` : null)
-    : (!isFigma ? (pres?.thumbUrl || null) : null);
+    : (!isFigma && !isDocs ? (pres?.thumbUrl || null) : null);
   const displayName = isFigma
     ? (figmaMeta?.title || label)
+    : (isDocs || isSlides) ? label
     : (item.archivo || label);
 
   if (!pres) return null;
@@ -70,9 +72,26 @@ export default function PresentationCard({ item, dark: d }) {
   return (
     <div className="rounded-xl overflow-hidden bg-surface border shadow-xs" style={{boxShadow:"0 1px 4px rgba(0,0,0,0.08)"}}>
       {thumbUrl && !thumbFailed ? (
-        <div className="w-full overflow-hidden" style={{height:180}}>
+        <div ref={containerRef} className="w-full overflow-hidden" style={{height:180}}>
           <img src={thumbUrl} alt="" className="w-full h-full object-cover object-top"
             onError={() => setThumbFailed(true)} />
+        </div>
+      ) : isSlides && thumbFailed && pres?.embedUrl ? (
+        <div ref={containerRef} className="w-full overflow-hidden relative" style={{aspectRatio:"16/9", background:"#f8f9fa"}}>
+          {iframeVisible && (
+            <iframe
+              src={pres.embedUrl}
+              title="Google Slides preview"
+              loading="lazy"
+              style={{
+                position:"absolute", top:0, left:0,
+                width:"100%",
+                height:"100%",
+                border:"none",
+                pointerEvents:"auto",
+              }}
+            />
+          )}
         </div>
       ) : isFigmaSlides && pres?.embedUrl ? (
         <div ref={containerRef} className="w-full overflow-hidden" style={{height:180, background:"#1e1e1e", position:"relative"}}>
@@ -86,7 +105,7 @@ export default function PresentationCard({ item, dark: d }) {
                 width:"200%", height:"200%",
                 border:"none",
                 transform:"scale(0.5)", transformOrigin:"top left",
-                pointerEvents:"none",
+                pointerEvents:"auto",
               }}
             />
           )}
@@ -101,10 +120,27 @@ export default function PresentationCard({ item, dark: d }) {
             <path d="M0 28.5A9.5 9.5 0 0 0 9.5 38H19V19H9.5A9.5 9.5 0 0 0 0 28.5z" fill="#A259FF"/>
           </svg>
         </div>
+      ) : isDocs && pres?.embedUrl ? (
+        <div ref={containerRef} className="w-full overflow-hidden relative" style={{height:180, background:"#f8f9fa"}}>
+          {iframeVisible && (
+            <iframe
+              src={pres.embedUrl}
+              title="Google Docs preview"
+              loading="lazy"
+              style={{
+                position:"absolute", top:0, left:0,
+                width:"200%", height:"200%",
+                border:"none",
+                transform:"scale(0.5)", transformOrigin:"top left",
+                pointerEvents:"auto",
+              }}
+            />
+          )}
+        </div>
       ) : (
-        <div className="w-full flex items-center justify-center gap-3" style={{height:120, background: isSlides ? "linear-gradient(135deg,#fbf3e8 0%,#fde9d3 100%)" : "linear-gradient(135deg,#e8f0fe 0%,#d2e3fc 100%)"}}>
+        <div className="w-full flex items-center justify-center gap-3" style={{height:120, background: isSlides ? "linear-gradient(135deg,#fbf3e8 0%,#fde9d3 100%)" : isDocs ? "linear-gradient(135deg,#e8f5e9 0%,#c8e6c9 100%)" : "linear-gradient(135deg,#e8f0fe 0%,#d2e3fc 100%)"}}>
           <DriveIcon />
-          <span className="text-sm font-semibold text-gray-500">{isSlides ? "Google" : "Google Drive"}</span>
+          <span className="text-sm font-semibold text-gray-500">{isSlides ? "Google Slides" : isDocs ? "Google Docs" : "Google Drive"}</span>
         </div>
       )}
 
