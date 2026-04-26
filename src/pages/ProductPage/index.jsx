@@ -137,14 +137,11 @@ export default function ProductPage() {
                       </div>
                       <p className="text-base font-bold text-white">{label}</p>
                     </div>
-                    <div className={`px-5 py-2.5 border-b flex items-center justify-between ${d ? "bg-gray-800/50" : "bg-gray-50"}`}>
-                      <p className="text-xs text-muted">Último Buyer y User Persona publicado</p>
-                      <button onClick={() => navigate(`/research/${toSlug(inv.title)}`)}
-                        className="flex items-center gap-1.5 text-sm font-semibold text-primary hover:text-brand transition-colors">
-                        <span className="truncate max-w-sm">{inv.title}</span>
-                        <svg className="w-4 h-4 flex-shrink-0 text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7"/></svg>
-                      </button>
-                    </div>
+                    <button onClick={() => navigate(`/research/${toSlug(inv.title)}`)}
+                      className={`w-full px-5 py-2.5 border-b flex items-center justify-between gap-3 text-left hover:bg-hover transition-colors ${d ? "bg-gray-800/50" : "bg-gray-50"}`}>
+                      <span className="text-sm font-semibold text-primary truncate">{inv.title}</span>
+                      <span className="text-xs text-muted flex-shrink-0">{formatDate(inv.date)}</span>
+                    </button>
                     {/* Grid: 1 col mobile, 2 sm, 3 lg */}
                     <div className="p-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                       {personas.map((p, i) => (
