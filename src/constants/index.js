@@ -1,4 +1,4 @@
-export const PRODUCTS = ["PGH", "Factoring", "Gestora", "Cambio Seguro", "Tandia", "Recadia"];
+export const PRODUCTS = ["PGH", "Factoring", "Gestora", "Cambio Seguro", "Tandia"];
 export const TYPES = ["Tipo de entregable", "Research", "Pruebas de usabilidad"];
 export const ESTADOS = ["Persona asignada", "Ana R.", "Sofia K.", "Luis M.", "Carlos T."];
 export const STATUSES = ["Borrador", "Publicado"];
@@ -17,7 +17,6 @@ export const PRODUCT_COLORS = {
   "Factoring": "#00975B",
   "Gestora": "#004D2E",
   "Tandia": "#1D4ED8",
-  "Recadia": "#2D8E5F",
   "Cambio Seguro": "#7C3AED",
 };
 
