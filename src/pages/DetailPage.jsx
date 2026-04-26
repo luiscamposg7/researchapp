@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { useApp } from "../context/AppContext";
 import { supabase } from "../supabase";
@@ -27,6 +27,7 @@ export default function DetailPage() {
   const [copied, setCopied] = useState(false);
   const item = deliverables.find(x => toSlug(x.title) === slug);
   const [openPersona, setOpenPersona] = useState(null);
+  const saveTimeRef = useRef(null);
   useEffect(() => {
     if (!item) return;
     const hasBuyers = (item.buyers?.length ? item.buyers : (item.personas?.length ? item.personas : [])).some(p => p.images?.length > 0);
@@ -70,11 +71,12 @@ export default function DetailPage() {
         });
     });
 
-    return () => {
+    const saveTime = () => {
       const elapsed = Math.round((Date.now() - startTime) / 1000);
       if (elapsed < 3) return;
       supabase.auth.getUser().then(({ data: { user } }) => {
         if (!user || elapsed <= existingMaxTime) return;
+        existingMaxTime = elapsed;
         supabase.from("research_views")
           .update({ max_reading_time: elapsed })
           .eq("research_id", String(item.id))
@@ -82,6 +84,9 @@ export default function DetailPage() {
           .then(({ error }) => { if (error) console.error("[views time]", error); });
       });
     };
+
+    saveTimeRef.current = saveTime;
+    return () => { saveTimeRef.current = null; saveTime(); };
   }, [item?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!item) return <div className="flex-1 flex items-center justify-center bg-page text-gray-500">Research no encontrado.</div>;
@@ -119,7 +124,7 @@ export default function DetailPage() {
         </button>
         <div className="flex gap-2">
           {isEditor && (
-            <Button color="secondary" onClick={() => setShowViews(true)} className="flex items-center gap-1.5">
+            <Button color="secondary" onClick={() => { saveTimeRef.current?.(); setShowViews(true); }} className="flex items-center gap-1.5">
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
               Ver vistas
               {viewCount !== null && (
