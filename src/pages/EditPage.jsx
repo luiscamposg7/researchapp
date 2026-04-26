@@ -101,7 +101,7 @@ function EditPageForm({ item }) {
       )}
 
       {/* Top bar */}
-      <div className="border-b px-4 py-3 md:px-8 md:py-4 sticky top-0 z-10 bg-page border flex items-center justify-between gap-4">
+      <div className="border-b px-4 py-3 md:px-8 md:py-4 bg-page border flex items-center justify-between gap-4">
         <button onClick={() => window.history.length > 1 ? navigate(-1) : navigate("/research")} className="flex items-center gap-2 text-sm font-semibold text-tertiary hover:text-primary transition-colors duration-150 cursor-pointer">
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7"/></svg>
           <span>Volver</span>

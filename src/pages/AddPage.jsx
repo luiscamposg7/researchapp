@@ -124,7 +124,7 @@ export default function AddPage() {
       )}
 
       {/* Top bar */}
-      <div className="border-b px-4 py-3 md:px-8 md:py-4 sticky top-0 z-10 bg-page border-subtle flex items-center justify-between gap-4">
+      <div className="border-b px-4 py-3 md:px-8 md:py-4 bg-page border-subtle flex items-center justify-between gap-4">
         <button
           onClick={() => {
             const hasData = form.title.trim() || form.descripcion.trim() || form.contenido.trim() || form.jiraUrl || form.archivoUrl;
