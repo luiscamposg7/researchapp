@@ -3,9 +3,11 @@ import { supabase } from "../supabase";
 import { Button } from "./ui/button";
 import { Spinner } from "./Spinner";
 
-export default function ViewsModal({ researchId, onClose }) {
+export default function ViewsModal({ researchId, onClose, getElapsed }) {
   const [views, setViews] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [currentUserId, setCurrentUserId] = useState(null);
+  const [liveTime, setLiveTime] = useState(0);
 
   const formatTime = (s) => {
     if (!s) return "—";
@@ -15,11 +17,27 @@ export default function ViewsModal({ researchId, onClose }) {
   };
 
   useEffect(() => {
-    supabase.from("research_views").select("user_name,user_email,user_avatar,first_viewed_at,max_reading_time")
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) setCurrentUserId(user.id);
+    });
+  }, []);
+
+  useEffect(() => {
+    supabase.from("research_views").select("user_id,user_name,user_email,user_avatar,first_viewed_at,max_reading_time")
       .eq("research_id", String(researchId))
-      .order("viewed_at", { ascending: false })
+      .order("max_reading_time", { ascending: false })
       .then(({ data, error }) => { if (error) console.error("[views select]", error); setViews(data || []); setLoading(false); });
   }, [researchId]);
+
+  // Live counter for current user
+  useEffect(() => {
+    if (!getElapsed?.current) return;
+    setLiveTime(getElapsed.current());
+    const interval = setInterval(() => {
+      setLiveTime(getElapsed.current?.() ?? 0);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [getElapsed]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
@@ -40,26 +58,31 @@ export default function ViewsModal({ researchId, onClose }) {
             <p className="text-sm text-center py-8 text-muted">Nadie ha visto este research aún.</p>
           ) : (
             <div className="space-y-2 max-h-[340px] overflow-y-auto pr-1">
-              {views.map((v, i) => (
-                <div key={i} className="flex items-center gap-3 px-4 py-3 rounded-xl border bg-muted">
-                  <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold text-white flex-shrink-0" style={{ backgroundColor: "#00B369" }}>
-                    {(v.user_name || v.user_email || "?")[0].toUpperCase()}
+              {views.map((v, i) => {
+                const isMe = v.user_id === currentUserId;
+                const time = isMe ? Math.max(liveTime, v.max_reading_time || 0) : v.max_reading_time;
+                return (
+                  <div key={i} className={`flex items-center gap-3 px-4 py-3 rounded-xl border ${isMe ? "bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800" : "bg-muted"}`}>
+                    <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold text-white flex-shrink-0" style={{ backgroundColor: "#00B369" }}>
+                      {(v.user_name || v.user_email || "?")[0].toUpperCase()}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-semibold truncate text-primary">{v.user_name || "—"}</p>
+                      <p className="text-xs truncate text-tertiary">{v.user_email}</p>
+                    </div>
+                    <div className="flex flex-col items-end flex-shrink-0 gap-0.5">
+                      <p className="text-xs text-muted">
+                        {v.first_viewed_at ? new Date(v.first_viewed_at).toLocaleDateString("es-PE", { day: "numeric", month: "short" }) : "—"}
+                      </p>
+                      <p className="text-xs font-medium text-secondary flex items-center gap-1">
+                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2M12 2a10 10 0 100 20A10 10 0 0012 2z"/></svg>
+                        {formatTime(time)}
+                        {isMe && liveTime > 0 && <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />}
+                      </p>
+                    </div>
                   </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-semibold truncate text-primary">{v.user_name || "—"}</p>
-                    <p className="text-xs truncate text-tertiary">{v.user_email}</p>
-                  </div>
-                  <div className="flex flex-col items-end flex-shrink-0 gap-0.5">
-                    <p className="text-xs text-muted">
-                      {v.first_viewed_at ? new Date(v.first_viewed_at).toLocaleDateString("es-PE", { day: "numeric", month: "short" }) : "—"}
-                    </p>
-                    <p className="text-xs font-medium text-secondary flex items-center gap-1">
-                      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2M12 2a10 10 0 100 20A10 10 0 0012 2z"/></svg>
-                      {formatTime(v.max_reading_time)}
-                    </p>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>

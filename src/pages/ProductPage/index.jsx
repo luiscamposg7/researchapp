@@ -137,11 +137,16 @@ export default function ProductPage() {
                       </div>
                       <p className="text-base font-bold text-white">{label}</p>
                     </div>
-                    <button onClick={() => navigate(`/research/${toSlug(inv.title)}`)}
-                      className={`w-full px-5 py-2.5 border-b flex items-center justify-between gap-3 text-left hover:bg-hover transition-colors ${d ? "bg-gray-800/50" : "bg-gray-50"}`}>
-                      <span className="text-sm font-semibold text-primary truncate">{inv.title}</span>
-                      <span className="text-xs text-muted flex-shrink-0">{formatDate(inv.date)}</span>
-                    </button>
+                    <div className={`w-full px-5 py-4 border-b flex items-center justify-between gap-4 ${d ? "bg-gray-800/50" : "bg-gray-50"}`}>
+                      <div className="min-w-0">
+                        <p className="text-base font-bold text-primary truncate">{inv.title}</p>
+                        <p className="text-sm text-muted mt-0.5">{formatDate(inv.date)}</p>
+                      </div>
+                      <button onClick={() => navigate(`/research/${toSlug(inv.title)}`)}
+                        className="flex-shrink-0 text-sm font-semibold px-4 py-2 rounded-lg border border-strong hover:bg-hover text-primary transition-colors">
+                        Ver research
+                      </button>
+                    </div>
                     {/* Grid: 1 col mobile, 2 sm, 3 lg */}
                     <div className="p-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                       {personas.map((p, i) => (

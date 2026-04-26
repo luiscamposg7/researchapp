@@ -28,6 +28,7 @@ export default function DetailPage() {
   const item = deliverables.find(x => toSlug(x.title) === slug);
   const [openPersona, setOpenPersona] = useState(null);
   const saveTimeRef = useRef(null);
+  const getElapsedRef = useRef(null);
   useEffect(() => {
     if (!item) return;
     const hasBuyers = (item.buyers?.length ? item.buyers : (item.personas?.length ? item.personas : [])).some(p => p.images?.length > 0);
@@ -100,6 +101,7 @@ export default function DetailPage() {
     };
 
     saveTimeRef.current = saveTime;
+    getElapsedRef.current = getElapsed;
     return () => {
       document.removeEventListener("visibilitychange", onVisibility);
       saveTimeRef.current = null;
@@ -162,7 +164,7 @@ export default function DetailPage() {
           )}
         </div>
       </div>
-      {showViews && <ViewsModal researchId={item.id} onClose={() => setShowViews(false)} />}
+      {showViews && <ViewsModal researchId={item.id} onClose={() => setShowViews(false)} getElapsed={getElapsedRef} />}
 
       <div className="w-full mx-auto px-4 md:px-8 py-6 md:py-8 pb-16 md:pb-24" style={{maxWidth:"1600px"}}>
         {/* Breadcrumb */}
