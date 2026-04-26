@@ -26,6 +26,7 @@ export function AppProvider({ children, setToast }) {
   const [editors, setEditors] = useState([]);
   const [deliverables, setDeliverables] = useState([]);
   const [loadingDeliverables, setLoadingDeliverables] = useState(true);
+  const lastSeenUpdatedRef = useRef(null);
   const [activeFilter, setActiveFilter] = useState({ type: "", team: null });
 
   useEffect(() => {
@@ -50,7 +51,10 @@ export function AppProvider({ children, setToast }) {
       const editorList = (data || []).filter(u => u.role === "editor" || u.role === "super_admin");
       setEditors(editorList.map(u => u.full_name || u.email || u.user_id));
     });
-    supabase.auth.updateUser({ data: { last_seen_at: new Date().toISOString() } });
+    if (lastSeenUpdatedRef.current !== session.user.id) {
+      lastSeenUpdatedRef.current = session.user.id;
+      supabase.auth.updateUser({ data: { last_seen_at: new Date().toISOString() } });
+    }
   }, [session]);
   /* eslint-enable react-hooks/set-state-in-effect */
 
