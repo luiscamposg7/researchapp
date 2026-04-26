@@ -171,9 +171,12 @@ export default function ProductPage() {
 
         {/* Research */}
         {(() => {
-          const recentResearch = [...productDeliverables]
-            .filter(i => i.status === "Publicado")
-            .sort((a, b) => parseDate(a.date) - parseDate(b.date))
+          const published = [...productDeliverables].filter(i => i.status === "Publicado");
+          const byType = {};
+          [...published].sort((a, b) => parseDate(b.date) - parseDate(a.date))
+            .forEach(i => { if (!byType[i.type]) byType[i.type] = i; });
+          const recentResearch = Object.values(byType)
+            .sort((a, b) => parseDate(b.date) - parseDate(a.date))
             .slice(0, 3);
           return (
             <div className="mb-12">

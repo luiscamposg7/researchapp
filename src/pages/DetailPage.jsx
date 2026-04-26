@@ -10,6 +10,7 @@ import ConfirmModal from "../components/ConfirmModal";
 import ViewsModal from "../components/ViewsModal";
 import PresentationCard from "../components/PresentationCard";
 import PersonaDetailTabs from "../components/PersonaDetailTabs";
+import Lightbox from "../components/Lightbox";
 import { PERSONA_TYPES } from "../lib/constants";
 import { toSlug, formatDate, sanitizeHtml, getBadgeColor } from "../lib/utils";
 
@@ -42,18 +43,45 @@ export default function DetailPage() {
 
   useEffect(() => {
     if (!item) return;
+    const startTime = Date.now();
+    let existingMaxTime = 0;
+
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) return;
-      supabase.from("research_views").upsert({
-        research_id: String(item.id),
-        user_id: user.id,
-        user_name: user.user_metadata?.full_name || null,
-        user_email: user.email,
-        user_avatar: user.user_metadata?.avatar_url || null,
-        viewed_at: new Date().toISOString(),
-      }, { onConflict: "research_id,user_id" })
-      .then(({ error }) => { if (error) console.error("[views upsert]", error); });
+      const now = new Date().toISOString();
+
+      supabase.from("research_views")
+        .select("max_reading_time, first_viewed_at")
+        .eq("research_id", String(item.id))
+        .eq("user_id", user.id)
+        .maybeSingle()
+        .then(({ data: existing }) => {
+          existingMaxTime = existing?.max_reading_time || 0;
+          supabase.from("research_views").upsert({
+            research_id: String(item.id),
+            user_id: user.id,
+            user_name: user.user_metadata?.full_name || null,
+            user_email: user.email,
+            user_avatar: user.user_metadata?.avatar_url || null,
+            viewed_at: now,
+            first_viewed_at: existing?.first_viewed_at || now,
+          }, { onConflict: "research_id,user_id" })
+          .then(({ error }) => { if (error) console.error("[views upsert]", error); });
+        });
     });
+
+    return () => {
+      const elapsed = Math.round((Date.now() - startTime) / 1000);
+      if (elapsed < 3) return;
+      supabase.auth.getUser().then(({ data: { user } }) => {
+        if (!user || elapsed <= existingMaxTime) return;
+        supabase.from("research_views")
+          .update({ max_reading_time: elapsed })
+          .eq("research_id", String(item.id))
+          .eq("user_id", user.id)
+          .then(({ error }) => { if (error) console.error("[views time]", error); });
+      });
+    };
   }, [item?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!item) return <div className="flex-1 flex items-center justify-center bg-page text-gray-500">Research no encontrado.</div>;
@@ -255,38 +283,26 @@ export default function DetailPage() {
                 <h3 className="text-xl font-semibold mb-3 text-primary">Imágenes adjuntas</h3>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                   {item.imagenes.map((url, i) => (
-                    <button key={i} onClick={() => setLightbox(i)} className="block rounded-xl overflow-hidden aspect-video group cursor-zoom-in">
-                      <img src={url} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200" />
+                    <button key={i} onClick={() => setLightbox(i)} className="relative block rounded-xl overflow-hidden aspect-square group cursor-zoom-in bg-white">
+                      <img src={url} alt="" className="w-full h-full object-contain" />
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
+                        <div className={`w-10 h-10 flex items-center justify-center shadow-md ${d ? "bg-gray-800 text-gray-100" : "bg-white text-gray-800"}`} style={{ borderRadius: 12 }}>
+                          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607zM10.5 7.5v6m3-3h-6"/></svg>
+                        </div>
+                      </div>
                     </button>
                   ))}
                 </div>
               </div>
             )}
             {lightbox !== null && item.imagenes && (
-              <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center" onClick={() => setLightbox(null)}>
-                <button onClick={() => setLightbox(null)} className="absolute top-4 right-4 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors">
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/></svg>
-                </button>
-                {lightbox > 0 && (
-                  <button onClick={e => { e.stopPropagation(); setLightbox(l => l - 1); }} className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors">
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7"/></svg>
-                  </button>
-                )}
-                {lightbox < item.imagenes.length - 1 && (
-                  <button onClick={e => { e.stopPropagation(); setLightbox(l => l + 1); }} className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors">
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7"/></svg>
-                  </button>
-                )}
-                <img src={item.imagenes[lightbox]} alt="" className="max-w-[90vw] max-h-[90vh] object-contain rounded-lg shadow-2xl" onClick={e => e.stopPropagation()} />
-                {item.imagenes.length > 1 && (
-                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5">
-                    {item.imagenes.map((_, i) => (
-                      <button key={i} onClick={e => { e.stopPropagation(); setLightbox(i); }}
-                        className={`w-2 h-2 rounded-full transition-colors ${i === lightbox ?"bg-white" :"bg-white/30 hover:bg-white/60"}`} />
-                    ))}
-                  </div>
-                )}
-              </div>
+              <Lightbox
+                images={item.imagenes}
+                index={lightbox}
+                onClose={() => setLightbox(null)}
+                onNavigate={i => setLightbox(i)}
+                showDownload
+              />
             )}
           </div>
         </div>

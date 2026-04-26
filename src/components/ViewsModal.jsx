@@ -7,8 +7,15 @@ export default function ViewsModal({ researchId, onClose }) {
   const [views, setViews] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const formatTime = (s) => {
+    if (!s) return "—";
+    if (s < 60) return `${s}s`;
+    const m = Math.floor(s / 60), sec = s % 60;
+    return sec > 0 ? `${m}m ${sec}s` : `${m}m`;
+  };
+
   useEffect(() => {
-    supabase.from("research_views").select("user_name,user_email,user_avatar,viewed_at")
+    supabase.from("research_views").select("user_name,user_email,user_avatar,first_viewed_at,max_reading_time")
       .eq("research_id", String(researchId))
       .order("viewed_at", { ascending: false })
       .then(({ data, error }) => { if (error) console.error("[views select]", error); setViews(data || []); setLoading(false); });
@@ -40,11 +47,17 @@ export default function ViewsModal({ researchId, onClose }) {
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-semibold truncate text-primary">{v.user_name || "—"}</p>
-                    <p className="text-sm truncate text-tertiary">{v.user_email}</p>
+                    <p className="text-xs truncate text-tertiary">{v.user_email}</p>
                   </div>
-                  <p className="text-sm flex-shrink-0 text-muted">
-                    {new Date(v.viewed_at).toLocaleDateString("es-PE", { day: "numeric", month: "short" })}
-                  </p>
+                  <div className="flex flex-col items-end flex-shrink-0 gap-0.5">
+                    <p className="text-xs text-muted">
+                      {v.first_viewed_at ? new Date(v.first_viewed_at).toLocaleDateString("es-PE", { day: "numeric", month: "short" }) : "—"}
+                    </p>
+                    <p className="text-xs font-medium text-secondary flex items-center gap-1">
+                      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2M12 2a10 10 0 100 20A10 10 0 0012 2z"/></svg>
+                      {formatTime(v.max_reading_time)}
+                    </p>
+                  </div>
                 </div>
               ))}
             </div>

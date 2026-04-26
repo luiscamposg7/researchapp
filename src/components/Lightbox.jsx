@@ -1,8 +1,11 @@
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { downloadImage } from "../lib/utils";
+import { useApp } from "../context/AppContext";
 
 export default function Lightbox({ images, index, onClose, onNavigate, showDownload = false }) {
+  const { dark: d } = useApp();
+  const btn = d ? "bg-black/50 hover:bg-black/70 text-white" : "bg-white/90 hover:bg-white text-gray-900";
   const [zoom, setZoom] = useState(1);
 
   // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -22,21 +25,21 @@ export default function Lightbox({ images, index, onClose, onNavigate, showDownl
     <div className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm" onClick={onClose}>
       <div className="absolute top-3 right-3 flex items-center gap-2 z-[210]" onClick={e => e.stopPropagation()}>
         <button onClick={e => { e.stopPropagation(); setZoom(z => Math.max(z - 0.5, 1)); }} disabled={zoom <= 1}
-          className="w-9 h-9 flex items-center justify-center rounded-full bg-white/20 hover:bg-white/40 text-white backdrop-blur-sm transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
+          className={`w-9 h-9 flex items-center justify-center rounded-full ${btn} backdrop-blur-sm transition-colors disabled:opacity-30 disabled:cursor-not-allowed`}>
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM7 10h6"/></svg>
         </button>
         <button onClick={e => { e.stopPropagation(); setZoom(z => Math.min(z + 0.5, 1.5)); }} disabled={zoom >= 1.5}
-          className="w-9 h-9 flex items-center justify-center rounded-full bg-white/20 hover:bg-white/40 text-white backdrop-blur-sm transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
+          className={`w-9 h-9 flex items-center justify-center rounded-full ${btn} backdrop-blur-sm transition-colors disabled:opacity-30 disabled:cursor-not-allowed`}>
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/></svg>
         </button>
         {showDownload && (
           <button onClick={e => { e.stopPropagation(); downloadImage(images[index], `persona-${index + 1}.jpg`); }}
-            className="w-9 h-9 flex items-center justify-center rounded-full bg-white/20 hover:bg-white/40 text-white backdrop-blur-sm transition-colors" title="Descargar">
+            className={`w-9 h-9 flex items-center justify-center rounded-full ${btn} backdrop-blur-sm transition-colors`} title="Descargar">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
           </button>
         )}
         <button onClick={onClose}
-          className="w-9 h-9 flex items-center justify-center rounded-full bg-white/20 hover:bg-white/40 text-white backdrop-blur-sm transition-colors">
+          className={`w-9 h-9 flex items-center justify-center rounded-full ${btn} backdrop-blur-sm transition-colors`}>
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/></svg>
         </button>
       </div>
@@ -51,13 +54,13 @@ export default function Lightbox({ images, index, onClose, onNavigate, showDownl
 
       {index > 0 && (
         <button onClick={e => { e.stopPropagation(); onNavigate(index - 1); }}
-          className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center rounded-full bg-white/20 hover:bg-white/40 text-white backdrop-blur-sm transition-colors z-[210]">
+          className={`absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center rounded-full ${btn} backdrop-blur-sm transition-colors z-[210]`}>
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7"/></svg>
         </button>
       )}
       {index < images.length - 1 && (
         <button onClick={e => { e.stopPropagation(); onNavigate(index + 1); }}
-          className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center rounded-full bg-white/20 hover:bg-white/40 text-white backdrop-blur-sm transition-colors z-[210]">
+          className={`absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center rounded-full ${btn} backdrop-blur-sm transition-colors z-[210]`}>
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7"/></svg>
         </button>
       )}
