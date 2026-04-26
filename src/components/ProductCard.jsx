@@ -2,9 +2,10 @@ import { PRODUCT_COLORS } from "../lib/constants";
 
 export default function ProductCard({ product: p, deliverables, coverUrl, onClick, dark: d }) {
   const pc = PRODUCT_COLORS[p] || "#00B369";
-  const all = deliverables.filter(i => i.tags.includes(p));
+  const all = deliverables.filter(i => i.tags && i.tags.includes(p));
   const research = all.filter(i => i.type === "Research").length;
-  const usabilidad = all.filter(i => i.type === "Pruebas de usabilidad").length;
+  const usabilidad = all.filter(i => i.type === "Prueba de usabilidad").length;
+  const personas = all.filter(i => i.type === "Buyer y User Persona").length;
   return (
     <button onClick={onClick}
       className="text-left rounded-xl overflow-hidden transition-all group bg-surface border hover:border-green-500 hover:shadow-md shadow-xs">
@@ -18,7 +19,8 @@ export default function ProductCard({ product: p, deliverables, coverUrl, onClic
         </div>
         <div className="text-sm space-y-1.5 text-muted">
           <div className="flex justify-between"><span>Research</span><span className="font-semibold text-secondary">{research}</span></div>
-          <div className="flex justify-between"><span>Pruebas de usabilidad</span><span className="font-semibold text-secondary">{usabilidad}</span></div>
+          <div className="flex justify-between"><span>Prueba de usabilidad</span><span className="font-semibold text-secondary">{usabilidad}</span></div>
+          <div className="flex justify-between"><span>Buyer y User Persona</span><span className="font-semibold text-secondary">{personas}</span></div>
           <div className="flex justify-between pt-1.5 border-t border-subtle">
             <span>Total</span><span className="font-bold" style={{ color: "#00B369" }}>{all.length}</span>
           </div>

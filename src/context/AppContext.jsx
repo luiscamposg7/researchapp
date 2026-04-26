@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef, createContext, useContext } from "react";
 import { flushSync } from "react-dom";
 import { supabase } from "../supabase";
+import { parseDate } from "../lib/utils";
 
 export const AppCtx = createContext(null);
 export const useApp = () => useContext(AppCtx);
@@ -64,7 +65,11 @@ export function AppProvider({ children, setToast }) {
     if (!session) return;
     fetch("/api/deliverables")
       .then(r => r.json())
-      .then(saved => { setDeliverables(saved); setLoadingDeliverables(false); })
+      .then(saved => {
+        const sorted = [...saved].sort((a, b) => parseDate(b.date) - parseDate(a.date));
+        setDeliverables(sorted);
+        setLoadingDeliverables(false);
+      })
       .catch(() => setLoadingDeliverables(false));
   }, [session]);
 

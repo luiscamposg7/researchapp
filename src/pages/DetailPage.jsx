@@ -24,8 +24,14 @@ export default function DetailPage() {
   const [lightbox, setLightbox] = useState(null);
   const [viewCount, setViewCount] = useState(null);
   const [copied, setCopied] = useState(false);
-  const [openPersona, setOpenPersona] = useState("buyer");
   const item = deliverables.find(x => toSlug(x.title) === slug);
+  const [openPersona, setOpenPersona] = useState(null);
+  useEffect(() => {
+    if (!item) return;
+    const hasBuyers = (item.buyers?.length ? item.buyers : (item.personas?.length ? item.personas : [])).some(p => p.images?.length > 0);
+    const hasUsers = (item.users || []).some(p => p.images?.length > 0);
+    setOpenPersona(hasBuyers ? "buyer" : hasUsers ? "user" : null);
+  }, [item?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!item) return;

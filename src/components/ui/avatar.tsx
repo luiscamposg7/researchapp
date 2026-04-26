@@ -48,6 +48,12 @@ function deriveInitials(name: string): string {
     return name.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase();
 }
 
+function nameToIndex(name: string, len: number): number {
+    let sum = 0;
+    for (let i = 0; i < name.length; i++) sum += name.charCodeAt(i) * (i + 1);
+    return sum % len;
+}
+
 export const Avatar = ({
     size = "sm",
     src,
@@ -73,7 +79,7 @@ export const Avatar = ({
         }
         if (derivedInitials) {
             return (
-                <div className={cx("w-full h-full rounded-full flex items-center justify-center", palette[index % palette.length])}>
+                <div className={cx("w-full h-full rounded-full flex items-center justify-center", palette[name ? nameToIndex(name, palette.length) : index % palette.length])}>
                     <span className={s.text}>{derivedInitials}</span>
                 </div>
             );

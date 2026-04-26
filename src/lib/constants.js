@@ -1,6 +1,6 @@
 // ── CONSTANTS ──
 
-export const PRODUCTS = ["Cambio Seguro", "Factoring", "Gestora", "PGH", "Recadia", "Tandia"];
+export const PRODUCTS = ["Factoring", "PGH", "Cambio Seguro", "Gestora", "Tandia", "Recadia"];
 export const TYPES = ["Tipo de entregable", "Research", "Prueba de usabilidad", "Buyer y User Persona"];
 export const PERSONA_TYPES = ["Buyer y User Persona"];
 export const NIVEL_TEC = [
