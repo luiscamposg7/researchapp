@@ -81,8 +81,8 @@ export default function RichEditor({ onChange, placeholder, value }) {
   const divider = <div className="w-px h-4 mx-1 bg-strong" />;
 
   return (
-    <div className="rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-green-400 border bg-surface">
-      <div className="flex items-center gap-0.5 px-2 py-1.5 border-b bg-muted flex-wrap">
+    <div className="rounded-lg focus-within:ring-2 focus-within:ring-green-400 border bg-surface">
+      <div className="sticky top-0 z-10 flex items-center gap-0.5 px-2 py-1.5 border-b bg-muted flex-wrap rounded-t-lg">
         {btn("bold",      <strong>B</strong>,                   "Negrita")}
         {btn("italic",    <em>I</em>,                           "Cursiva")}
         {btn("underline", <span className="underline">U</span>, "Subrayado")}
