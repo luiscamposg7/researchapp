@@ -44,13 +44,27 @@ export default function DetailPage() {
 
   useEffect(() => {
     if (!item) return;
-    const startTime = Date.now();
+    let activeTime = 0;
+    let segmentStart = document.visibilityState === "visible" ? Date.now() : null;
     let existingMaxTime = 0;
+
+    const getElapsed = () => {
+      const extra = segmentStart ? Date.now() - segmentStart : 0;
+      return Math.round((activeTime + extra) / 1000);
+    };
+
+    const onVisibility = () => {
+      if (document.visibilityState === "hidden") {
+        if (segmentStart) { activeTime += Date.now() - segmentStart; segmentStart = null; }
+      } else {
+        segmentStart = Date.now();
+      }
+    };
+    document.addEventListener("visibilitychange", onVisibility);
 
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) return;
       const now = new Date().toISOString();
-
       supabase.from("research_views")
         .select("max_reading_time, first_viewed_at")
         .eq("research_id", String(item.id))
@@ -72,7 +86,7 @@ export default function DetailPage() {
     });
 
     const saveTime = () => {
-      const elapsed = Math.round((Date.now() - startTime) / 1000);
+      const elapsed = getElapsed();
       if (elapsed < 3) return;
       supabase.auth.getUser().then(({ data: { user } }) => {
         if (!user || elapsed <= existingMaxTime) return;
@@ -86,7 +100,11 @@ export default function DetailPage() {
     };
 
     saveTimeRef.current = saveTime;
-    return () => { saveTimeRef.current = null; saveTime(); };
+    return () => {
+      document.removeEventListener("visibilitychange", onVisibility);
+      saveTimeRef.current = null;
+      saveTime();
+    };
   }, [item?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!item) return <div className="flex-1 flex items-center justify-center bg-page text-gray-500">Research no encontrado.</div>;
