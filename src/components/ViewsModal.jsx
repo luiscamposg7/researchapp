@@ -2,12 +2,15 @@ import { useState, useEffect } from "react";
 import { supabase } from "../supabase";
 import { Button } from "./ui/button";
 import { Spinner } from "./Spinner";
+import { useApp } from "../context/AppContext";
 
 export default function ViewsModal({ researchId, onClose, getElapsed }) {
+  const { isSuperAdmin } = useApp();
   const [views, setViews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentUserId, setCurrentUserId] = useState(null);
   const [liveTime, setLiveTime] = useState(0);
+  const [superAdminIds, setSuperAdminIds] = useState(new Set());
 
   const formatTime = (s) => {
     if (!s) return "—";
@@ -20,6 +23,8 @@ export default function ViewsModal({ researchId, onClose, getElapsed }) {
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (user) setCurrentUserId(user.id);
     });
+    supabase.from("user_roles").select("user_id").eq("role", "super_admin")
+      .then(({ data }) => setSuperAdminIds(new Set((data || []).map(r => r.user_id))));
   }, []);
 
   useEffect(() => {
@@ -58,7 +63,7 @@ export default function ViewsModal({ researchId, onClose, getElapsed }) {
             <p className="text-sm text-center py-8 text-muted">Nadie ha visto este research aún.</p>
           ) : (
             <div className="space-y-2 max-h-[340px] overflow-y-auto pr-1">
-              {views.map((v, i) => {
+              {views.filter(v => isSuperAdmin || !superAdminIds.has(v.user_id)).map((v, i) => {
                 const isMe = v.user_id === currentUserId;
                 const time = isMe ? Math.max(liveTime, v.max_reading_time || 0) : v.max_reading_time;
                 return (
