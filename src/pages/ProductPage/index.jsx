@@ -102,22 +102,33 @@ export default function ProductPage() {
 
       <div className="w-full mx-auto px-4 md:px-8 py-6 md:py-8 pb-16" style={{ maxWidth: "1600px" }}>
         {/* Product header */}
-        <div className="flex items-center gap-3 mb-8">
-          <div className="w-10 h-10 rounded-xl flex-shrink-0 overflow-hidden" style={{ backgroundColor: color }}>
-            {coverUrl && <img src={coverUrl} alt="" className="w-full h-full object-cover object-center" />}
+        <div className="flex items-center justify-between gap-3 mb-8">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl flex-shrink-0 overflow-hidden" style={{ backgroundColor: color }}>
+              {coverUrl && <img src={coverUrl} alt="" className="w-full h-full object-cover object-center" />}
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-primary leading-tight">{product}</h1>
+              <p className="text-sm text-muted">{productDeliverables.filter(i => i.status === "Publicado").length} entregables publicados</p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-2xl font-bold text-primary leading-tight">{product}</h1>
-            <p className="text-sm text-muted">{productDeliverables.filter(i => i.status === "Publicado").length} entregables publicados</p>
-          </div>
+          {isEditor && (
+            <Button color="primary" onClick={() => navigate("/añadir-research", { state: { product } })} className="flex items-center gap-2">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              <span className="hidden sm:inline">Añadir research</span>
+              <span className="sm:hidden">Añadir</span>
+            </Button>
+          )}
         </div>
         {/* Persona sections */}
         {(latestBuyerItem || latestUserItem) && (
           <div className="mb-10">
             <div className="space-y-8">
               {[
-                { item: latestUserItem,  getPersonas: i => i.users || [],                                                          label: "User Persona",  color: "#00B369", isBuyer: false },
                 { item: latestBuyerItem, getPersonas: i => i.buyers?.length ? i.buyers : (i.personas?.length ? i.personas : []), label: "Buyer Persona", color: "#2563EB", isBuyer: true },
+                { item: latestUserItem,  getPersonas: i => i.users || [],                                                          label: "User Persona",  color: "#00B369", isBuyer: false },
               ].filter(({ item }) => item).map(({ item: inv, getPersonas, label, color: bc, isBuyer }) => {
                 const personas = getPersonas(inv).filter(p => p.images?.length > 0);
                 return (

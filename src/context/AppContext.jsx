@@ -84,8 +84,10 @@ export function AppProvider({ children, setToast }) {
     toastTimerRef.current = setTimeout(() => setToast(null), 4000);
   };
 
+  const sortByDate = (arr) => [...arr].sort((a, b) => parseDate(b.date) - parseDate(a.date));
+
   const handleAdd = (item) => {
-    setDeliverables(prev => prev.some(d => d.id === item.id) ? prev : [item, ...prev]);
+    setDeliverables(prev => prev.some(d => d.id === item.id) ? prev : sortByDate([item, ...prev]));
     fetch("/api/deliverables", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -99,7 +101,7 @@ export function AppProvider({ children, setToast }) {
   };
 
   const handleUpdate = (item) => {
-    flushSync(() => setDeliverables(prev => prev.map(d => d.id === item.id ? item : d)));
+    flushSync(() => setDeliverables(prev => sortByDate(prev.map(d => d.id === item.id ? item : d))));
     fetch(`/api/deliverables/${item.id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
