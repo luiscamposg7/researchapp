@@ -19,8 +19,6 @@ export default function Layout({ toast, user }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   return (
     <div className="min-h-screen bg-page" style={{ fontFamily: "'Inter', sans-serif" }}>
-      <div className="animated-bg animated-bg-1" />
-      <div className="animated-bg animated-bg-2" />
       <Toast toast={toast} />
       <div className="flex h-screen overflow-hidden" style={{position:"relative", zIndex:1}}>
         {showSettings && <SettingsModal dark={dark} onClose={() => setShowSettings(false)} />}
