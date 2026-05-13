@@ -121,9 +121,24 @@ function localDb() {
           const qs = new URL(req.url, 'http://localhost').searchParams;
           const figmaUrl = qs.get('url');
           if (!figmaUrl) { res.writeHead(400); return res.end(JSON.stringify({ error: 'Missing url' })); }
-          const oembedPath = '/api/oembed?url=' + encodeURIComponent(figmaUrl);
+          const figmaToken = process.env.FIGMA_TOKEN;
+          const fileKeyMatch = figmaUrl.match(/figma\.com\/(?:file|design|proto|slides|deck)\/([^/?#]+)/);
+          const fileKey = fileKeyMatch?.[1];
+          if (figmaToken && fileKey) {
+            const apiResp = await new Promise((resolve, reject) => {
+              https.get({ hostname: 'api.figma.com', path: `/v1/files/${fileKey}`, headers: { 'X-FIGMA-TOKEN': figmaToken, 'Accept': 'application/json' } }, (resp) => {
+                let d = ''; resp.on('data', c => d += c); resp.on('end', () => resolve({ status: resp.statusCode, body: d }));
+              }).on('error', reject);
+            });
+            if (apiResp.status === 200) {
+              try {
+                const data = JSON.parse(apiResp.body);
+                return res.end(JSON.stringify({ title: data.name || null, thumbnail_url: data.thumbnailUrl || null }));
+              } catch {}
+            }
+          }
           const r = await new Promise((resolve, reject) => {
-            https.get({ hostname: 'www.figma.com', path: oembedPath, headers: { 'User-Agent': 'Mozilla/5.0', 'Accept': 'application/json' } }, (resp) => {
+            https.get({ hostname: 'www.figma.com', path: '/api/oembed?url=' + encodeURIComponent(figmaUrl), headers: { 'User-Agent': 'Mozilla/5.0', 'Accept': 'application/json' } }, (resp) => {
               let d = ''; resp.on('data', c => d += c); resp.on('end', () => resolve({ status: resp.statusCode, body: d }));
             }).on('error', reject);
           });
@@ -137,14 +152,30 @@ function localDb() {
           const qs = new URL(req.url, 'http://localhost').searchParams;
           const figmaUrl = qs.get('url');
           if (!figmaUrl) { res.writeHead(400); res.setHeader('Content-Type', 'application/json'); return res.end(JSON.stringify({ error: 'Missing url' })); }
-          const oembedPath = '/api/oembed?url=' + encodeURIComponent(figmaUrl);
-          const oembedResp = await new Promise((resolve, reject) => {
-            https.get({ hostname: 'www.figma.com', path: oembedPath, headers: { 'User-Agent': 'Mozilla/5.0', 'Accept': 'application/json' } }, (resp) => {
-              let d = ''; resp.on('data', c => d += c); resp.on('end', () => resolve({ status: resp.statusCode, body: d }));
-            }).on('error', reject);
-          });
-          if (oembedResp.status >= 300) { res.writeHead(oembedResp.status); return res.end(''); }
-          let thumbUrl; try { thumbUrl = JSON.parse(oembedResp.body).thumbnail_url; } catch { res.writeHead(500); return res.end(''); }
+          const figmaToken = process.env.FIGMA_TOKEN;
+          const fileKeyMatch = figmaUrl.match(/figma\.com\/(?:file|design|proto|slides|deck)\/([^/?#]+)/);
+          const fileKey = fileKeyMatch?.[1];
+          let thumbUrl = null;
+          if (figmaToken && fileKey) {
+            const apiResp = await new Promise((resolve, reject) => {
+              https.get({ hostname: 'api.figma.com', path: `/v1/files/${fileKey}`, headers: { 'X-FIGMA-TOKEN': figmaToken, 'Accept': 'application/json' } }, (resp) => {
+                let d = ''; resp.on('data', c => d += c); resp.on('end', () => resolve({ status: resp.statusCode, body: d }));
+              }).on('error', reject);
+            });
+            if (apiResp.status === 200) {
+              try { thumbUrl = JSON.parse(apiResp.body).thumbnailUrl || null; } catch {}
+            }
+          }
+          if (!thumbUrl) {
+            const oembedResp = await new Promise((resolve, reject) => {
+              https.get({ hostname: 'www.figma.com', path: '/api/oembed?url=' + encodeURIComponent(figmaUrl), headers: { 'User-Agent': 'Mozilla/5.0', 'Accept': 'application/json' } }, (resp) => {
+                let d = ''; resp.on('data', c => d += c); resp.on('end', () => resolve({ status: resp.statusCode, body: d }));
+              }).on('error', reject);
+            });
+            if (oembedResp.status < 300) {
+              try { thumbUrl = JSON.parse(oembedResp.body).thumbnail_url || null; } catch {}
+            }
+          }
           if (!thumbUrl) { res.writeHead(404); return res.end(''); }
           const parsed = new URL(thumbUrl);
           await new Promise((resolve, reject) => {

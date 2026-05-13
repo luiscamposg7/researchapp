@@ -3,24 +3,18 @@ module.exports = async function handler(req, res) {
   if (!url) return res.status(400).json({ error: "Missing url" });
 
   try {
-    const isSlidesOrDeck = /figma\.com\/(slides|deck)\//.test(url);
+    const figmaToken = process.env.FIGMA_TOKEN;
+    const m = url.match(/figma\.com\/(?:file|design|proto|slides|deck)\/([^/?#]+)/);
+    const fileKey = m?.[1];
 
-    if (isSlidesOrDeck) {
-      const figmaToken = process.env.FIGMA_TOKEN;
-      if (figmaToken) {
-        const m = url.match(/figma\.com\/(?:slides|deck)\/([^/?#]+)/);
-        const fileKey = m?.[1];
-        if (fileKey) {
-          const apiRes = await fetch(`https://api.figma.com/v1/files/${fileKey}`, {
-            headers: { 'X-FIGMA-TOKEN': figmaToken, 'Accept': 'application/json' }
-          });
-          if (apiRes.ok) {
-            const data = await apiRes.json();
-            return res.json({ title: data.name || null, thumbnail_url: data.thumbnailUrl || null });
-          }
-        }
+    if (figmaToken && fileKey) {
+      const apiRes = await fetch(`https://api.figma.com/v1/files/${fileKey}`, {
+        headers: { 'X-FIGMA-TOKEN': figmaToken, 'Accept': 'application/json' }
+      });
+      if (apiRes.ok) {
+        const data = await apiRes.json();
+        return res.json({ title: data.name || null, thumbnail_url: data.thumbnailUrl || null });
       }
-      return res.json({ title: null, thumbnail_url: null });
     }
 
     const r = await fetch(`https://www.figma.com/api/oembed?url=${encodeURIComponent(url)}`, {

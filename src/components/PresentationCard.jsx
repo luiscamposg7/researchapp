@@ -59,7 +59,7 @@ export default function PresentationCard({ item, dark: d }) {
       .catch(() => {});
   }, [item.archivoUrl, isFigma, isFigmaSlides]);
 
-  const thumbUrl = isFigma && !isFigmaSlides
+  const thumbUrl = isFigma
     ? (item.archivoUrl ? `/api/figma-img?url=${encodeURIComponent(item.archivoUrl)}` : null)
     : (!isFigma && !isDocs ? (pres?.thumbUrl || null) : null);
   const displayName = isFigma
