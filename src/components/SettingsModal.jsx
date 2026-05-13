@@ -15,7 +15,7 @@ export default function SettingsModal({ onClose, dark }) {
     supabase.auth.getUser().then(({ data: { user } }) => {
       supabase.rpc("get_users_with_roles").then(({ data }) => {
         const list = (data || [])
-          .filter(u => u.email?.endsWith("@prestamype.com"))
+          .filter(u => ["@prestamype.com", "@cambioseguro.com", "@tandia.com"].some(d => u.email?.endsWith(d)))
           .sort((a, b) => (a.user_id === user?.id ? -1 : b.user_id === user?.id ? 1 : 0));
         setUsers(list);
         setUsersLoading(false);
