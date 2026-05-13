@@ -43,14 +43,15 @@ function AppGate({ toast }) {
 
   if (!session) return <LoginPage />;
 
-  if (!session.user.email?.endsWith("@prestamype.com")) return (
+  const allowedDomains = ["@prestamype.com", "@cambioseguro.com", "@tandia.com"];
+  if (!allowedDomains.some(d => session.user.email?.endsWith(d))) return (
     <div className="min-h-screen flex items-center justify-center bg-page">
       <div className="w-full max-w-sm rounded-2xl border p-10 flex flex-col items-center gap-4 text-center bg-surface shadow-sm">
         <div className="w-12 h-12 rounded-full flex items-center justify-center bg-red-100">
           <svg className="w-6 h-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
         </div>
         <h2 className="text-lg font-bold text-primary">Acceso restringido</h2>
-        <p className="text-sm text-secondary">Solo cuentas <span className="font-semibold">@prestamype.com</span> pueden acceder a este portal.</p>
+        <p className="text-sm text-secondary">Solo cuentas <span className="font-semibold">@prestamype.com</span>, <span className="font-semibold">@cambioseguro.com</span> o <span className="font-semibold">@tandia.com</span> pueden acceder a este portal.</p>
         <button onClick={() => supabase.auth.signOut()} className="mt-2 text-sm font-semibold text-red-500 hover:text-red-700">Cerrar sesión</button>
       </div>
     </div>
